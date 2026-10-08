@@ -1,33 +1,67 @@
-<h2>{{ title }}</h2>
+<h1>Quản lý sinh viên</h1>
 
-<label for="studentId">Mã sinh viên:</label>
-<input type="text" [(ngModel)]="studentId">
-<br><br>
-
-<label for="studentName">Tên sinh viên:</label>
-<input type="text" [(ngModel)]="studentName">
-<br><br>
-
-<label for="email">Email:</label>
-<input type="email" [(ngModel)]="email">
-<br><br>
-
-<p>Số lượng sinh viên: {{ studentCount }}</p>
-<button [disabled]="isDisabled" (click)="addStudent()">Thêm sinh viên</button>
-<button [disabled]="studentCount === 0" (click)="deleteStudent()">Xóa sinh viên</button><br>
-
-<button (click)="resetCount()">Reset Count</button>
-
-<h1>Student Information</h1>
-
-
+<h2>Thêm sinh viên</h2>
+<div>
+    <label for="studentId">Mã sinh viên:</label>
+    <input type="text" id="studentId" [(ngModel)]="studentId" name="studentId">
+</div>
+<br>
 
 <div>
-    <p>ID: {{ studentId }}</p>
-    <p>Name: {{ studentName }}</p>
-    <p>Email: {{ email }}</p>
-    <p>Phone: {{ phone }}</p>
-    <p>School: {{ schoolName }}</p>
+    <label for="studentName">Họ tên:</label>
+    <input type="text" id="studentName" [(ngModel)]="studentName" name="studentName">
 </div>
+<br>
 
+<div>
+    <label for="studentEmail">Email:</label>
+    <input type="email" id="studentEmail" [(ngModel)]="studentEmail" name="studentEmail">
+</div>
+<br>
+
+<div>
+    <label for="studentGender">Giới tính:</label>
+    <select id="studentGender" [(ngModel)]="studentGender" name="studentGender">
+        <option value="Male">Nam</option>
+        <option value="Female">Nữ</option>
+    </select>
+</div>
+<br>
+
+<button (click)="addStudent()">Thêm sinh viên</button>
+<button (click)="updateStudent()" [disabled]="editButtonDisabled">Sửa</button>
+<hr>
+<h2>Danh sách sinh viên</h2>
+
+@if (students.length === 0) {
+  <p>Không có sinh viên nào.</p>
+} @else {
+    <table>
+        <thead>
+            <tr>
+            <th>Mã SV</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Giới tính</th>
+            <th>Hành động</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @for (student of students; track student.id) {
+            <tr>
+                <td>{{ student.id }}</td>
+                <td>{{ student.name }}</td>
+                <td>{{ student.email }}</td>
+                <td>{{ student.gender }}</td>
+
+                <td>
+                    <button (click)="deleteStudent(student.id)">Xóa</button>
+                    <button (click)="editStudent(student.id)">Sửa</button>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>  
+}
 

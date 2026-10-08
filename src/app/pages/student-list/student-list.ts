@@ -9,41 +9,69 @@ import { FormsModule } from '@angular/forms';
 })
 export class StudentList {
   title = 'Student List';
+  editButtonDisabled = true;
 
-  schoolName = 'ABC University';
-  studentName = '';
   studentId = '';
-  email = '';
-  phone = '123-456-7890';
+  studentName = '';
+  studentEmail = '';
+  studentGender = '';
 
-  studentAvatar = 'https://example.com/avatar.jpg';
-
-  studentCount = 0;
-  isDisabled = false;
-
-
+  students = [
+    { id: 'SV01', name: 'John Doe', email: 'john.doe@abcuniversity.edu', gender: 'Male' },
+    { id: 'SV02', name: 'Jane Smith', email: 'jane.smith@abcuniversity.edu', gender: 'Female' },
+    { id: 'SV03', name: 'Michael Johnson', email: 'michael.johnson@abcuniversity.edu', gender: 'Male' }
+  ];
 
   addStudent() {
-    this.studentCount++;
-
-    if (this.studentCount >= 10) {
-      this.isDisabled = true;
-    } 
-
-    console.log('Mã sinh viên:', this.studentId);
-    console.log('Tên sinh viên:', this.studentName);
-    console.log('Email:', this.email);
+    if (this.studentId && this.studentName && this.studentEmail && this.studentGender) {
+      const newStudent = {
+        id: this.studentId,
+        name: this.studentName,
+        email: this.studentEmail,
+        gender: this.studentGender
+      };
+      this.students.push(newStudent);
+      this.studentId = '';
+      this.studentName = '';
+      this.studentEmail = '';
+      this.studentGender = '';
+    } else {
+      alert('Please fill in all fields before adding a student.');
+    }
   }
 
-  resetCount() {
-    this.studentCount = 0;
-    this.isDisabled = false;
+  deleteStudent(studentId: string) {
+    this.students = this.students.filter(student => student.id !== studentId);
   }
 
-  deleteStudent() {
-    this.studentCount--;
-    if (this.studentCount < 10) {
-      this.isDisabled = false;
+  editStudent(studentId: string) {
+    const student = this.students.find(student => student.id === studentId);
+    if (student) {
+      this.studentId = student.id;
+      this.studentName = student.name;
+      this.studentEmail = student.email;
+      this.studentGender = student.gender;
+      this.editButtonDisabled = false;
+    }
+  }
+
+  updateStudent() {
+    const index = this.students.findIndex(student => student.id === this.studentId);
+    
+    if (index !== -1) {
+      this.students[index] = {
+        id: this.studentId,
+        name: this.studentName,
+        email: this.studentEmail,
+        gender: this.studentGender
+      };
+      this.studentId = '';
+      this.studentName = '';
+      this.studentEmail = '';
+      this.studentGender = '';
+      this.editButtonDisabled = true;
+    } else {
+      alert('Student not found.');
     }
   }
 }
