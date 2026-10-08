@@ -1,0 +1,33 @@
+<h2>{{ title }}</h2>
+
+<label for="studentId">Mã sinh viên:</label>
+<input type="text" [(ngModel)]="studentId">
+<br><br>
+
+<label for="studentName">Tên sinh viên:</label>
+<input type="text" [(ngModel)]="studentName">
+<br><br>
+
+<label for="email">Email:</label>
+<input type="email" [(ngModel)]="email">
+<br><br>
+
+<p>Số lượng sinh viên: {{ studentCount }}</p>
+<button [disabled]="isDisabled" (click)="addStudent()">Thêm sinh viên</button>
+<button [disabled]="studentCount === 0" (click)="deleteStudent()">Xóa sinh viên</button><br>
+
+<button (click)="resetCount()">Reset Count</button>
+
+<h1>Student Information</h1>
+
+
+
+<div>
+    <p>ID: {{ studentId }}</p>
+    <p>Name: {{ studentName }}</p>
+    <p>Email: {{ email }}</p>
+    <p>Phone: {{ phone }}</p>
+    <p>School: {{ schoolName }}</p>
+</div>
+
+
