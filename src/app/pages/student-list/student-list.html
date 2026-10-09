@@ -60,6 +60,8 @@
                 <th>Mã sinh viên</th>
                 <th>Tên</th>
                 <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Hành động</th>
             </tr>
         </thead>
         <tbody>
@@ -68,6 +70,10 @@
                     <td>{{ student.id }}</td>
                     <td>{{ student.name }}</td>
                     <td>{{ student.email }}</td>
+                    <td>{{ student.phone }}</td>
+                    <td>
+                        <button class="btn btn-danger" (click)="deleteStudent(student.id)">Xóa</button>
+                    </td>
                 </tr>
             }
         </tbody>
