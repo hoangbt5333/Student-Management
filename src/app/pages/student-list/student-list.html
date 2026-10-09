@@ -1,67 +1,75 @@
-<h1>Quản lý sinh viên</h1>
+<h3>Thêm sinh viên</h3>
 
-<h2>Thêm sinh viên</h2>
-<div>
-    <label for="studentId">Mã sinh viên:</label>
-    <input type="text" id="studentId" [(ngModel)]="studentId" name="studentId">
-</div>
-<br>
 
-<div>
-    <label for="studentName">Họ tên:</label>
-    <input type="text" id="studentName" [(ngModel)]="studentName" name="studentName">
-</div>
-<br>
+<form [formGroup]="studentForm" (ngSubmit)="addStudent()">
+  
+    <div class="form-group">
+    <label for="id">Mã sinh viên:</label>
+    <input type="text" id="id" formControlName="id" class="form-control" />
+    @if (
+        studentForm.controls.id.invalid &&
+        studentForm.controls.id.touched
+    ) {
+        <p style="color: red;">Mã sinh viên là bắt buộc.</p>
+    }
+  </div>
 
-<div>
-    <label for="studentEmail">Email:</label>
-    <input type="email" id="studentEmail" [(ngModel)]="studentEmail" name="studentEmail">
-</div>
-<br>
+  <div class="form-group">
+    <label for="name">Tên:</label>
+    <input type="text" id="name" formControlName="name" class="form-control" />
+    @if (
+        studentForm.controls.name.invalid &&
+        studentForm.controls.name.touched
+    ) {
+        <p style="color: red;">Tên là bắt buộc.</p>
+    }
+  </div>
 
-<div>
-    <label for="studentGender">Giới tính:</label>
-    <select id="studentGender" [(ngModel)]="studentGender" name="studentGender">
-        <option value="Male">Nam</option>
-        <option value="Female">Nữ</option>
-    </select>
-</div>
-<br>
 
-<button (click)="addStudent()">Thêm sinh viên</button>
-<button (click)="updateStudent()" [disabled]="editButtonDisabled">Sửa</button>
+  <div class="form-group">
+    <label for="email">Email:</label>
+    <input type="email" id="email" formControlName="email" class="form-control" />
+    @if (studentForm.controls.email.invalid && studentForm.controls.email.touched) {
+        <div class="text-danger" style="color: red;">
+            Email không hợp lệ.
+        </div>
+    }
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Số điện thoại:</label>
+        <input type="text" id="phone" formControlName="phone" class="form-control" />
+        @if (studentForm.controls.phone.invalid && studentForm.controls.phone.touched) {
+            <div class="text-danger" style="color: red;">
+                Số điện thoại không hợp lệ (10 chữ số).
+            </div>
+        }
+    </div>
+
+  <button type="submit" class="btn btn-primary" [disabled]="studentForm.invalid">Thêm sinh viên</button>
+</form>
+
 <hr>
-<h2>Danh sách sinh viên</h2>
-
+<h3>Danh sách sinh viên</h3>
 @if (students.length === 0) {
-  <p>Không có sinh viên nào.</p>
+    <p>Không có sinh viên nào.</p>
 } @else {
-    <table>
+    <table class="table">
         <thead>
             <tr>
-            <th>Mã SV</th>
-            <th>Họ tên</th>
-            <th>Email</th>
-            <th>Giới tính</th>
-            <th>Hành động</th>
+                <th>Mã sinh viên</th>
+                <th>Tên</th>
+                <th>Email</th>
             </tr>
         </thead>
-
         <tbody>
             @for (student of students; track student.id) {
-            <tr>
-                <td>{{ student.id }}</td>
-                <td>{{ student.name }}</td>
-                <td>{{ student.email }}</td>
-                <td>{{ student.gender }}</td>
-
-                <td>
-                    <button (click)="deleteStudent(student.id)">Xóa</button>
-                    <button (click)="editStudent(student.id)">Sửa</button>
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ student.id }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.email }}</td>
+                </tr>
             }
         </tbody>
-    </table>  
+    </table>
 }
-
