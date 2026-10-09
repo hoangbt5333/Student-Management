@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, signal, computed } from '@angular/core';
 import {
   FormBuilder,
   ReactiveFormsModule,
@@ -20,10 +20,14 @@ export class StudentListComponent implements OnInit {
   private studentService = inject(StudentService);
   private changeDetector = inject(ChangeDetectorRef);
 
-  students: Student[] = [];
-  errorMessage = '';
-  loading = false;
   editingStudentId: string | null = null;
+
+  students = signal<Student[]>([]);
+  loading = signal(false);
+  errorMessage = signal('');
+
+  studentCount = computed(() => this.students().length);
+  searchTerm = signal('');
 
   studentForm = this.fb.group({
     id: ['', Validators.required],
@@ -37,25 +41,38 @@ export class StudentListComponent implements OnInit {
   }
 
   loadStudents(): void {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     this.studentService.getStudents().subscribe({
       next: (data) => {
-        this.students = data;
-        this.loading = false;
+        this.students.set(data);
+        this.loading.set(false);
         this.changeDetector.markForCheck();
       },
       error: (error) => {
         console.error('Lỗi tải danh sách:', error);
-        this.errorMessage =
-          'Không thể tải danh sách sinh viên. Hãy kiểm tra backend.';
-        this.loading = false;
+        this.errorMessage.set(
+          'Không thể tải danh sách sinh viên. Hãy kiểm tra backend.');
+        this.loading.set(false);
         this.changeDetector.markForCheck();
       }
     });
   }
 
+  filteredStudents = computed(() => {
+    const keyword = this.searchTerm().trim().toLowerCase();
+
+    if (!keyword) {
+      return this.students();
+    }
+
+    return this.students().filter(student =>
+      student.id.toLowerCase().includes(keyword) ||
+      student.name.toLowerCase().includes(keyword)
+    );
+  });
+  
   addStudent(): void {
     if (this.studentForm.invalid) {
       this.studentForm.markAllAsTouched();
@@ -71,12 +88,12 @@ export class StudentListComponent implements OnInit {
       phone: value.phone!
     };
 
-    if (this.students.some(student => student.id === newStudent.id)) {
-      this.errorMessage = 'Mã sinh viên đã tồn tại!';
-      return;
-    }
+    // if (this.students.some(student => student.id === newStudent.id)) {
+    //   this.errorMessage.set('Mã sinh viên đã tồn tại!');
+    //   return;
+    // }
 
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     this.studentService.addStudent(newStudent).subscribe({
       next: () => {
@@ -85,8 +102,8 @@ export class StudentListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Lỗi thêm sinh viên:', error);
-        this.errorMessage =
-          'Không thể thêm sinh viên. Hãy kiểm tra mã sinh viên và backend.';
+        this.errorMessage.set(
+          'Không thể thêm sinh viên. Hãy kiểm tra mã sinh viên và backend.');
         this.changeDetector.markForCheck();
       }
     });
@@ -135,7 +152,7 @@ export class StudentListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Lỗi cập nhật sinh viên:', error);
-        this.errorMessage = 'Không thể cập nhật sinh viên.';
+        this.errorMessage.set('Không thể cập nhật sinh viên.');
       }
     });
   }
@@ -149,7 +166,7 @@ export class StudentListComponent implements OnInit {
   }
 
   deleteStudent(id: string): void {
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     this.studentService.deleteStudent(id).subscribe({
       next: () => {
@@ -157,7 +174,7 @@ export class StudentListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Lỗi xóa sinh viên:', error);
-        this.errorMessage = 'Không thể xóa sinh viên.';
+        this.errorMessage.set('Không thể xóa sinh viên.');
         this.changeDetector.markForCheck();
       }
     });

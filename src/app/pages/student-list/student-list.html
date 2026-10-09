@@ -56,21 +56,34 @@
 </form>
 
 
-@if (loading) {
+@if (loading()) {
   <p>Đang tải danh sách sinh viên...</p>
 }
 
-@if (errorMessage) {
+@if (errorMessage()) {
   <p class="error">{{ errorMessage }}</p>
 }
 
 <h2>Danh sách sinh viên</h2>
+<br>
 
-@if (!loading && students.length === 0 && !errorMessage) {
+<div class="form-group">
+  <label for="searchStudent">Tìm sinh viên</label>
+
+  <input
+    id="searchStudent"
+    type="text"
+    placeholder="Nhập mã sinh viên hoặc họ tên..."
+    [value]="searchTerm()"
+    (input)="searchTerm.set($any($event.target).value)"
+  />
+</div>
+
+@if (!loading() && students().length === 0 && !errorMessage()) {
   <p>Chưa có sinh viên nào.</p>
 }
 
-@if (students.length > 0) {
+@if (filteredStudents().length > 0) {
   <table>
     <thead>
       <tr>
@@ -82,7 +95,7 @@
       </tr>
     </thead>
     <tbody>
-      @for (student of students; track student.id) {
+      @for (student of filteredStudents(); track student.id) {
         <tr>
           <td>{{ student.id }}</td>
           <td>{{ student.name }}</td>
@@ -102,4 +115,6 @@
       }
     </tbody>
   </table>
+} @else {
+  <p>Không tìm thấy sinh viên</p>
 }
