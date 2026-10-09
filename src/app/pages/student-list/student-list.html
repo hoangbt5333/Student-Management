@@ -49,33 +49,49 @@
   <button type="submit" class="btn btn-primary" [disabled]="studentForm.invalid">Thêm sinh viên</button>
 </form>
 
-<hr>
-<h3>Danh sách sinh viên</h3>
-@if (students.length === 0) {
-    <p>Không có sinh viên nào.</p>
-} @else {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Mã sinh viên</th>
-                <th>Tên</th>
-                <th>Email</th>
-                <th>Số điện thoại</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (student of students; track student.id) {
-                <tr>
-                    <td>{{ student.id }}</td>
-                    <td>{{ student.name }}</td>
-                    <td>{{ student.email }}</td>
-                    <td>{{ student.phone }}</td>
-                    <td>
-                        <button class="btn btn-danger" (click)="deleteStudent(student.id)">Xóa</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+@if (loading) {
+  <p>Đang tải danh sách sinh viên...</p>
+}
+
+@if (errorMessage) {
+  <p class="error">{{ errorMessage }}</p>
+}
+
+<h2>Danh sách sinh viên</h2>
+
+@if (!loading && students.length === 0 && !errorMessage) {
+  <p>Chưa có sinh viên nào.</p>
+}
+
+@if (students.length > 0) {
+  <table>
+    <thead>
+      <tr>
+        <th>Mã SV</th>
+        <th>Họ tên</th>
+        <th>Email</th>
+        <th>Số điện thoại</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (student of students; track student.id) {
+        <tr>
+          <td>{{ student.id }}</td>
+          <td>{{ student.name }}</td>
+          <td>{{ student.email }}</td>
+          <td>{{ student.phone }}</td>
+          <td>
+            <button
+              type="button"
+              (click)="deleteStudent(student.id)"
+            >
+              Xóa
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
 }
