@@ -26,6 +26,10 @@ export class StudentService {
     return this.http.post<Student>(this.apiUrl, student);
   }
 
+  updateStudent(student: Student): Observable<Student> {
+    return this.http.put<Student>(`${this.apiUrl}/${encodeURIComponent(student.id)}`, student);
+  }
+
   deleteStudent(id: string): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/${encodeURIComponent(id)}`

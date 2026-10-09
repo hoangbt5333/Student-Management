@@ -1,7 +1,7 @@
 <h3>Thêm sinh viên</h3>
 
 
-<form [formGroup]="studentForm" (ngSubmit)="addStudent()">
+<form [formGroup]="studentForm" (ngSubmit)="saveStudent()">
   
     <div class="form-group">
     <label for="id">Mã sinh viên:</label>
@@ -46,7 +46,13 @@
         }
     </div>
 
-  <button type="submit" class="btn btn-primary" [disabled]="studentForm.invalid">Thêm sinh viên</button>
+  <button type="submit" class="btn btn-primary" [disabled]="studentForm.invalid">
+    {{ editingStudentId ? 'Lưu thay đổi' : 'Thêm sinh viên'}}
+  </button>
+
+  @if (editingStudentId) {
+    <button type="button" (click)="cancelEdit()">Hủy</button>
+  }
 </form>
 
 
@@ -83,6 +89,8 @@
           <td>{{ student.email }}</td>
           <td>{{ student.phone }}</td>
           <td>
+            <button type="button" (click)="editStudent(student)">Sửa</button>
+            
             <button
               type="button"
               (click)="deleteStudent(student.id)"

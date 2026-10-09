@@ -23,6 +23,7 @@ export class StudentListComponent implements OnInit {
   students: Student[] = [];
   errorMessage = '';
   loading = false;
+  editingStudentId: string | null = null;
 
   studentForm = this.fb.group({
     id: ['', Validators.required],
@@ -89,6 +90,62 @@ export class StudentListComponent implements OnInit {
         this.changeDetector.markForCheck();
       }
     });
+  }
+
+  editStudent(student: Student): void {
+    this.editingStudentId = student.id;
+
+    this.studentForm.patchValue({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      phone: student.phone
+    });
+
+    // Do not change student's ID
+    this.studentForm.controls.id.disable(); 
+  }
+
+  cancelEdit(): void {
+    this.editingStudentId = null;
+    this.studentForm.reset();
+    this.studentForm.controls.id.enable();
+  }
+
+  updateStudent(): void {
+    if (this.studentForm.invalid || !this.editingStudentId) {
+      this.studentForm.markAllAsTouched();
+      return;
+    }
+
+    // getRawValue() lấy cả trường đang bị disable
+    const value = this.studentForm.getRawValue();
+
+    const updatedStudent: Student = {
+      id: this.editingStudentId,
+      name: value.name!,
+      email: value.email!,
+      phone: value.phone!
+    };
+
+    this.studentService.updateStudent(updatedStudent).subscribe({
+      next: () => {
+        this.cancelEdit();
+        this.loadStudents();
+      },
+      error: (error) => {
+        console.error('Lỗi cập nhật sinh viên:', error);
+        this.errorMessage = 'Không thể cập nhật sinh viên.';
+      }
+    });
+  }
+  
+  saveStudent(): void {
+    if (this.editingStudentId) {
+      this.updateStudent();
+    } else {
+      this.addStudent();
+    }
   }
 
   deleteStudent(id: string): void {
