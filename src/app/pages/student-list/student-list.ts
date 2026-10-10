@@ -7,11 +7,12 @@ import {
 
 import { StudentService } from '../../services/student';
 import type { Student } from '../../services/student';
+import { StudentTable } from '../../components/student-table/student-table';
 
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, StudentTable],
   templateUrl: './student-list.html',
   styleUrl: './student-list.css'
 })
@@ -95,8 +96,12 @@ export class StudentListComponent implements OnInit {
 
     this.errorMessage.set('');
 
+    console.log('ID:', value.id);
+    console.log('Payload:', JSON.stringify(newStudent));
+
     this.studentService.addStudent(newStudent).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('Response từ API: ', response);
         this.studentForm.reset();
         this.loadStudents();
       },
