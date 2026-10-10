@@ -1,0 +1,28 @@
+
+:host {
+  display: block;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background: #f3f4f6;
+}
+
+button {
+  margin-right: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
