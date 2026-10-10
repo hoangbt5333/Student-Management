@@ -1,23 +1,18 @@
 import { ChangeDetectorRef, Component, inject, OnInit, signal, computed } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
 
 import { StudentService } from '../../services/student';
 import type { Student } from '../../services/student';
 import { StudentTable } from '../../components/student-table/student-table';
+import { StudentForm } from '../../components/student-form/student-form';
 
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [ReactiveFormsModule, StudentTable],
+  imports: [StudentForm, StudentTable],
   templateUrl: './student-list.html',
   styleUrl: './student-list.css'
 })
 export class StudentListComponent implements OnInit {
-  private fb = inject(FormBuilder);
   private studentService = inject(StudentService);
   private changeDetector = inject(ChangeDetectorRef);
 
@@ -26,16 +21,10 @@ export class StudentListComponent implements OnInit {
   students = signal<Student[]>([]);
   loading = signal(false);
   errorMessage = signal('');
+  selectedStudent = signal<Student | null>(null);
 
   studentCount = computed(() => this.students().length);
   searchTerm = signal('');
-
-  studentForm = this.fb.group({
-    id: ['', Validators.required],
-    name: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]]
-  });
 
   ngOnInit(): void {
     this.loadStudents();
@@ -74,99 +63,42 @@ export class StudentListComponent implements OnInit {
     );
   });
   
-  addStudent(): void {
-    if (this.studentForm.invalid) {
-      this.studentForm.markAllAsTouched();
-      return;
-    }
-
-    const value = this.studentForm.getRawValue();
-
-    const newStudent: Student = {
-      id: value.id!,
-      name: value.name!,
-      email: value.email!,
-      phone: value.phone!
-    };
-
-    // if (this.students.some(student => student.id === newStudent.id)) {
-    //   this.errorMessage.set('Mã sinh viên đã tồn tại!');
-    //   return;
-    // }
-
-    this.errorMessage.set('');
-
-    console.log('ID:', value.id);
-    console.log('Payload:', JSON.stringify(newStudent));
-
-    this.studentService.addStudent(newStudent).subscribe({
-      next: (response) => {
-        console.log('Response từ API: ', response);
-        this.studentForm.reset();
-        this.loadStudents();
-      },
-      error: (error) => {
-        console.error('Lỗi thêm sinh viên:', error);
-        this.errorMessage.set(
-          'Không thể thêm sinh viên. Hãy kiểm tra mã sinh viên và backend.');
-        this.changeDetector.markForCheck();
-      }
-    });
-  }
 
   editStudent(student: Student): void {
-    this.editingStudentId = student.id;
-
-    this.studentForm.patchValue({
-      id: student.id,
-      name: student.name,
-      email: student.email,
-      phone: student.phone
-    });
-
-    // Do not change student's ID
-    this.studentForm.controls.id.disable(); 
+    this.selectedStudent.set(student);
   }
 
   cancelEdit(): void {
-    this.editingStudentId = null;
-    this.studentForm.reset();
-    this.studentForm.controls.id.enable();
-  }
-
-  updateStudent(): void {
-    if (this.studentForm.invalid || !this.editingStudentId) {
-      this.studentForm.markAllAsTouched();
-      return;
-    }
-
-    // getRawValue() lấy cả trường đang bị disable
-    const value = this.studentForm.getRawValue();
-
-    const updatedStudent: Student = {
-      id: this.editingStudentId,
-      name: value.name!,
-      email: value.email!,
-      phone: value.phone!
-    };
-
-    this.studentService.updateStudent(updatedStudent).subscribe({
-      next: () => {
-        this.cancelEdit();
-        this.loadStudents();
-      },
-      error: (error) => {
-        console.error('Lỗi cập nhật sinh viên:', error);
-        this.errorMessage.set('Không thể cập nhật sinh viên.');
-      }
-    });
+    this.selectedStudent.set(null);
   }
   
-  saveStudent(): void {
-    if (this.editingStudentId) {
-      this.updateStudent();
+  saveStudent(student: Student): void {
+    this.errorMessage.set('');
+
+    if (this.selectedStudent()) {
+      //Đang sửa: PUT
+      this.studentService.updateStudent(student).subscribe({
+        next: () => {
+          this.selectedStudent.set(null);
+          this.loadStudents();
+        },
+        error: (error) => {
+          console.error('Lỗi cập nhập sinh viên: ', error);
+          this.errorMessage.set('Không thể cập nhập sinh viên')
+        }
+      });
     } else {
-      this.addStudent();
+      //Đang thêm: POST
+      this.studentService.addStudent(student).subscribe({
+        next: () => {
+          this.selectedStudent.set(null);
+          this.loadStudents();
+        },
+        error: (error) => {
+          console.error('Lỗi thêm sinh viên: ', error);
+          this.errorMessage.set('Không thể thêm sinh viên.');
+        }
+      });
     }
   }
 

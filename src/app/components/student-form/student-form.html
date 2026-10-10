@@ -1,0 +1,57 @@
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <h2>{{ student() ? 'Sửa sinh viên' : 'Thêm sinh viên' }}</h2>
+
+  <div class="form-group">
+    <label for="id">Mã sinh viên</label>
+    <input id="id" type="text" formControlName="id" />
+
+    @if (form.controls.id.touched && form.controls.id.invalid) {
+      <small class="error">Vui lòng nhập mã sinh viên.</small>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="name">Họ và tên</label>
+    <input id="name" type="text" formControlName="name" />
+
+    @if (form.controls.name.touched && form.controls.name.invalid) {
+      <small class="error">Vui lòng nhập họ tên.</small>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" />
+
+    @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+      <small class="error">Vui lòng nhập email.</small>
+    }
+
+    @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+      <small class="error">Email không đúng định dạng.</small>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="phone">Số điện thoại</label>
+    <input id="phone" type="text" formControlName="phone" />
+
+    @if (form.controls.phone.touched && form.controls.phone.invalid) {
+      <small class="error">Vui lòng nhập số điện thoại.</small>
+    }
+  </div>
+
+  <div class="actions">
+    <button type="submit">
+      {{ student() ? 'Cập nhật' : 'Thêm sinh viên' }}
+    </button>
+
+    @if (student()) {
+      <button type="button" (click)="onCancel()">
+        Hủy sửa
+      </button>
+    }
+  </div>
+</form>
+
