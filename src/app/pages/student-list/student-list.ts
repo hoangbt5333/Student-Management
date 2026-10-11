@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit, signal, computed } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 
 import { StudentService } from '../../services/student';
 import type { Student } from '../../services/student';
@@ -22,6 +22,22 @@ export class StudentListComponent implements OnInit {
   loading = signal(false);
   errorMessage = signal('');
   selectedStudent = signal<Student | null>(null);
+
+  constructor(){
+    effect(() => {
+      const student = this.selectedStudent();
+
+      if (student) {
+        console.log('Đang sửa sinh viên: ', student.name);
+      } else {
+        console.log('Đang thêm sinh viên');
+      }
+    });
+
+    effect(() => {
+      console.log('Từ khoá tìm kiếm: ', this.searchTerm());
+    });
+  }
 
   studentCount = computed(() => this.students().length);
   searchTerm = signal('');
@@ -51,17 +67,25 @@ export class StudentListComponent implements OnInit {
   }
 
   filteredStudents = computed(() => {
-    const keyword = this.searchTerm().trim().toLowerCase();
+    const keyword = this.normalizeSearchText(this.searchTerm().trim());
 
     if (!keyword) {
       return this.students();
     }
 
     return this.students().filter(student =>
-      student.id.toLowerCase().includes(keyword) ||
-      student.name.toLowerCase().includes(keyword)
+      this.normalizeSearchText(student.id).includes(keyword) ||
+      this.normalizeSearchText(student.name).includes(keyword)
     );
   });
+
+  private normalizeSearchText(value: string): string {
+    return value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd');
+  }
   
 
   editStudent(student: Student): void {
