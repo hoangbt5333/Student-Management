@@ -5,6 +5,7 @@ import type { Student } from '../../services/student';
 import { StudentTable } from '../../components/student-table/student-table';
 import { StudentForm } from '../../components/student-form/student-form';
 import { StudentFacade } from '../../facades/student-facade';
+import { StudentStore } from '../../stores/student.store';
 
 @Component({
   selector: 'app-student-list',
@@ -19,15 +20,22 @@ export class StudentListComponent implements OnInit {
   private studentService = inject(StudentService);
   private changeDetector = inject(ChangeDetectorRef);
   private studentFacade = inject(StudentFacade);
+  private studentStore = inject(StudentStore);
 
   editingStudentId: string | null = null;
   selectedStudent = signal<Student | null>(null);
   searchTerm = signal('');
 
-  readonly students = this.studentFacade.students;
-  readonly loading = this.studentFacade.loading;
-  readonly errorMessage = this.studentFacade.errorMessage;
-  readonly studentCount = this.studentFacade.studentCount;
+  // readonly students = this.studentFacade.students;
+  // readonly loading = this.studentFacade.loading;
+  // readonly errorMessage = this.studentFacade.errorMessage;
+  // readonly studentCount = this.studentFacade.studentCount;
+
+  readonly students = this.studentStore.students;
+  readonly loading = this.studentStore.loading;
+  readonly errorMessage = this.studentStore.errorMessage;
+  readonly studentCount = this.studentStore.studentCount;
+  readonly filteredStudents = this.studentStore.filteredStudents;
 
 
   constructor(){
@@ -48,50 +56,30 @@ export class StudentListComponent implements OnInit {
 
 
   ngOnInit(): void {
-    this.studentFacade.loadStudents();
+    this.studentStore.loadStudents();
   }
 
-  loadStudents(): void {
-    this.loading.set(true);
-    this.errorMessage.set('');
+  // filteredStudents = computed(() => {
+  //   const keyword = this.normalizeSearchText(this.searchTerm().trim());
+  //   const students = this.studentFacade.students();
 
-    this.studentService.getStudents().subscribe({
-      next: (data) => {
-        this.students.set(data);
-        this.loading.set(false);
-        this.changeDetector.markForCheck();
-      },
-      error: (error) => {
-        console.error('Lỗi tải danh sách:', error);
-        this.errorMessage.set(
-          'Không thể tải danh sách sinh viên. Hãy kiểm tra backend.');
-        this.loading.set(false);
-        this.changeDetector.markForCheck();
-      }
-    });
-  }
+  //   if (!keyword) {
+  //     return students;
+  //   }
 
-  filteredStudents = computed(() => {
-    const keyword = this.normalizeSearchText(this.searchTerm().trim());
-    const students = this.studentFacade.students();
+  //   return students.filter(student =>
+  //     this.normalizeSearchText(student.id).includes(keyword) ||
+  //     this.normalizeSearchText(student.name).includes(keyword)
+  //   );
+  // });
 
-    if (!keyword) {
-      return students;
-    }
-
-    return students.filter(student =>
-      this.normalizeSearchText(student.id).includes(keyword) ||
-      this.normalizeSearchText(student.name).includes(keyword)
-    );
-  });
-
-  private normalizeSearchText(value: string): string {
-    return value
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd');
-  }
+  // private normalizeSearchText(value: string): string {
+  //   return value
+  //     .toLowerCase()
+  //     .normalize('NFD')
+  //     .replace(/[\u0300-\u036f]/g, '')
+  //     .replace(/đ/g, 'd');
+  // }
   
 
   editStudent(student: Student): void {
@@ -106,15 +94,15 @@ export class StudentListComponent implements OnInit {
     // this.errorMessage.set('');
     if (this.selectedStudent()) {
       //Đang sửa: PUT
-      this.studentFacade.updateStudent(student);
+      this.studentStore.updateStudent(student);
       this.selectedStudent.set(null);
     } else {
       //Đang thêm: POST
-      this.studentFacade.addStudent(student, () => this.studentForm.resetForNewStudent());
+      this.studentStore.addStudent(student);
     }
   }
 
   deleteStudent(id: string): void {
-    this.studentFacade.deleteStudent(id);
+    this.studentStore.deleteStudent(id);
   }
 }

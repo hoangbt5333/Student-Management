@@ -15,8 +15,8 @@
   <input
     type="text"
     placeholder="Tìm theo mã sinh viên hoặc họ tên..."
-    [value]="searchTerm()"
-    (input)="searchTerm.set($any($event.target).value)"
+    [value]="studentStore.searchTerm()"
+    (input)="studentStore.setSearchTerm($any($event.target).value)"
   />
 </div>
 
