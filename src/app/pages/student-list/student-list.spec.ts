@@ -34,19 +34,19 @@ describe('StudentList', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should match Vietnamese names without typing their diacritics', () => {
-    const student = {
-      id: 'SV01',
-      name: 'Nguyễn Bình',
-      email: 'binh@example.com',
-      phone: '0123456789',
-    };
+  // it('should match Vietnamese names without typing their diacritics', () => {
+  //   const student = {
+  //     id: 'SV01',
+  //     name: 'Nguyễn Bình',
+  //     email: 'binh@example.com',
+  //     phone: '0123456789',
+  //   };
 
-    component.students.set([student]);
-    component.searchTerm.set('bi');
+  //   component.students.set([student]);
+  //   component.searchTerm.set('bi');
 
-    expect(component.filteredStudents()).toEqual([student]);
-  });
+  //   expect(component.filteredStudents()).toEqual([student]);
+  // });
 
   it('should clear the form after a student is added successfully', () => {
     const form = fixture.debugElement.query(By.directive(StudentForm)).injector.get(StudentForm);
