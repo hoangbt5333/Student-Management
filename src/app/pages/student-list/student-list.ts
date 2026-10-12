@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, inject, OnInit, signal, computed, effect } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, signal, computed, effect, ViewChild } from '@angular/core';
 
 import { StudentService } from '../../services/student';
 import type { Student } from '../../services/student';
 import { StudentTable } from '../../components/student-table/student-table';
 import { StudentForm } from '../../components/student-form/student-form';
+import { StudentFacade } from '../../facades/student-facade';
 
 @Component({
   selector: 'app-student-list',
@@ -13,15 +14,21 @@ import { StudentForm } from '../../components/student-form/student-form';
   styleUrl: './student-list.css'
 })
 export class StudentListComponent implements OnInit {
+  @ViewChild(StudentForm) private studentForm!: StudentForm;
+
   private studentService = inject(StudentService);
   private changeDetector = inject(ChangeDetectorRef);
+  private studentFacade = inject(StudentFacade);
 
   editingStudentId: string | null = null;
-
-  students = signal<Student[]>([]);
-  loading = signal(false);
-  errorMessage = signal('');
   selectedStudent = signal<Student | null>(null);
+  searchTerm = signal('');
+
+  readonly students = this.studentFacade.students;
+  readonly loading = this.studentFacade.loading;
+  readonly errorMessage = this.studentFacade.errorMessage;
+  readonly studentCount = this.studentFacade.studentCount;
+
 
   constructor(){
     effect(() => {
@@ -39,11 +46,9 @@ export class StudentListComponent implements OnInit {
     });
   }
 
-  studentCount = computed(() => this.students().length);
-  searchTerm = signal('');
 
   ngOnInit(): void {
-    this.loadStudents();
+    this.studentFacade.loadStudents();
   }
 
   loadStudents(): void {
@@ -68,12 +73,13 @@ export class StudentListComponent implements OnInit {
 
   filteredStudents = computed(() => {
     const keyword = this.normalizeSearchText(this.searchTerm().trim());
+    const students = this.studentFacade.students();
 
     if (!keyword) {
-      return this.students();
+      return students;
     }
 
-    return this.students().filter(student =>
+    return students.filter(student =>
       this.normalizeSearchText(student.id).includes(keyword) ||
       this.normalizeSearchText(student.name).includes(keyword)
     );
@@ -97,47 +103,18 @@ export class StudentListComponent implements OnInit {
   }
   
   saveStudent(student: Student): void {
-    this.errorMessage.set('');
-
+    // this.errorMessage.set('');
     if (this.selectedStudent()) {
       //Đang sửa: PUT
-      this.studentService.updateStudent(student).subscribe({
-        next: () => {
-          this.selectedStudent.set(null);
-          this.loadStudents();
-        },
-        error: (error) => {
-          console.error('Lỗi cập nhập sinh viên: ', error);
-          this.errorMessage.set('Không thể cập nhập sinh viên')
-        }
-      });
+      this.studentFacade.updateStudent(student);
+      this.selectedStudent.set(null);
     } else {
       //Đang thêm: POST
-      this.studentService.addStudent(student).subscribe({
-        next: () => {
-          this.selectedStudent.set(null);
-          this.loadStudents();
-        },
-        error: (error) => {
-          console.error('Lỗi thêm sinh viên: ', error);
-          this.errorMessage.set('Không thể thêm sinh viên.');
-        }
-      });
+      this.studentFacade.addStudent(student, () => this.studentForm.resetForNewStudent());
     }
   }
 
   deleteStudent(id: string): void {
-    this.errorMessage.set('');
-
-    this.studentService.deleteStudent(id).subscribe({
-      next: () => {
-        this.loadStudents();
-      },
-      error: (error) => {
-        console.error('Lỗi xóa sinh viên:', error);
-        this.errorMessage.set('Không thể xóa sinh viên.');
-        this.changeDetector.markForCheck();
-      }
-    });
+    this.studentFacade.deleteStudent(id);
   }
 }

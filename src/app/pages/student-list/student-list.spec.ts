@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { StudentService } from '../../services/student';
+import type { Student } from '../../services/student';
+import { StudentForm } from '../../components/student-form/student-form';
 import { StudentListComponent } from './student-list';
 
 describe('StudentList', () => {
@@ -11,7 +14,13 @@ describe('StudentList', () => {
     await TestBed.configureTestingModule({
       imports: [StudentListComponent],
       providers: [
-        { provide: StudentService, useValue: { getStudents: () => of([]) } },
+        {
+          provide: StudentService,
+          useValue: {
+            getStudents: () => of([]),
+            addStudent: (student: Student) => of(student),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -37,5 +46,25 @@ describe('StudentList', () => {
     component.searchTerm.set('bi');
 
     expect(component.filteredStudents()).toEqual([student]);
+  });
+
+  it('should clear the form after a student is added successfully', () => {
+    const form = fixture.debugElement.query(By.directive(StudentForm)).injector.get(StudentForm);
+    const student = {
+      id: 'SV01',
+      name: 'Nguyễn Bình',
+      email: 'binh@example.com',
+      phone: '0123456789',
+    };
+
+    form.form.setValue(student);
+    component.saveStudent(student);
+
+    expect(form.form.getRawValue()).toEqual({
+      id: '',
+      name: '',
+      email: '',
+      phone: '',
+    });
   });
 });

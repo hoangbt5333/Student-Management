@@ -33,15 +33,19 @@ export class StudentForm {
         this.form.controls.id.disable();
       } else {
         //Chế độ thêm mới
-        this.form.reset({
-          id: '',
-          name: '',
-          email: '',
-          phone: ''
-        });
-        this.form.controls.id.enable();
+        this.resetForNewStudent();
       }
     });
+  }
+
+  resetForNewStudent(): void {
+    this.form.reset({
+      id: '',
+      name: '',
+      email: '',
+      phone: ''
+    });
+    this.form.controls.id.enable();
   }
 
   onSubmit(): void {
