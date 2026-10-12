@@ -1,10 +1,10 @@
-import { Component, Input, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 @Component({
   imports: [],
   selector: 'app-input-change-demo',
   styleUrl: './input-change-demo.css',
-  templateUrl: '<p>Giá trị nhận được: {{ value }}</p>',
+  templateUrl: './input-change-demo.html',
 })
 export class InputChangeDemo implements OnChanges{
   @Input() value = '';

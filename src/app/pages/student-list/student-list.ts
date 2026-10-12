@@ -4,11 +4,12 @@ import { StudentService } from '../../services/student';
 import type { Student } from '../../services/student';
 import { StudentTable } from '../../components/student-table/student-table';
 import { StudentForm } from '../../components/student-form/student-form';
+import { InputChangeDemo } from '../../components/input-change-demo/input-change-demo';
 
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [StudentForm, StudentTable],
+  imports: [StudentForm, StudentTable, InputChangeDemo],
   templateUrl: './student-list.html',
   styleUrl: './student-list.css'
 })
