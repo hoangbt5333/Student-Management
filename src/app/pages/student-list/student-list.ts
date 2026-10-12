@@ -22,6 +22,14 @@ export class StudentListComponent implements OnInit {
   private studentFacade = inject(StudentFacade);
   private studentStore = inject(StudentStore);
 
+  private clearSelectionOnSaveSuccess = effect(() => {
+    const message = this.studentStore.successMessage();
+
+    if (message) {
+      this.selectedStudent.set(null);
+    }
+  });
+
   editingStudentId: string | null = null;
   selectedStudent = signal<Student | null>(null);
   searchTerm = signal('');
@@ -91,15 +99,12 @@ export class StudentListComponent implements OnInit {
   }
   
   saveStudent(student: Student): void {
-    // this.errorMessage.set('');
-    if (this.selectedStudent()) {
-      //Đang sửa: PUT
-      this.studentStore.updateStudent(student);
-      this.selectedStudent.set(null);
-    } else {
-      //Đang thêm: POST
-      this.studentStore.addStudent(student);
-    }
+    const mode = this.selectedStudent() ? 'update' : 'add';
+
+    this.studentStore.saveStudent({
+      student, 
+      mode
+    })
   }
 
   deleteStudent(id: string): void {

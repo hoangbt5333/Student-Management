@@ -7,8 +7,12 @@
   (cancel)="cancelEdit()"
 />
 
-@if (errorMessage()) {
-  <p class="error">{{ errorMessage() }}</p>
+@if (studentStore.errorMessage()) {
+  <p class="error-message">{{ studentStore.errorMessage() }}</p>
+}
+
+@if (studentStore.successMessage()) {
+  <p class="success-message">{{ studentStore.successMessage() }}</p>
 }
 
 <div class="search-box">
@@ -22,7 +26,7 @@
 
 <p>Tổng số sinh viên: {{ studentCount() }}</p>
 
-@if (loading()) {
+@if (studentStore.loading()) {
   <p>Đang tải danh sách...</p>
 } @else {
   <app-student-table

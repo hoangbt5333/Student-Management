@@ -8,6 +8,17 @@ import {
   withMethods,
   withState
 } from '@ngrx/signals';
+import {
+  EMPTY,
+  catchError,
+  exhaustMap,
+  finalize,
+  pipe,
+  switchMap,
+  tap
+} from 'rxjs';
+
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
 
 import { StudentService } from '../services/student';
 import type { Student } from '../services/student';
@@ -16,13 +27,20 @@ type StudentState = {
   students: Student[];
   loading: boolean;
   errorMessage: string;
+  successMessage: string;
   searchTerm: string;
+};
+
+type SaveStudentRequest = {
+  student: Student;
+  mode: 'add' | 'update';
 };
 
 const initialState: StudentState = {
   students: [],
   loading: false,
   errorMessage: '',
+  successMessage: '',
   searchTerm: ''
 };
 
@@ -121,6 +139,56 @@ export const StudentStore = signalStore(
           }
         });
       },
+
+      saveStudent: rxMethod<SaveStudentRequest>(
+        pipe(
+          tap(() => {
+            patchState(store, {
+              loading: true,
+              errorMessage: '',
+              successMessage: ''
+            });
+          }),
+
+          exhaustMap(({ student, mode }) => {
+            const request$ =
+              mode === 'add'
+                ? studentService.addStudent(student)
+                : studentService.updateStudent(student);
+
+            return request$.pipe(
+              // Chỉ tải lại danh sách sau khi API ghi dữ liệu thành công
+              switchMap(() => studentService.getStudents()),
+
+              // Chỉ cập nhật danh sách và báo thành công khi tải lại xong
+              tap((students) => {
+                patchState(store, {
+                  students,
+                  successMessage:
+                    mode === 'add'
+                      ? 'Thêm sinh viên thành công.'
+                      : 'Cập nhật sinh viên thành công.'
+                });
+              }),
+
+              catchError((error) => {
+                console.error('Lỗi lưu sinh viên:', error);
+
+                patchState(store, {
+                  errorMessage:
+                    'Không thể hoàn tất thao tác. Vui lòng kiểm tra và thử lại.'
+                });
+
+                return EMPTY;
+              }),
+
+              finalize(() => {
+                patchState(store, { loading: false });
+              })
+            );
+          })
+        )
+      ),
 
       deleteStudent(id: string): void {
         patchState(store, {
