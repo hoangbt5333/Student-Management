@@ -24,3 +24,28 @@ nav a.active {
 .app-content {
   padding: 24px;
 }
+
+.global-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

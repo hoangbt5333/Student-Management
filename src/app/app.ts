@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { LoadingService } from './core/services/loading.service';
 
 
 
@@ -10,5 +11,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './app.html',
 })
 export class App {
-   
+   private loadingService = inject(LoadingService);
+
+   loading = this.loadingService.loading;
 }
