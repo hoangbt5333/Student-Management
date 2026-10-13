@@ -7,26 +7,26 @@
   (cancel)="cancelEdit()"
 />
 
-@if (studentStore.errorMessage()) {
-  <p class="error-message">{{ studentStore.errorMessage() }}</p>
+@if (facade.errorMessage()) {
+  <p class="error-message">{{ facade.errorMessage() }}</p>
 }
 
-@if (studentStore.successMessage()) {
-  <p class="success-message">{{ studentStore.successMessage() }}</p>
+@if (facade.successMessage()) {
+  <p class="success-message">{{ facade.successMessage() }}</p>
 }
 
 <div class="search-box">
   <input
     type="text"
     placeholder="Tìm theo mã sinh viên hoặc họ tên..."
-    [value]="studentStore.searchTerm()"
-    (input)="studentStore.setSearchTerm($any($event.target).value)"
+    [value]="facade.searchTerm()"
+    (input)="facade.setSearchTerm($any($event.target).value)"
   />
 </div>
 
 <p>Tổng số sinh viên: {{ studentCount() }}</p>
 
-@if (studentStore.loading()) {
+@if (facade.loading()) {
   <p>Đang tải danh sách...</p>
 } @else {
   <app-student-table

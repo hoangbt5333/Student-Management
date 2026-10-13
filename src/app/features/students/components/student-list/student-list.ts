@@ -4,7 +4,7 @@ import { StudentService } from '../../data-access/student';
 import type { Student } from '../../data-access/student';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
-import { StudentFacade } from '../../../../facades/student-facade';
+import { StudentFacade } from '../../data-access/student.facade';
 import { StudentStore } from '../../data-access/student.store';
 
 @Component({
@@ -15,15 +15,16 @@ import { StudentStore } from '../../data-access/student.store';
   styleUrl: './student-list.css'
 })
 export class StudentListComponent implements OnInit {
-  @ViewChild(StudentForm) private studentForm!: StudentForm;
+  // @ViewChild(StudentForm) private studentForm!: StudentForm;
 
-  private studentService = inject(StudentService);
-  private changeDetector = inject(ChangeDetectorRef);
-  private studentFacade = inject(StudentFacade);
-  private studentStore = inject(StudentStore);
+  // private studentService = inject(StudentService);
+  // private changeDetector = inject(ChangeDetectorRef);
+  // private studentFacade = inject(StudentFacade);
+  // private studentStore = inject(StudentStore);
+  private facade = inject(StudentFacade);
 
   private clearSelectionOnSaveSuccess = effect(() => {
-    const message = this.studentStore.successMessage();
+    const message = this.facade.successMessage();
 
     if (message) {
       this.selectedStudent.set(null);
@@ -39,11 +40,12 @@ export class StudentListComponent implements OnInit {
   // readonly errorMessage = this.studentFacade.errorMessage;
   // readonly studentCount = this.studentFacade.studentCount;
 
-  readonly students = this.studentStore.students;
-  readonly loading = this.studentStore.loading;
-  readonly errorMessage = this.studentStore.errorMessage;
-  readonly studentCount = this.studentStore.studentCount;
-  readonly filteredStudents = this.studentStore.filteredStudents;
+  students = this.facade.students;
+  loading = this.facade.loading;
+  errorMessage = this.facade.errorMessage;
+  successMessage = this.facade.successMessage;
+  studentCount = this.facade.studentCount;
+  filteredStudents = this.facade.filteredStudents;
 
 
   constructor(){
@@ -64,31 +66,13 @@ export class StudentListComponent implements OnInit {
 
 
   ngOnInit(): void {
-    this.studentStore.loadStudents();
+    this.facade.loadStudents();
   }
 
-  // filteredStudents = computed(() => {
-  //   const keyword = this.normalizeSearchText(this.searchTerm().trim());
-  //   const students = this.studentFacade.students();
+  search(keyword: string): void {
+    this.facade.setSearchTerm(keyword);
+  }
 
-  //   if (!keyword) {
-  //     return students;
-  //   }
-
-  //   return students.filter(student =>
-  //     this.normalizeSearchText(student.id).includes(keyword) ||
-  //     this.normalizeSearchText(student.name).includes(keyword)
-  //   );
-  // });
-
-  // private normalizeSearchText(value: string): string {
-  //   return value
-  //     .toLowerCase()
-  //     .normalize('NFD')
-  //     .replace(/[\u0300-\u036f]/g, '')
-  //     .replace(/đ/g, 'd');
-  // }
-  
 
   editStudent(student: Student): void {
     this.selectedStudent.set(student);
@@ -101,13 +85,10 @@ export class StudentListComponent implements OnInit {
   saveStudent(student: Student): void {
     const mode = this.selectedStudent() ? 'update' : 'add';
 
-    this.studentStore.saveStudent({
-      student, 
-      mode
-    })
+    this.facade.saveStudent(student, mode);
   }
 
   deleteStudent(id: string): void {
-    this.studentStore.deleteStudent(id);
+    this.facade.deleteStudent(id);
   }
 }

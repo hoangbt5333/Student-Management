@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
-import { StudentService } from '../../services/student';
-import type { Student } from '../../services/student';
+import { StudentService } from '../../data-access/student';
+import type { Student } from '../../data-access/student';
 import { StudentForm } from '../../components/student-form/student-form';
 import { StudentListComponent } from './student-list';
 
