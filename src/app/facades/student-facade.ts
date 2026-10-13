@@ -1,6 +1,6 @@
 import { Service, computed, inject, Injectable, signal } from '@angular/core';
-import { StudentService } from '../services/student';
-import type { Student } from '../services/student';
+import { StudentService } from '../features/students/data-access/student';
+import type { Student } from '../features/students/data-access/student';
 
 // @Service()
 

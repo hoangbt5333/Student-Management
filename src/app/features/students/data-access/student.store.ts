@@ -20,8 +20,8 @@ import {
 
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 
-import { StudentService } from '../services/student';
-import type { Student } from '../services/student';
+import { StudentService } from './student';
+import type { Student } from './student';
 
 type StudentState = {
   students: Student[];

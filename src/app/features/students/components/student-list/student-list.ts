@@ -1,11 +1,11 @@
 import { ChangeDetectorRef, Component, inject, OnInit, signal, computed, effect, ViewChild } from '@angular/core';
 
-import { StudentService } from '../../../../services/student';
-import type { Student } from '../../../../services/student';
+import { StudentService } from '../../data-access/student';
+import type { Student } from '../../data-access/student';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
 import { StudentFacade } from '../../../../facades/student-facade';
-import { StudentStore } from '../../../../stores/student.store';
+import { StudentStore } from '../../data-access/student.store';
 
 @Component({
   selector: 'app-student-list',

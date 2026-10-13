@@ -1,6 +1,6 @@
 import { Component, input, output, inject, effect } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import type { Student } from '../../../../services/student';
+import type { Student } from '../../data-access/student';
 
 @Component({
   imports: [ReactiveFormsModule],
