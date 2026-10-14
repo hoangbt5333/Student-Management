@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { LoadingService } from './core/services/loading.service';
+import { NotificationService } from './core/services/notification.service';
 
 
 
@@ -12,6 +13,7 @@ import { LoadingService } from './core/services/loading.service';
 })
 export class App {
    private loadingService = inject(LoadingService);
+   readonly notification = inject(NotificationService);
 
    loading = this.loadingService.loading;
 }

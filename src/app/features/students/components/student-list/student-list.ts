@@ -89,6 +89,12 @@ export class StudentListComponent implements OnInit {
   }
 
   deleteStudent(id: string): void {
+    const confirmed = confirm('Bạn có chắc muốn xóa sinh viên này?');
+
+    if (!confirmed) {
+      return;
+    }
+    
     this.facade.deleteStudent(id);
   }
 }

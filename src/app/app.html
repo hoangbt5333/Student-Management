@@ -15,7 +15,20 @@
         <span>Đang xử lý...</span>
     </div>
   }
-    <router-outlet />
+
+  @if (notification.errorMessage(); as message) {
+    <div class="error-banner" role="alert">
+      <span>{{ message }}</span>
+      <button
+        type="button"
+        (click)="notification.clearError()"
+        aria-label="Đóng thông báo">
+        Đóng
+      </button>
+    </div>
+  }  
+               
+  <router-outlet />
 </main>
 
 
