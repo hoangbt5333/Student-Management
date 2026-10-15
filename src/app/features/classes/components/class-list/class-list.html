@@ -1,0 +1,103 @@
+
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Quản lý lớp học</h1>
+      <p>Quản lý danh sách lớp trong hệ thống</p>
+    </div>
+    
+    <button class="primary-button" (click)="openAddForm()">
+      + Thêm lớp
+    </button>
+  </header>
+
+  @if (facade.errorMessage()) {
+    <div class="message error">
+      {{ facade.errorMessage() }}
+    </div>
+  }
+
+  @if (facade.successMessage()) {
+    <div class="message success">
+      {{ facade.successMessage() }}
+    </div>
+  }
+
+  <section class="toolbar">
+    <input
+      type="search"
+      placeholder="Tìm theo mã lớp, tên lớp, khoa, năm học..."
+      [value]="facade.searchTerm()"
+      (input)="onSearch($event)"
+    />
+
+    <span class="count">
+      {{ facade.filteredClassCount() }} / {{ facade.classCount() }} lớp
+    </span>
+  </section>
+
+  @if (showForm) {
+    <app-class-form
+      [classItem]="editingClass"
+      (saved)="onSave($event)"
+      (cancelled)="closeForm()"
+    />
+  }
+
+  @if (facade.loading()) {
+    <p class="status">Đang tải dữ liệu...</p>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã lớp</th>
+            <th>
+              <button
+                class="sort-button"
+                (click)="facade.setSortBy('name')"
+              >
+                Tên lớp
+              </button>
+            </th>
+            <th>Khoa / Ngành</th>
+            <th>Năm học</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of facade.filteredClasses(); track item.id) {
+            <tr>
+              <td>{{ item.id }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.department }}</td>
+              <td>{{ item.academicYear }}</td>
+              <td class="actions">
+                <button
+                  class="secondary-button"
+                  (click)="openEditForm(item)"
+                >
+                  Sửa
+                </button>
+
+                <button
+                  class="danger-button"
+                  (click)="onDelete(item)"
+                >
+                  Xóa
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty">
+                Không tìm thấy lớp học phù hợp.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

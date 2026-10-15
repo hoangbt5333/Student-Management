@@ -1,0 +1,107 @@
+<section class="form-card">
+  <header class="form-header">
+    <h2>{{ classItem() ? 'Cập nhật lớp học' : 'Thêm lớp học' }}</h2>
+    <button type="button" class="close-button" (click)="cancel()">
+      Đóng
+    </button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <div class="field">
+        <label for="id">Mã lớp</label>
+        <input
+          id="id"
+          formControlName="id"
+          placeholder="Ví dụ: CLS001"
+          [readonly]="!!classItem()"
+        />
+
+        @if (
+          form.controls.id.touched &&
+          form.controls.id.hasError('required')
+        ) {
+          <small class="field-error">Vui lòng nhập mã lớp.</small>
+        }
+
+        @if (
+          form.controls.id.touched &&
+          form.controls.id.hasError('pattern')
+        ) {
+          <small class="field-error">
+            Mã lớp phải có dạng CLS001.
+          </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="name">Tên lớp</label>
+        <input
+          id="name"
+          formControlName="name"
+          placeholder="Ví dụ: CNTT-K68-01"
+        />
+
+        @if (
+          form.controls.name.touched &&
+          form.controls.name.hasError('required')
+        ) {
+          <small class="field-error">Vui lòng nhập tên lớp.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="department">Khoa / Ngành</label>
+        <input
+          id="department"
+          formControlName="department"
+          placeholder="Ví dụ: Công nghệ thông tin"
+        />
+
+        @if (
+          form.controls.department.touched &&
+          form.controls.department.hasError('required')
+        ) {
+          <small class="field-error">
+            Vui lòng nhập khoa hoặc ngành.
+          </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="academicYear">Năm học</label>
+        <input
+          id="academicYear"
+          formControlName="academicYear"
+          placeholder="Ví dụ: 2025-2026"
+        />
+
+        @if (
+          form.controls.academicYear.touched &&
+          form.controls.academicYear.hasError('required')
+        ) {
+          <small class="field-error">Vui lòng nhập năm học.</small>
+        }
+
+        @if (
+          form.controls.academicYear.touched &&
+          form.controls.academicYear.hasError('pattern')
+        ) {
+          <small class="field-error">
+            Năm học phải có dạng 2025-2026.
+          </small>
+        }
+      </div>
+    </div>
+
+    <footer class="form-actions">
+      <button type="button" class="cancel-button" (click)="cancel()">
+        Hủy
+      </button>
+
+      <button type="submit" class="submit-button">
+        {{ classItem() ? 'Lưu thay đổi' : 'Thêm lớp' }}
+      </button>
+    </footer>
+  </form>
+</section>
