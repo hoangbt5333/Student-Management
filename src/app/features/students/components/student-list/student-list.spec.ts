@@ -48,23 +48,28 @@ describe('StudentList', () => {
   //   expect(component.filteredStudents()).toEqual([student]);
   // });
 
-  it('should clear the form after a student is added successfully', () => {
+  it('should clear the form after a student is added successfully', async () => {
     const form = fixture.debugElement.query(By.directive(StudentForm)).injector.get(StudentForm);
     const student = {
       id: 'SV01',
       name: 'Nguyễn Bình',
       email: 'binh@example.com',
       phone: '0123456789',
+      className: 'CTK42',
+      faculty: 'Công nghệ thông tin',
     };
 
     form.form.setValue(student);
     component.saveStudent(student);
+    await fixture.whenStable();
 
     expect(form.form.getRawValue()).toEqual({
       id: '',
       name: '',
       email: '',
       phone: '',
+      className: '',
+      faculty: '',
     });
   });
 });

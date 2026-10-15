@@ -29,19 +29,42 @@ type StudentState = {
   errorMessage: string;
   successMessage: string;
   searchTerm: string;
+  classFilter: string;
+  facultyFilter: string;
+  sortBy: keyof Student;
+  sortDirection: 'asc' | 'desc';
+  page: number;
+  pageSize: number;
 };
+
+type StudentSortField = keyof Student;
 
 type SaveStudentRequest = {
   student: Student;
   mode: 'add' | 'update';
 };
 
+function normalizeText(value: string | undefined): string {
+  return (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLocaleLowerCase('vi');
+}
+
 const initialState: StudentState = {
   students: [],
   loading: false,
   errorMessage: '',
   successMessage: '',
-  searchTerm: ''
+  searchTerm: '',
+  classFilter: '',
+  facultyFilter: '',
+  sortBy: 'name',
+  sortDirection: 'asc',
+  page: 1,
+  pageSize: 5
 };
 
 
@@ -51,24 +74,97 @@ export const StudentStore = signalStore(
 
   withState(initialState),
 
-  withComputed(({ students, searchTerm }) => ({
-    studentCount: computed(() => students().length),
+  withComputed(({
+    students,
+    searchTerm,
+    classFilter,
+    facultyFilter,
+    sortBy,
+    sortDirection,
+    page,
+    pageSize
+  }) => {
+    const filteredStudents = computed(() => {
+      const keyword = normalizeText(searchTerm().trim());
 
-    filteredStudents: computed(() => {
-      const keyword = searchTerm().trim().toLowerCase();
+      return students()
+        .filter((student) => {
+          const matchesSearch = !keyword || [
+            student.id,
+            student.name,
+            student.email,
+            student.phone,
+            student.className,
+            student.faculty
+          ].some((value) => normalizeText(value).includes(keyword));
 
-      if (!keyword) {
-        return students();
-      }
+          return matchesSearch
+            && (!classFilter() || student.className?.trim() === classFilter())
+            && (!facultyFilter() || student.faculty?.trim() === facultyFilter());
+        })
+        .sort((first, second) => {
+          const firstValue = first[sortBy()] ?? '';
+          const secondValue = second[sortBy()] ?? '';
+          const comparison = String(firstValue).localeCompare(
+            String(secondValue),
+            'vi',
+            { sensitivity: 'base', numeric: true }
+          );
 
-      return students().filter(student =>
-        student.id.toLowerCase().includes(keyword) ||
-        student.name.toLowerCase().includes(keyword)
-      );
-    })
-  })),
+          return sortDirection() === 'asc' ? comparison : -comparison;
+        });
+    });
+
+    const totalPages = computed(() => Math.max(
+      1,
+      Math.ceil(filteredStudents().length / pageSize())
+    ));
+    const currentPage = computed(() => Math.min(page(), totalPages()));
+
+    return {
+      studentCount: computed(() => students().length),
+      filteredStudents,
+      filteredStudentCount: computed(() => filteredStudents().length),
+
+      classOptions: computed(() => [...new Set(
+        students()
+          .map((student) => student.className?.trim() ?? '')
+          .filter(Boolean)
+      )].sort((first, second) => first.localeCompare(second, 'vi'))),
+
+      facultyOptions: computed(() => [...new Set(
+        students()
+          .map((student) => student.faculty?.trim() ?? '')
+          .filter(Boolean)
+      )].sort((first, second) => first.localeCompare(second, 'vi'))),
+
+      totalPages,
+      currentPage,
+
+      pageStudents: computed(() => {
+        const start = (currentPage() - 1) * pageSize();
+        return filteredStudents().slice(start, start + pageSize());
+      })
+    };
+  }),
 
   withMethods((store, studentService = inject(StudentService)) => {
+    function replaceStudents(students: Student[]): void {
+      const selectedClass = store.classFilter();
+      const selectedFaculty = store.facultyFilter();
+
+      patchState(store, {
+        students,
+        classFilter: students.some(
+          (student) => student.className?.trim() === selectedClass
+        ) ? selectedClass : '',
+        facultyFilter: students.some(
+          (student) => student.faculty?.trim() === selectedFaculty
+        ) ? selectedFaculty : ''
+      });
+      patchState(store, { page: Math.min(store.page(), store.totalPages()) });
+    }
+
     function load(): void {
       patchState(store, {
         loading: true,
@@ -78,9 +174,9 @@ export const StudentStore = signalStore(
       studentService.getStudents().subscribe({
         next: (students) => {
           patchState(store, {
-            students,
             loading: false
           });
+          replaceStudents(students);
         },
         error: (error) => {
           console.error('Lỗi tải sinh viên:', error);
@@ -99,7 +195,37 @@ export const StudentStore = signalStore(
       },
 
       setSearchTerm(searchTerm: string): void {
-        patchState(store, { searchTerm });
+        patchState(store, { searchTerm, page: 1 });
+      },
+
+      setClassFilter(classFilter: string): void {
+        patchState(store, { classFilter, page: 1 });
+      },
+
+      setFacultyFilter(facultyFilter: string): void {
+        patchState(store, { facultyFilter, page: 1 });
+      },
+
+      setSortBy(sortBy: StudentSortField): void {
+        patchState(store, { sortBy, page: 1 });
+      },
+
+      setSortDirection(sortDirection: 'asc' | 'desc'): void {
+        patchState(store, { sortDirection, page: 1 });
+      },
+
+      setPage(page: number): void {
+        patchState(store, {
+          page: Math.min(Math.max(1, Math.floor(page)), store.totalPages())
+        });
+      },
+
+      setPageSize(pageSize: number): void {
+        if (!Number.isInteger(pageSize) || pageSize < 1) {
+          throw new RangeError('Page size must be a positive integer.');
+        }
+
+        patchState(store, { pageSize, page: 1 });
       },
 
       addStudent(student: Student): void {
@@ -162,8 +288,8 @@ export const StudentStore = signalStore(
 
               // Chỉ cập nhật danh sách và báo thành công khi tải lại xong
               tap((students) => {
+                replaceStudents(students);
                 patchState(store, {
-                  students,
                   successMessage:
                     mode === 'add'
                       ? 'Thêm sinh viên thành công.'
@@ -211,4 +337,3 @@ export const StudentStore = signalStore(
     };
   })
 );
-

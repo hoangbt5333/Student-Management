@@ -42,6 +42,24 @@
     }
   </div>
 
+  <div class="form-group">
+    <label for="className">Lớp</label>
+    <input id="className" type="text" formControlName="className" />
+
+    @if (form.controls.className.touched && form.controls.className.invalid) {
+      <small class="error">Vui lòng nhập lớp.</small>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="faculty">Khoa</label>
+    <input id="faculty" type="text" formControlName="faculty" />
+
+    @if (form.controls.faculty.touched && form.controls.faculty.invalid) {
+      <small class="error">Vui lòng nhập khoa.</small>
+    }
+  </div>
+
   <div class="actions">
     <button type="submit">
       {{ student() ? 'Cập nhật' : 'Thêm sinh viên' }}
@@ -54,4 +72,3 @@
     }
   </div>
 </form>
-

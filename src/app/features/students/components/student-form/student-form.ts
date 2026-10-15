@@ -20,7 +20,9 @@ export class StudentForm {
     id: ['', Validators.required],
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]]
+    phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+    className: ['', Validators.required],
+    faculty: ['', Validators.required]
   });
 
   constructor() {
@@ -28,11 +30,16 @@ export class StudentForm {
       const student = this.student();
 
       if (student) {
-        //Chế độ sửa
-        this.form.reset(student);
+        this.form.reset({
+          id: student.id,
+          name: student.name,
+          email: student.email,
+          phone: student.phone,
+          className: student.className ?? '',
+          faculty: student.faculty ?? ''
+        });
         this.form.controls.id.disable();
       } else {
-        //Chế độ thêm mới
         this.resetForNewStudent();
       }
     });
@@ -43,7 +50,9 @@ export class StudentForm {
       id: '',
       name: '',
       email: '',
-      phone: ''
+      phone: '',
+      className: '',
+      faculty: ''
     });
     this.form.controls.id.enable();
   }
@@ -61,7 +70,9 @@ export class StudentForm {
       id: student.id,
       name: student.name,
       email: student.email,
-      phone: student.phone
+      phone: student.phone,
+      className: student.className,
+      faculty: student.faculty
     });
   }
 

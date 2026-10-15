@@ -5,6 +5,8 @@
             <th>Họ tên</th>
             <th>Email</th>
             <th>Số điện thoại</th>
+            <th>Lớp</th>
+            <th>Khoa</th>
             <th>Hành động</th>
         </tr>
     </thead>
@@ -16,6 +18,8 @@
                 <td>{{ student.name }}</td>
                 <td>{{ student.email }}</td>
                 <td>{{ student.phone }}</td>
+                <td>{{ student.className || '—' }}</td>
+                <td>{{ student.faculty || '—' }}</td>
                 <td>
                     <button type="button" (click)="edit.emit(student)">Sửa</button>
 
@@ -24,7 +28,7 @@
             </tr>
         } @empty {
             <tr>
-                <td colspan="5">Không có sinh viên nào phù hợp.</td>
+                <td colspan="7">Không có sinh viên nào phù hợp.</td>
             </tr>
         }
     </tbody>

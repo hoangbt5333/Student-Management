@@ -11,6 +11,7 @@ describe('StudentTable', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(StudentTable);
+    fixture.componentRef.setInput('students', []);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

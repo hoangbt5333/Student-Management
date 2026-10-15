@@ -1,11 +1,9 @@
-import { ChangeDetectorRef, Component, inject, OnInit, signal, computed, effect, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, effect, ViewChild } from '@angular/core';
 
-import { StudentService } from '../../data-access/student';
 import type { Student } from '../../data-access/student';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
 import { StudentFacade } from '../../data-access/student.facade';
-import { StudentStore } from '../../data-access/student.store';
 
 @Component({
   selector: 'app-student-list',
@@ -15,55 +13,41 @@ import { StudentStore } from '../../data-access/student.store';
   styleUrl: './student-list.css'
 })
 export class StudentListComponent implements OnInit {
-  // @ViewChild(StudentForm) private studentForm!: StudentForm;
-
-  // private studentService = inject(StudentService);
-  // private changeDetector = inject(ChangeDetectorRef);
-  // private studentFacade = inject(StudentFacade);
-  // private studentStore = inject(StudentStore);
-  private facade = inject(StudentFacade);
+  @ViewChild(StudentForm) private studentForm?: StudentForm;
+  readonly facade = inject(StudentFacade);
 
   private clearSelectionOnSaveSuccess = effect(() => {
     const message = this.facade.successMessage();
 
     if (message) {
       this.selectedStudent.set(null);
+      this.studentForm?.resetForNewStudent();
     }
   });
 
-  editingStudentId: string | null = null;
   selectedStudent = signal<Student | null>(null);
-  searchTerm = signal('');
-
-  // readonly students = this.studentFacade.students;
-  // readonly loading = this.studentFacade.loading;
-  // readonly errorMessage = this.studentFacade.errorMessage;
-  // readonly studentCount = this.studentFacade.studentCount;
 
   students = this.facade.students;
   loading = this.facade.loading;
   errorMessage = this.facade.errorMessage;
   successMessage = this.facade.successMessage;
   studentCount = this.facade.studentCount;
-  filteredStudents = this.facade.filteredStudents;
+  pageStudents = this.facade.pageStudents;
+  filteredStudentCount = this.facade.filteredStudentCount;
+  classOptions = this.facade.classOptions;
+  facultyOptions = this.facade.facultyOptions;
+  currentPage = this.facade.currentPage;
+  totalPages = this.facade.totalPages;
+  pageSize = this.facade.pageSize;
 
-
-  constructor(){
-    effect(() => {
-      const student = this.selectedStudent();
-
-      if (student) {
-        console.log('Đang sửa sinh viên: ', student.name);
-      } else {
-        console.log('Đang thêm sinh viên');
-      }
-    });
-
-    effect(() => {
-      console.log('Từ khoá tìm kiếm: ', this.searchTerm());
-    });
-  }
-
+  readonly sortFields: { value: keyof Student; label: string }[] = [
+    { value: 'id', label: 'Mã sinh viên' },
+    { value: 'name', label: 'Họ tên' },
+    { value: 'email', label: 'Email' },
+    { value: 'phone', label: 'Số điện thoại' },
+    { value: 'className', label: 'Lớp' },
+    { value: 'faculty', label: 'Khoa' }
+  ];
 
   ngOnInit(): void {
     this.facade.loadStudents();
@@ -73,6 +57,39 @@ export class StudentListComponent implements OnInit {
     this.facade.setSearchTerm(keyword);
   }
 
+  setClassFilter(value: string): void {
+    this.facade.setClassFilter(value);
+  }
+
+  setFacultyFilter(value: string): void {
+    this.facade.setFacultyFilter(value);
+  }
+
+  setSortBy(value: string): void {
+    const field = this.sortFields.find((sortField) => sortField.value === value);
+
+    if (!field) {
+      throw new RangeError(`Unsupported student sort field: ${value}`);
+    }
+
+    this.facade.setSortBy(field.value);
+  }
+
+  setSortDirection(value: string): void {
+    if (value !== 'asc' && value !== 'desc') {
+      throw new RangeError(`Unsupported sort direction: ${value}`);
+    }
+
+    this.facade.setSortDirection(value);
+  }
+
+  setPageSize(value: string): void {
+    this.facade.setPageSize(Number(value));
+  }
+
+  setPage(page: number): void {
+    this.facade.setPage(page);
+  }
 
   editStudent(student: Student): void {
     this.selectedStudent.set(student);

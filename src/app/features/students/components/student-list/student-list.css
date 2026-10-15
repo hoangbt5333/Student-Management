@@ -57,3 +57,39 @@ th {
 .success-message {
   color: #16a34a;
 }
+
+.list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.list-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list-controls select,
+.search-box input {
+  padding: 8px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
