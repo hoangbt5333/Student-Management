@@ -21,7 +21,7 @@ import {
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 
 import { StudentService } from './student';
-import type { Student } from './student';
+import type { Student } from './models/student.model';
 
 type StudentState = {
   students: Student[];

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { StudentService } from '../../data-access/student';
-import type { Student } from '../../data-access/student';
+import type { Student } from '../../data-access/models/student.model';
 import { StudentForm } from '../../components/student-form/student-form';
 import { StudentListComponent } from './student-list';
 
@@ -55,11 +55,19 @@ describe('StudentList', () => {
       name: 'Nguyễn Bình',
       email: 'binh@example.com',
       phone: '0123456789',
+      classId: '',
       className: 'CTK42',
       faculty: 'Công nghệ thông tin',
     };
 
-    form.form.setValue(student);
+    form.form.setValue({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      phone: student.phone,
+      classId: student.classId ?? '',
+      faculty: student.faculty ?? '',
+    });
     component.saveStudent(student);
     await fixture.whenStable();
 
@@ -68,7 +76,7 @@ describe('StudentList', () => {
       name: '',
       email: '',
       phone: '',
-      className: '',
+      classId: '',
       faculty: '',
     });
   });

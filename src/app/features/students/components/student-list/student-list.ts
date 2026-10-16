@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, effect, ViewChild } from '@angular/core';
 
-import type { Student } from '../../data-access/student';
+import type { Student } from '../../data-access/models/student.model';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
 import { StudentFacade } from '../../data-access/student.facade';

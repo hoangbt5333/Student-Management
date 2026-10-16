@@ -2,6 +2,7 @@ import { Component, inject, OnInit, effect } from '@angular/core';
 import { ClassFacade } from '../../data-access/class.facade';
 import type { ClassModel } from '../../data-access/models/class.model';
 import { ClassForm } from '../class-form/class-form';
+import { StudentFacade } from '../../../students/data-access/student.facade';
 
 @Component({
   imports: [ClassForm],
@@ -11,6 +12,7 @@ import { ClassForm } from '../class-form/class-form';
 })
 export class ClassList implements OnInit {
   readonly facade = inject(ClassFacade);
+  readonly studentFacede = inject(StudentFacade);
 
   showForm = false;
   editingClass: ClassModel | null = null;
@@ -34,6 +36,7 @@ export class ClassList implements OnInit {
 
   ngOnInit(): void {
     this.facade.loadClasses();
+    this.studentFacede.loadStudents();
   }
 
   openAddForm(): void {
@@ -62,6 +65,19 @@ export class ClassList implements OnInit {
   }
 
   onDelete(classItem: ClassModel): void {
+    const students = this.studentFacede.students();
+
+    const hasStudents = students.some(student =>
+      student.classId
+        ? student.classId === classItem.id
+        : student.className === classItem.name
+    )
+
+    if (hasStudents) {
+      alert(`Không thể xóa lớp "${classItem.name}" vì vẫn còn sinh viên thuộc lớp này.`);
+      return;
+    }
+    
     const confirmed = window.confirm(
       `Bạn có chắc muốn xóa lớp "${classItem.name}" không?`
     );

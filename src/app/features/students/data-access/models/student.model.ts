@@ -3,4 +3,7 @@ export interface Student {
   name: string;
   email: string;
   phone: string;
+  classId?: string;
+  className?: string;
+  faculty?: string;
 }

@@ -43,11 +43,24 @@
   </div>
 
   <div class="form-group">
-    <label for="className">Lớp</label>
-    <input id="className" type="text" formControlName="className" />
+    <label for="classId">Lớp</label>
 
-    @if (form.controls.className.touched && form.controls.className.invalid) {
-      <small class="error">Vui lòng nhập lớp.</small>
+    <select id="classId" formControlName="classId">
+      <option value="">-- Chọn lớp học --</option>
+
+      @for (classItem of classFacade.classes(); track classItem.id) {
+        <option [value]="classItem.id">
+          {{ classItem.name }}
+        </option>
+      }
+    </select>
+
+    @if (form.controls.classId.touched && form.controls.classId.hasError('required')) {
+      <small class="error">Vui lòng chọn lớp.</small>
+    }
+
+    @if (form.controls.classId.touched && form.controls.classId.hasError('classNotFound')) {
+      <small class="error">Lớp đã chọn không còn tồn tại. Vui lòng chọn lại.</small>
     }
   </div>
 

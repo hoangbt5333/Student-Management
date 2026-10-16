@@ -7,7 +7,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { StudentStore } from './student.store';
-import type { Student } from './student';
+import type { Student } from './models/student.model';
 
 describe('StudentStore', () => {
   let store: InstanceType<typeof StudentStore>;

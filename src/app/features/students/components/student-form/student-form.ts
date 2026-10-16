@@ -1,6 +1,7 @@
 import { Component, input, output, inject, effect } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import type { Student } from '../../data-access/student';
+import type { Student } from '../../data-access/models/student.model';
+import { ClassFacade } from '../../../classes/data-access/class.facade';
 
 @Component({
   imports: [ReactiveFormsModule],
@@ -10,6 +11,7 @@ import type { Student } from '../../data-access/student';
 })
 export class StudentForm {
   private fb = inject(FormBuilder);
+  readonly classFacade = inject(ClassFacade);
 
   student = input<Student | null>(null);
 
@@ -21,21 +23,29 @@ export class StudentForm {
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
-    className: ['', Validators.required],
+    classId: ['', Validators.required],
     faculty: ['', Validators.required]
   });
 
   constructor() {
+    this.classFacade.loadClasses();
+    
     effect(() => {
       const student = this.student();
 
       if (student) {
+        const classes = this.classFacade.classes();
+
+        const matchedClass = classes.find(
+          item => item.name === student.className
+        );
+        
         this.form.reset({
           id: student.id,
           name: student.name,
           email: student.email,
           phone: student.phone,
-          className: student.className ?? '',
+          classId: student.classId ?? matchedClass?.id ?? '',
           faculty: student.faculty ?? ''
         });
         this.form.controls.id.disable();
@@ -51,7 +61,7 @@ export class StudentForm {
       name: '',
       email: '',
       phone: '',
-      className: '',
+      classId: '',
       faculty: ''
     });
     this.form.controls.id.enable();
@@ -65,13 +75,17 @@ export class StudentForm {
 
     // getRawValue() vẫn lấy được id đang bị disable
     const student = this.form.getRawValue();
+    const selectedClass = this.classFacade.classes().find(
+      classItem => classItem.id === student.classId
+    );
 
     this.save.emit({
       id: student.id,
       name: student.name,
       email: student.email,
       phone: student.phone,
-      className: student.className,
+      classId: student.classId,
+      className: selectedClass?.name,
       faculty: student.faculty
     });
   }

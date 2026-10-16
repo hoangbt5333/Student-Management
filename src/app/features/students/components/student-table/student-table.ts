@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import type { Student } from '../../data-access/student';
+import type { Student } from '../../data-access/models/student.model';
 
 
 @Component({
