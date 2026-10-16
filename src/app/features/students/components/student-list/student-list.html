@@ -29,11 +29,14 @@
     Lớp
     <select
       [value]="facade.classFilter()"
-      (change)="setClassFilter($any($event.target).value)"
+      (change)="facade.setClassFilter($any($event.target).value)"
     >
       <option value="">Tất cả lớp</option>
-      @for (className of classOptions(); track className) {
-        <option [value]="className">{{ className }}</option>
+
+      @for (classItem of facade.classOptions(); track classItem.id) {
+        <option [value]="classItem.id">
+          {{ classItem.name }}
+        </option>
       }
     </select>
   </label>

@@ -22,6 +22,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 
 import { StudentService } from './student';
 import type { Student } from './models/student.model';
+import { ClassStore } from '../../classes/data-access/class.store';
 
 type StudentState = {
   students: Student[];
@@ -84,59 +85,114 @@ export const StudentStore = signalStore(
     page,
     pageSize
   }) => {
+    const classStore = inject(ClassStore);
+
+    // Lấy danh sách lớp dùng chung từ ClassStore.
+    const classes = classStore.classes;
+
+    // Tra cứu tên lớp theo classId.
+    const getClassName = (student: Student): string => {
+      if (student.classId) {
+        return classes().find(
+          item => item.id === student.classId
+        )?.name ?? student.className ?? '';
+      }
+
+      // Hỗ trợ dữ liệu cũ chưa có classId.
+      return student.className ?? '';
+    };
+
     const filteredStudents = computed(() => {
       const keyword = normalizeText(searchTerm().trim());
+      const selectedClassId = classFilter();
 
       return students()
-        .filter((student) => {
+        .filter(student => {
+          const className = getClassName(student);
+
           const matchesSearch = !keyword || [
             student.id,
             student.name,
             student.email,
             student.phone,
-            student.className,
+            className,
             student.faculty
-          ].some((value) => normalizeText(value).includes(keyword));
+          ].some(value => normalizeText(value ?? '').includes(keyword));
 
-          return matchesSearch
-            && (!classFilter() || student.className?.trim() === classFilter())
-            && (!facultyFilter() || student.faculty?.trim() === facultyFilter());
+          const matchesClass = !selectedClassId
+            || (
+              student.classId
+                ? student.classId === selectedClassId
+                : classes().some(
+                    item =>
+                      item.id === selectedClassId &&
+                      item.name === student.className
+                  )
+            );
+
+          const matchesFaculty =
+            !facultyFilter()
+            || student.faculty?.trim() === facultyFilter();
+
+          return matchesSearch && matchesClass && matchesFaculty;
         })
         .sort((first, second) => {
-          const firstValue = first[sortBy()] ?? '';
-          const secondValue = second[sortBy()] ?? '';
+          const field = sortBy();
+
+          // Nếu đang sắp xếp theo lớp, dùng tên lớp thay vì classId.
+          const firstValue = field === 'className'
+            ? getClassName(first)
+            : first[field] ?? '';
+
+          const secondValue = field === 'className'
+            ? getClassName(second)
+            : second[field] ?? '';
+
           const comparison = String(firstValue).localeCompare(
             String(secondValue),
             'vi',
             { sensitivity: 'base', numeric: true }
           );
 
-          return sortDirection() === 'asc' ? comparison : -comparison;
+          return sortDirection() === 'asc'
+            ? comparison
+            : -comparison;
         });
     });
 
-    const totalPages = computed(() => Math.max(
-      1,
-      Math.ceil(filteredStudents().length / pageSize())
-    ));
-    const currentPage = computed(() => Math.min(page(), totalPages()));
+    const totalPages = computed(() =>
+      Math.max(1, Math.ceil(filteredStudents().length / pageSize()))
+    );
+
+    const currentPage = computed(() =>
+      Math.min(page(), totalPages())
+    );
 
     return {
       studentCount: computed(() => students().length),
+
       filteredStudents,
-      filteredStudentCount: computed(() => filteredStudents().length),
 
-      classOptions: computed(() => [...new Set(
-        students()
-          .map((student) => student.className?.trim() ?? '')
-          .filter(Boolean)
-      )].sort((first, second) => first.localeCompare(second, 'vi'))),
+      filteredStudentCount: computed(
+        () => filteredStudents().length
+      ),
 
-      facultyOptions: computed(() => [...new Set(
-        students()
-          .map((student) => student.faculty?.trim() ?? '')
-          .filter(Boolean)
-      )].sort((first, second) => first.localeCompare(second, 'vi'))),
+      // Trả về đối tượng lớp để dropdown dùng id làm value.
+      classOptions: computed(() =>
+        [...classes()].sort((first, second) =>
+          first.name.localeCompare(second.name, 'vi')
+        )
+      ),
+
+      facultyOptions: computed(() =>
+        [...new Set(
+          students()
+            .map(student => student.faculty?.trim() ?? '')
+            .filter(Boolean)
+        )].sort((first, second) =>
+          first.localeCompare(second, 'vi')
+        )
+      ),
 
       totalPages,
       currentPage,
