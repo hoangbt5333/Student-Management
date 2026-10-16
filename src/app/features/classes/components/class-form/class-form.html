@@ -48,6 +48,15 @@
         ) {
           <small class="field-error">Vui lòng nhập tên lớp.</small>
         }
+
+        @if (
+          form.controls.name.touched &&
+          form.controls.name.hasError('maxlength')
+        ) {
+          <small class="field-error">
+            Tên lớp không được vượt quá 100 ký tự.
+          </small>
+        }
       </div>
 
       <div class="field">
@@ -64,6 +73,15 @@
         ) {
           <small class="field-error">
             Vui lòng nhập khoa hoặc ngành.
+          </small>
+        }
+
+        @if (
+          form.controls.department.touched &&
+          form.controls.department.hasError('maxlength')
+        ) {
+          <small class="field-error">
+            Khoa/ngành không được vượt quá 100 ký tự.
           </small>
         }
       </div>

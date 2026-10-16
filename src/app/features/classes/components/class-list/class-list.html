@@ -53,12 +53,12 @@
           <tr>
             <th>Mã lớp</th>
             <th>
-              <button
-                class="sort-button"
-                (click)="facade.setSortBy('name')"
-              >
-                Tên lớp
-              </button>
+              <button class="sort-button" (click)="toggleNameSort()">
+              Tên lớp
+              {{ facade.sortBy() === 'name'
+                  ? (facade.sortDirection() === 'asc' ? '↑' : '↓')
+                  : '' }}
+            </button>
             </th>
             <th>Khoa / Ngành</th>
             <th>Năm học</th>

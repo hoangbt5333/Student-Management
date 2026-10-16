@@ -127,6 +127,19 @@ export const ClassStore = signalStore(
       ).subscribe();
     }
 
+    function hasDuplicateId(
+      classItem: ClassModel,
+      mode: 'add' | 'update'
+    ): boolean {
+      return store.classes().some((item) => {
+        const sameId =
+          item.id.trim().toLocaleLowerCase() ===
+          classItem.id.trim().toLocaleLowerCase();
+
+        return sameId && (mode === 'add' || item.id !== classItem.id);
+      });
+    }
+
     return {
       loadClasses(): void {
         load();
@@ -162,6 +175,15 @@ export const ClassStore = signalStore(
           }),
 
           exhaustMap(({ classItem, mode }) => {
+            if (hasDuplicateId(classItem, mode)) {
+              patchState(store, {
+                errorMessage: `Mã lớp "${classItem.id}" đã tồn tại.`,
+                loading: false
+              });
+
+              return EMPTY;
+            }
+            
             const request$ = (() => {
                 if (mode === 'add') {
                     return classService.create(classItem);

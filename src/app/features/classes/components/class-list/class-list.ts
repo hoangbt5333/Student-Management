@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, effect } from '@angular/core';
 import { ClassFacade } from '../../data-access/class.facade';
 import type { ClassModel } from '../../data-access/models/class.model';
 import { ClassForm } from '../class-form/class-form';
@@ -14,6 +14,23 @@ export class ClassList implements OnInit {
 
   showForm = false;
   editingClass: ClassModel | null = null;
+
+  private waitingForSave = false;
+  private readonly saveEffect = effect(() => {
+    const success = this.facade.successMessage();
+    const error = this.facade.errorMessage();
+
+    if (!this.waitingForSave) {
+      return;
+    }
+
+    if (success) {
+      this.waitingForSave = false;
+      this.closeForm;
+    } else {
+      this.waitingForSave = false;
+    }
+  });
 
   ngOnInit(): void {
     this.facade.loadClasses();
@@ -40,8 +57,8 @@ export class ClassList implements OnInit {
     classItem: ClassModel;
     mode: 'add' | 'update';
   }): void {
+    this.waitingForSave = true;
     this.facade.saveClass(event.classItem, event.mode);
-    this.closeForm();
   }
 
   onDelete(classItem: ClassModel): void {
@@ -57,5 +74,16 @@ export class ClassList implements OnInit {
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.facade.setSearchTerm(input.value);
+  }
+
+  toggleNameSort(): void {
+    if (this.facade.sortBy() === 'name') {
+      this.facade.setSortDirection(
+        this.facade.sortDirection() === 'asc' ? 'desc' : 'asc'
+      );
+    } else {
+      this.facade.setSortBy('name');
+      this.facade.setSortDirection('asc');
+    }
   }
 }
