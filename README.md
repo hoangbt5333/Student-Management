@@ -1,32 +1,44 @@
-# User Management
+# Student Management Demo
 
-Ứng dụng quản lý sinh viên được xây dựng bằng Angular. Hiện feature sinh viên hỗ trợ thêm, sửa, xóa, tìm kiếm, lọc theo lớp/khoa, sắp xếp và phân trang.
+Ứng dụng demo Angular quản lý sinh viên, lớp học, giảng viên, môn học và điểm số. Dự án giữ standalone components, lazy routes, Reactive Forms, HttpClient và Signal Store/facade hiện có.
 
 ## Yêu cầu
 
 - Node.js phiên bản tương thích với Angular CLI 22.
 - npm.
-- Một REST API chạy tại `http://localhost:3000` và cung cấp tài nguyên `/students`. Backend API không nằm trong repository này.
+- Mock API JSON Server trong thư mục `../mock-api`, chạy tại `http://localhost:3001`.
 
 ## Cài đặt và chạy
 
+Mở hai terminal:
+
 ```bash
+cd mock-api
+npm install
+npm start
+```
+
+```bash
+cd Student-Management
 npm install
 npm run start
 ```
 
-Mở `http://localhost:4200`. Lệnh `npm run start` chạy Angular development server; API sinh viên vẫn cần được khởi động riêng.
+Mở `http://localhost:4200`. Thanh điều hướng có Dashboard, Sinh viên, Lớp học, Giảng viên, Môn học và Điểm số.
 
-API được `StudentService` gọi theo các endpoint:
+JSON Server cung cấp CRUD cho các collection sau:
 
 | Thao tác | HTTP | Endpoint |
 | --- | --- | --- |
-| Tải danh sách | `GET` | `/students` |
-| Thêm sinh viên | `POST` | `/students` |
-| Cập nhật sinh viên | `PUT` | `/students/:id` |
-| Xóa sinh viên | `DELETE` | `/students/:id` |
+| Dữ liệu | Collection |
+| --- | --- |
+| Sinh viên | `/students` |
+| Lớp học | `/classes` |
+| Giảng viên | `/teachers` |
+| Môn học | `/subjects` |
+| Điểm | `/grades` |
 
-Mỗi sinh viên có `id`, `name`, `email`, `phone`; các trường `className` (lớp) và `faculty` (khoa) hiện có thể thiếu trong dữ liệu cũ. Khi cập nhật hoặc thêm mới, API cần lưu và trả lại các trường được gửi lên.
+Điểm tham chiếu sinh viên/môn bằng ID và form kiểm tra khoảng 0–10. Không lưu lặp tên sinh viên hoặc tên môn trong bản ghi điểm.
 
 ## Lệnh thường dùng
 
@@ -37,7 +49,7 @@ npm run start
 # Build production (bao gồm cấu hình server-side rendering)
 npm run build
 
-# Chạy unit test bằng Angular CLI và Vitest
+# Chạy unit test
 npm test
 
 # Build lại khi mã nguồn thay đổi
@@ -51,6 +63,15 @@ npm run serve:ssr:user-management
 ```
 
 Server mặc định lắng nghe tại cổng `4000` (hoặc cổng được đặt qua biến môi trường `PORT`).
+
+## Mô hình dữ liệu
+
+- `students.classId` liên kết đến `classes.id`.
+- `subjects.teacherId` liên kết tùy chọn đến `teachers.id`.
+- `grades.studentId` và `grades.subjectId` liên kết đến sinh viên và môn học.
+- Điểm trung bình được tính từ điểm hợp lệ, không lưu thêm trong API.
+
+Model lớp ban đầu không có giảng viên chủ nhiệm nên quan hệ đó chưa được thêm. JSON Server không enforce foreign key; giao diện ngăn xóa giảng viên hoặc môn học đang được tham chiếu.
 
 ## Cấu trúc dự án
 
@@ -66,17 +87,10 @@ src/
 │   │       ├── loading.service.ts
 │   │       └── notification.service.ts
 │   ├── features/
-│   │   └── students/
-│   │       ├── components/
-│   │       │   ├── student-form/
-│   │       │   ├── student-list/
-│   │       │   └── student-table/
-│   │       ├── data-access/
-│   │       │   ├── models/
-│   │       │   ├── student.facade.ts
-│   │       │   ├── student.store.ts
-│   │       │   └── student.ts
-│   │       └── students.routes.ts
+│   │   ├── academics/  # Giảng viên, môn học, điểm và AcademicService
+│   │   ├── classes/    # Danh sách và chi tiết lớp
+│   │   ├── dashboard/
+│   │   └── students/  # CRUD, danh sách và hồ sơ chi tiết
 │   ├── app.config.server.ts
 │   ├── app.config.ts
 │   ├── app.routes.server.ts

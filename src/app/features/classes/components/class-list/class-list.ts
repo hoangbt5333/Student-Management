@@ -1,11 +1,12 @@
 import { Component, inject, OnInit, effect } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ClassFacade } from '../../data-access/class.facade';
 import type { ClassModel } from '../../data-access/models/class.model';
 import { ClassForm } from '../class-form/class-form';
 import { StudentFacade } from '../../../students/data-access/student.facade';
 
 @Component({
-  imports: [ClassForm],
+  imports: [ClassForm, RouterLink],
   selector: 'app-class-list',
   styleUrl: './class-list.css',
   templateUrl: './class-list.html',
@@ -20,7 +21,6 @@ export class ClassList implements OnInit {
   private waitingForSave = false;
   private readonly saveEffect = effect(() => {
     const success = this.facade.successMessage();
-    const error = this.facade.errorMessage();
 
     if (!this.waitingForSave) {
       return;
@@ -28,10 +28,11 @@ export class ClassList implements OnInit {
 
     if (success) {
       this.waitingForSave = false;
-      this.closeForm;
-    } else {
-      this.waitingForSave = false;
+      this.closeForm();
+      return;
     }
+
+    this.waitingForSave = false;
   });
 
   ngOnInit(): void {

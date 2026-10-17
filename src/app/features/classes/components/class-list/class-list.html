@@ -69,8 +69,8 @@
         <tbody>
           @for (item of facade.filteredClasses(); track item.id) {
             <tr>
-              <td>{{ item.id }}</td>
-              <td>{{ item.name }}</td>
+              <td>{{ item.code || item.id }}</td>
+              <td><a [routerLink]="['/classes', item.id]">{{ item.name }}</a></td>
               <td>{{ item.department }}</td>
               <td>{{ item.academicYear }}</td>
               <td class="actions">

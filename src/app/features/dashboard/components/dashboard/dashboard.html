@@ -1,0 +1,68 @@
+<section class="dashboard">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Tổng quan</p>
+      <h1>Dashboard quản lý sinh viên</h1>
+    </div>
+  </header>
+
+  <div class="stats-grid">
+    <article class="stat-card accent">
+      <span class="label">Tổng sinh viên</span>
+      <strong>{{ stats().totalStudents }}</strong>
+      <small>Đã có trong hệ thống</small>
+    </article>
+
+    <article class="stat-card info">
+      <span class="label">Tổng lớp học</span>
+      <strong>{{ stats().totalClasses }}</strong>
+      <small>Đang quản lý</small>
+    </article>
+
+    <article class="stat-card success">
+      <span class="label">TB sinh viên / lớp</span>
+      <strong>{{ stats().averageStudentsPerClass }}</strong>
+      <small>Trung bình</small>
+    </article>
+
+    <article class="stat-card warning">
+      <span class="label">Lớp chưa có sinh viên</span>
+      <strong>{{ stats().inactiveClasses.length }}</strong>
+      <small>Chưa được phân bổ</small>
+    </article>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Thống kê theo lớp</h2>
+      @if (stats().topClass) {
+        <span class="badge">Đang dẫn đầu: {{ stats().topClass.name }}</span>
+      }
+    </div>
+
+    @if (stats().classStats.length) {
+      <table>
+        <thead>
+          <tr>
+            <th>Mã lớp</th>
+            <th>Tên lớp</th>
+            <th>Khoa</th>
+            <th>Sĩ số</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of stats().classStats; track item.id) {
+            <tr>
+              <td>{{ item.id }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.department }}</td>
+              <td>{{ item.studentCount }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <p class="empty-state">Chưa có dữ liệu lớp học để thống kê.</p>
+    }
+  </div>
+</section>

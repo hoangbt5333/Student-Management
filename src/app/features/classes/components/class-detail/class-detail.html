@@ -1,0 +1,27 @@
+<section class="detail-page">
+  <a routerLink="/classes" class="back-link">← Danh sách lớp</a>
+  @if (loading()) {
+    <p role="status">Đang tải thông tin lớp...</p>
+  } @else if (errorMessage()) {
+    <p class="error" role="alert">{{ errorMessage() }}</p>
+  } @else if (classItem(); as item) {
+    <header class="page-heading">
+      <div><p class="eyebrow">Chi tiết lớp học</p><h1>{{ item.name }}</h1></div>
+      <strong class="count">{{ students().length }} sinh viên</strong>
+    </header>
+    <section class="panel">
+      <h2>Thông tin lớp</h2>
+      <dl><dt>Mã lớp</dt><dd>{{ item.code || item.id }}</dd><dt>Tên lớp</dt><dd>{{ item.name }}</dd><dt>Khoa / Ngành</dt><dd>{{ item.department }}</dd><dt>Niên khóa</dt><dd>{{ item.academicYear }}</dd></dl>
+    </section>
+    <section class="panel">
+      <h2>Danh sách sinh viên</h2>
+      @if (students().length) {
+        <div class="table-wrap"><table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Email</th><th>Hồ sơ</th></tr></thead><tbody>
+          @for (student of students(); track student.id) {
+            <tr><td>{{ student.id }}</td><td>{{ student.name }}</td><td>{{ student.email }}</td><td><a [routerLink]="['/students', student.id]">Xem chi tiết</a></td></tr>
+          }
+        </tbody></table></div>
+      } @else { <p class="muted">Lớp hiện chưa có sinh viên.</p> }
+    </section>
+  }
+</section>

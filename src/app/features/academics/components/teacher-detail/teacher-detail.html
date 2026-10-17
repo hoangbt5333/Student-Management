@@ -1,0 +1,13 @@
+<section class="catalog-page">
+  <a routerLink="/teachers">← Danh sách giảng viên</a>
+  @if (loading()) { <p role="status">Đang tải hồ sơ...</p> }
+  @else if (errorMessage()) { <p class="message error" role="alert">{{ errorMessage() }}</p> }
+  @else if (teacher(); as item) {
+    <header class="page-heading"><div><p>Hồ sơ giảng viên</p><h1>{{ item.name }}</h1></div></header>
+    <section class="edit-form"><h2>Thông tin cơ bản</h2><p><strong>Mã giảng viên:</strong> {{ item.code || item.id }}</p><p><strong>Email:</strong> <a [href]="'mailto:' + item.email">{{ item.email }}</a></p><p><strong>Khoa:</strong> {{ item.department }}</p></section>
+    <section><h2>Môn học phụ trách</h2>
+      @if (subjects().length) { <div class="table-wrap"><table><thead><tr><th>Mã môn</th><th>Tên môn</th><th>Tín chỉ</th></tr></thead><tbody>@for (subject of subjects(); track subject.id) { <tr><td>{{ subject.id }}</td><td><a [routerLink]="['/subjects', subject.id]">{{ subject.name }}</a></td><td>{{ subject.credits }}</td></tr> }</tbody></table></div> }
+      @else { <p class="empty">Chưa được phân công môn học.</p> }
+    </section>
+  }
+</section>

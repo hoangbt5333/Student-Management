@@ -14,8 +14,8 @@
     <tbody>
         @for (student of students(); track student.id) {
             <tr>
-                <td>{{ student.id }}</td>
-                <td>{{ student.name }}</td>
+                <td>{{ student.code || student.id }}</td>
+                <td><a [routerLink]="['/students', student.id]">{{ student.name }}</a></td>
                 <td>{{ student.email }}</td>
                 <td>{{ student.phone }}</td>
                 <td>{{ student.className || '—' }}</td>

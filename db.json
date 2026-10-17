@@ -1,0 +1,48 @@
+{
+  "students": [
+    {
+      "id": "SV001",
+      "code": "D19CNTT-001",
+      "name": "Nguyễn Văn A",
+      "email": "nguyenvana@example.com",
+      "phone": "0901234567",
+      "class": "D19CNTT",
+      "department": "IT",
+      "status": "ACTIVE",
+      "createdAt": "2025-01-10T08:30:00.000Z"
+    },
+    {
+      "id": "SV002",
+      "code": "D19CNTT-002",
+      "name": "Trần Thị B",
+      "email": "tranthib@example.com",
+      "phone": "0907654321",
+      "class": "D19CNTT",
+      "department": "IT",
+      "status": "PENDING",
+      "createdAt": "2025-02-12T09:15:00.000Z"
+    },
+    {
+      "id": "SV003",
+      "code": "D20CNTT-001",
+      "name": "Lê Văn C",
+      "email": "levanc@example.com",
+      "phone": "0912345678",
+      "class": "D20CNTT",
+      "department": "IT",
+      "status": "INACTIVE",
+      "createdAt": "2025-03-05T14:00:00.000Z"
+    },
+    {
+      "id": "SV004",
+      "code": "D21ECON-001",
+      "name": "Phạm Thị D",
+      "email": "phamthid@example.com",
+      "phone": "0987654321",
+      "class": "D21ECON",
+      "department": "Economics",
+      "status": "ACTIVE",
+      "createdAt": "2025-04-18T11:45:00.000Z"
+    }
+  ]
+}

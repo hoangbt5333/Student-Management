@@ -10,7 +10,7 @@ import { ClassModel, CreateClassDto, UpdateClassDto } from "./models/class.model
 export class ClassService {
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'http://localhost:3000/classes';
+  private readonly apiUrl = 'http://localhost:3001/classes';
 
   getAll(): Observable<ClassModel[]> {
     return this.http.get<ClassModel[]>(this.apiUrl);
@@ -21,7 +21,11 @@ export class ClassService {
   }
 
   create(data: CreateClassDto): Observable<ClassModel> {
-    return this.http.post<ClassModel>(this.apiUrl, data);
+    const { id, ...classData } = data;
+    return this.http.post<ClassModel>(this.apiUrl, {
+      ...classData,
+      code: data.code ?? id
+    });
   }
 
   update(

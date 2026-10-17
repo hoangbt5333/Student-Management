@@ -1,5 +1,6 @@
 export interface ClassModel {
     id: string;
+    code?: string;
     name: string;
     department: string;
     academicYear: string;

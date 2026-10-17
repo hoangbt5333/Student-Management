@@ -1,0 +1,54 @@
+<section class="detail-page">
+  <a routerLink="/students" class="back-link">← Danh sách sinh viên</a>
+  @if (loading()) {
+    <p role="status">Đang tải hồ sơ...</p>
+  } @else if (errorMessage()) {
+    <p class="error" role="alert">{{ errorMessage() }}</p>
+  } @else if (student(); as item) {
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">Hồ sơ sinh viên</p>
+        <h1>{{ item.name }}</h1>
+        <p class="muted">{{ item.code || item.id }}</p>
+      </div>
+      <a routerLink="/grades" [queryParams]="{ studentId: item.id }" class="button-link">Xem bảng điểm</a>
+    </header>
+
+    <div class="detail-grid">
+      <section class="panel">
+        <h2>Thông tin cá nhân</h2>
+        <dl>
+          <dt>Mã sinh viên</dt><dd>{{ item.code || item.id }}</dd>
+          <dt>Họ và tên</dt><dd>{{ item.name }}</dd>
+          <dt>Email</dt><dd><a [href]="'mailto:' + item.email">{{ item.email }}</a></dd>
+          <dt>Số điện thoại</dt><dd>{{ item.phone }}</dd>
+          <dt>Khoa</dt><dd>{{ item.faculty || 'Chưa cập nhật' }}</dd>
+        </dl>
+      </section>
+      <section class="panel">
+        <h2>Thông tin học tập</h2>
+        @if (classItem(); as classInfo) {
+          <dl>
+            <dt>Lớp</dt><dd><a [routerLink]="['/classes', classInfo.id]">{{ classInfo.name }}</a></dd>
+            <dt>Mã lớp</dt><dd>{{ classInfo.id }}</dd>
+            <dt>Niên khóa</dt><dd>{{ classInfo.academicYear }}</dd>
+          </dl>
+        } @else {
+          <p class="muted">Chưa có thông tin lớp học.</p>
+        }
+      </section>
+    </div>
+
+    <section class="panel results-panel">
+      <div class="section-heading"><h2>Kết quả học tập</h2><strong>Điểm trung bình: {{ average() }}</strong></div>
+      @if (grades().length) {
+        <div class="table-wrap"><table>
+          <thead><tr><th>Mã môn</th><th>Môn học</th><th>Điểm</th></tr></thead>
+          <tbody>@for (grade of grades(); track grade.id) {
+            <tr><td>{{ grade.subjectId }}</td><td>{{ subjectName(grade.subjectId) }}</td><td>{{ grade.score | number:'1.1-2' }}</td></tr>
+          }</tbody>
+        </table></div>
+      } @else { <p class="muted">Sinh viên chưa có điểm.</p> }
+    </section>
+  }
+</section>

@@ -2,6 +2,12 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
     {
+        path: 'dashboard',
+        loadComponent: () =>
+            import('./features/dashboard/components/dashboard/dashboard')
+                .then((m) => m.DashboardComponent)
+    },
+    {
         path: 'students',
         loadChildren: () =>
             import('./features/students/students.routes')
@@ -9,17 +15,23 @@ export const routes: Routes = [
     },
     {
         path: 'classes',
-        loadComponent: () =>
-            import('./features/classes/components/class-list/class-list')
-                .then((m) => m.ClassList)
+        loadChildren: () =>
+            import('./features/classes/classes.routes')
+                .then((m) => m.CLASS_ROUTES)
+    },
+    {
+        path: '',
+        loadChildren: () =>
+            import('./features/academics/academics.routes')
+                .then((m) => m.ACADEMIC_ROUTES)
     },
     {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'students'
+        redirectTo: 'dashboard'
     },
     {
         path: '**',
-        redirectTo: 'students'
+        redirectTo: 'dashboard'
     }
 ];

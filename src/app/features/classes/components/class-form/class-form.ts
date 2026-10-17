@@ -32,7 +32,7 @@ export class ClassForm {
       const item = this.classItem();
 
       if (item) {
-        this.form.reset(item);
+        this.form.reset({ ...item, id: item.code ?? item.id });
         this.form.controls.id.disable();
       } else {
         this.form.reset({
@@ -52,7 +52,12 @@ export class ClassForm {
       return;
     }
 
-    const classItem = this.form.getRawValue() as ClassModel;
+    const values = this.form.getRawValue();
+    const classItem: ClassModel = {
+      ...values,
+      id: this.classItem()?.id ?? values.id,
+      code: values.id
+    };
 
     this.saved.emit({
       classItem,

@@ -1,0 +1,28 @@
+<section class="catalog-page">
+  <header class="page-heading"><div><h1>Quản lý giảng viên</h1><p>Hồ sơ giảng viên và môn học phụ trách</p></div><button type="button" class="primary" (click)="openAdd()">+ Thêm giảng viên</button></header>
+  @if (errorMessage()) { <p class="message error" role="alert">{{ errorMessage() }}</p> }
+  @if (successMessage()) { <p class="message success" role="status">{{ successMessage() }}</p> }
+  <div class="toolbar"><input type="search" aria-label="Tìm giảng viên" placeholder="Tìm theo mã, tên hoặc email..." (input)="setSearch($any($event.target).value)"><span>{{ filteredTeachers().length }} / {{ teachers().length }} giảng viên</span></div>
+  @if (showForm()) {
+    <form class="edit-form" [formGroup]="form" (ngSubmit)="save()">
+      <h2>{{ editingId() ? 'Cập nhật giảng viên' : 'Thêm giảng viên' }}</h2>
+      <label>Mã giảng viên<input formControlName="id" placeholder="GV004"></label>
+      @if (form.controls.id.touched && form.controls.id.invalid) { <small>Mã bắt buộc, định dạng GV001.</small> }
+      <label>Họ tên<input formControlName="name"></label>
+      @if (form.controls.name.touched && form.controls.name.invalid) { <small>Vui lòng nhập họ tên hợp lệ.</small> }
+      <label>Email<input type="email" formControlName="email"></label>
+      @if (form.controls.email.touched && form.controls.email.invalid) { <small>Email không hợp lệ.</small> }
+      <label>Khoa<input formControlName="department"></label>
+      @if (form.controls.department.touched && form.controls.department.invalid) { <small>Vui lòng nhập khoa.</small> }
+      <div class="form-actions"><button class="primary" type="submit" [disabled]="loading()">Lưu</button><button type="button" (click)="closeForm()">Hủy</button></div>
+    </form>
+  }
+  @if (loading() && !teachers().length) { <p role="status">Đang tải giảng viên...</p> }
+  @else {
+    <div class="table-wrap"><table><thead><tr><th>Mã GV</th><th>Họ tên</th><th>Email</th><th>Khoa</th><th>Thông tin</th><th>Thao tác</th></tr></thead><tbody>
+      @for (teacher of filteredTeachers(); track teacher.id) {
+        <tr><td>{{ teacher.code || teacher.id }}</td><td>{{ teacher.name }}</td><td>{{ teacher.email }}</td><td>{{ teacher.department }}</td><td><a [routerLink]="['/teachers', teacher.id]">Chi tiết</a></td><td class="actions"><button type="button" (click)="edit(teacher)">Sửa</button><button type="button" class="danger" (click)="delete(teacher)">Xóa</button></td></tr>
+      } @empty { <tr><td colspan="6" class="empty">Không tìm thấy giảng viên.</td></tr> }
+    </tbody></table></div>
+  }
+</section>

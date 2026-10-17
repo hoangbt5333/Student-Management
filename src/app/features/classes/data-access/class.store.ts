@@ -77,6 +77,7 @@ export const ClassStore = signalStore(
 
           return [
             item.id,
+            item.code,
             item.name,
             item.department,
             item.academicYear
@@ -133,7 +134,7 @@ export const ClassStore = signalStore(
     ): boolean {
       return store.classes().some((item) => {
         const sameId =
-          item.id.trim().toLocaleLowerCase() ===
+          (item.code ?? item.id).trim().toLocaleLowerCase() ===
           classItem.id.trim().toLocaleLowerCase();
 
         return sameId && (mode === 'add' || item.id !== classItem.id);

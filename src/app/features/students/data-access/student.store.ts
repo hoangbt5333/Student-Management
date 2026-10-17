@@ -111,6 +111,7 @@ export const StudentStore = signalStore(
           const className = getClassName(student);
 
           const matchesSearch = !keyword || [
+            student.code,
             student.id,
             student.name,
             student.email,
@@ -142,11 +143,15 @@ export const StudentStore = signalStore(
           // Nếu đang sắp xếp theo lớp, dùng tên lớp thay vì classId.
           const firstValue = field === 'className'
             ? getClassName(first)
-            : first[field] ?? '';
+            : field === 'id'
+              ? first.code ?? first.id
+              : first[field] ?? '';
 
           const secondValue = field === 'className'
             ? getClassName(second)
-            : second[field] ?? '';
+            : field === 'id'
+              ? second.code ?? second.id
+              : second[field] ?? '';
 
           const comparison = String(firstValue).localeCompare(
             String(secondValue),
@@ -204,16 +209,17 @@ export const StudentStore = signalStore(
     };
   }),
 
-  withMethods((store, studentService = inject(StudentService)) => {
+  withMethods((store, studentService = inject(StudentService), classStore = inject(ClassStore)) => {
     function replaceStudents(students: Student[]): void {
       const selectedClass = store.classFilter();
       const selectedFaculty = store.facultyFilter();
+      const selectedClassExists = !selectedClass
+        || classStore.classes().some((classItem) => classItem.id === selectedClass)
+        || students.some((student) => student.classId === selectedClass);
 
       patchState(store, {
         students,
-        classFilter: students.some(
-          (student) => student.className?.trim() === selectedClass
-        ) ? selectedClass : '',
+        classFilter: selectedClassExists ? selectedClass : '',
         facultyFilter: students.some(
           (student) => student.faculty?.trim() === selectedFaculty
         ) ? selectedFaculty : ''
@@ -333,6 +339,20 @@ export const StudentStore = signalStore(
           }),
 
           exhaustMap(({ student, mode }) => {
+            const studentCode = (student.code ?? student.id).trim().toLocaleLowerCase();
+            const duplicateCode = store.students().some((item) =>
+              (item.code ?? item.id).trim().toLocaleLowerCase() === studentCode
+              && (mode === 'add' || item.id !== student.id)
+            );
+
+            if (duplicateCode) {
+              patchState(store, {
+                errorMessage: `Mã sinh viên "${student.code ?? student.id}" đã tồn tại.`,
+                loading: false
+              });
+              return EMPTY;
+            }
+
             const request$ =
               mode === 'add'
                 ? studentService.addStudent(student)

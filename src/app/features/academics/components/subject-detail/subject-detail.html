@@ -1,0 +1,9 @@
+<section class="catalog-page">
+  <a routerLink="/subjects">← Danh sách môn học</a>
+  @if (loading()) { <p role="status">Đang tải môn học...</p> }
+  @else if (errorMessage()) { <p class="message error" role="alert">{{ errorMessage() }}</p> }
+  @else if (subject(); as item) {
+    <header class="page-heading"><div><p>Chi tiết môn học</p><h1>{{ item.name }}</h1></div></header>
+    <section class="edit-form"><h2>Thông tin môn học</h2><p><strong>Mã môn:</strong> {{ item.code || item.id }}</p><p><strong>Tên môn:</strong> {{ item.name }}</p><p><strong>Số tín chỉ:</strong> {{ item.credits }}</p><p><strong>Giảng viên:</strong> @if (teacher(); as teacherInfo) { <a [routerLink]="['/teachers', teacherInfo.id]">{{ teacherInfo.name }}</a> } @else { Chưa phân công }</p><p><strong>Số bản ghi điểm:</strong> {{ gradeCount() }}</p></section>
+  }
+</section>

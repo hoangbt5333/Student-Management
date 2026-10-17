@@ -41,7 +41,7 @@ export class StudentForm {
         );
         
         this.form.reset({
-          id: student.id,
+          id: student.code ?? student.id,
           name: student.name,
           email: student.email,
           phone: student.phone,
@@ -80,7 +80,8 @@ export class StudentForm {
     );
 
     this.save.emit({
-      id: student.id,
+      id: this.student()?.id ?? student.id,
+      code: student.id,
       name: student.name,
       email: student.email,
       phone: student.phone,
