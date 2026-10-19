@@ -21,9 +21,11 @@
                 <td>{{ student.className || '—' }}</td>
                 <td>{{ student.faculty || '—' }}</td>
                 <td>
-                    <button type="button" (click)="edit.emit(student)">Sửa</button>
+                    @if (authFacade.can('manage-students')){
+                        <button type="button" (click)="edit.emit(student)">Sửa</button>
 
-                    <button type="button" (click)="delete.emit(student.id)">Xoá</button>
+                        <button type="button" (click)="delete.emit(student.id)">Xoá</button>
+                    } 
                 </td> 
             </tr>
         } @empty {

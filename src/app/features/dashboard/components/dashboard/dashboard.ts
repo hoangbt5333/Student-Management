@@ -21,6 +21,7 @@ export class DashboardComponent implements OnInit {
     const classStats = classes
       .map((classItem) => ({
         id: classItem.id,
+        code: classItem.code,
         name: classItem.name,
         department: classItem.department,
         studentCount: students.filter((student) => {

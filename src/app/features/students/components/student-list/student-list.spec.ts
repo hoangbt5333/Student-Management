@@ -34,6 +34,26 @@ describe('StudentList', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows the student form only after clicking the add button', () => {
+    expect(fixture.debugElement.query(By.directive(StudentForm))).toBeNull();
+
+    const addButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    addButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.directive(StudentForm))).not.toBeNull();
+  });
+
+  it('closes the form when adding is canceled', () => {
+    component.openAddStudent();
+    fixture.detectChanges();
+
+    component.cancelEdit();
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.directive(StudentForm))).toBeNull();
+  });
+
   // it('should match Vietnamese names without typing their diacritics', () => {
   //   const student = {
   //     id: 'SV01',
@@ -49,6 +69,8 @@ describe('StudentList', () => {
   // });
 
   it('should clear the form after a student is added successfully', async () => {
+    component.openAddStudent();
+    fixture.detectChanges();
     const form = fixture.debugElement.query(By.directive(StudentForm)).injector.get(StudentForm);
     const student = {
       id: 'SV01',
@@ -79,5 +101,6 @@ describe('StudentList', () => {
       classId: '',
       faculty: '',
     });
+    expect(component.showForm()).toBe(false);
   });
 });

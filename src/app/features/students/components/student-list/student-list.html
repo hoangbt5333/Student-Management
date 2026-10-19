@@ -1,11 +1,21 @@
 
-<h1>Quản lý sinh viên</h1>
+<header class="page-header">
+  <h1>Quản lý sinh viên</h1>
+  @if (authFacade.can('manage-students')) {
+    <button type="button" class="primary-button" (click)="openAddStudent()">
+      + Thêm sinh viên
+    </button>
+  }
+  
+</header>
 
-<app-student-form
-  [student]="selectedStudent()"
-  (save)="saveStudent($event)"
-  (cancel)="cancelEdit()"
-/>
+@if (showForm()) {
+  <app-student-form
+    [student]="selectedStudent()"
+    (save)="saveStudent($event)"
+    (cancel)="cancelEdit()"
+  />
+}
 
 @if (facade.errorMessage()) {
   <p class="error-message">{{ facade.errorMessage() }}</p>

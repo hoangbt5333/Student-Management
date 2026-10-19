@@ -4,6 +4,7 @@ import type { Student } from '../../data-access/models/student.model';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
 import { StudentFacade } from '../../data-access/student.facade';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
   selector: 'app-student-list',
@@ -15,6 +16,7 @@ import { StudentFacade } from '../../data-access/student.facade';
 export class StudentListComponent implements OnInit {
   @ViewChild(StudentForm) private studentForm?: StudentForm;
   readonly facade = inject(StudentFacade);
+  readonly authFacade = inject(AuthFacade);
 
   private clearSelectionOnSaveSuccess = effect(() => {
     const message = this.facade.successMessage();
@@ -22,10 +24,12 @@ export class StudentListComponent implements OnInit {
     if (message) {
       this.selectedStudent.set(null);
       this.studentForm?.resetForNewStudent();
+      this.showForm.set(false);
     }
   });
 
   selectedStudent = signal<Student | null>(null);
+  showForm = signal(false);
 
   students = this.facade.students;
   loading = this.facade.loading;
@@ -93,10 +97,18 @@ export class StudentListComponent implements OnInit {
 
   editStudent(student: Student): void {
     this.selectedStudent.set(student);
+    this.showForm.set(true);
+  }
+
+  openAddStudent(): void {
+    this.selectedStudent.set(null);
+    this.studentForm?.resetForNewStudent();
+    this.showForm.set(true);
   }
 
   cancelEdit(): void {
     this.selectedStudent.set(null);
+    this.showForm.set(false);
   }
   
   saveStudent(student: Student): void {

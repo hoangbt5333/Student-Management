@@ -66,4 +66,9 @@ export class StudentDetailComponent implements OnInit {
   subjectName(id: string): string {
     return this.subjects().find((subject) => subject.id === id)?.name ?? 'Môn học không tồn tại';
   }
+
+  subjectCode(id: string): string {
+    const subject = this.subjects().find((item) => item.id === id);
+    return subject?.code || subject?.id || id;
+  }
 }

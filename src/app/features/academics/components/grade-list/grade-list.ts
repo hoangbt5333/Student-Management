@@ -77,6 +77,8 @@ export class GradeListComponent implements OnInit {
 
   studentName(id: string): string { return this.students().find((student) => student.id === id)?.name ?? 'Sinh viên không tồn tại'; }
   subjectName(id: string): string { return this.subjects().find((subject) => subject.id === id)?.name ?? 'Môn học không tồn tại'; }
+  studentCode(id: string): string { const student = this.students().find((item) => item.id === id); return student?.code || student?.id || id; }
+  subjectCode(id: string): string { const subject = this.subjects().find((item) => item.id === id); return subject?.code || subject?.id || id; }
   setStudentFilter(value: string): void { this.studentFilter.set(value); }
   setSubjectFilter(value: string): void { this.subjectFilter.set(value); }
   closeForm(): void { this.showForm.set(false); }

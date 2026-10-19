@@ -61,4 +61,24 @@ describe('GradeListComponent', () => {
 
     expect(createGradeCalls).toEqual([{ studentId: 'SV001', subjectId: 'MH001', score: 8.5 }]);
   });
+
+  it('uses entity codes for display while retaining IDs for grade relations', () => {
+    const component = TestBed.createComponent(GradeListComponent).componentInstance;
+    component.students.set([{
+      id: 'R2J5VkW',
+      code: 'SV005',
+      name: 'Phạm Văn C',
+      email: 'student@example.com',
+      phone: '0900000000',
+    }]);
+    component.subjects.set([{
+      id: 'LP7XYCZ',
+      code: 'MH006',
+      name: 'IP',
+      credits: 3,
+    }]);
+
+    expect(component.studentCode('R2J5VkW')).toBe('SV005');
+    expect(component.subjectCode('LP7XYCZ')).toBe('MH006');
+  });
 });

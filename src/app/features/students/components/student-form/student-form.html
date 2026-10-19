@@ -78,10 +78,16 @@
       {{ student() ? 'Cập nhật' : 'Thêm sinh viên' }}
     </button>
 
-    @if (student()) {
+    <!-- @if (student()) {
       <button type="button" (click)="onCancel()">
         Hủy sửa
       </button>
-    }
+    } -->
+
+    <button type="button" (click)="onCancel()">
+      Hủy
+    </button>
+
+    
   </div>
 </form>

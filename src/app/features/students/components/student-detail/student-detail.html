@@ -30,7 +30,7 @@
         @if (classItem(); as classInfo) {
           <dl>
             <dt>Lớp</dt><dd><a [routerLink]="['/classes', classInfo.id]">{{ classInfo.name }}</a></dd>
-            <dt>Mã lớp</dt><dd>{{ classInfo.id }}</dd>
+            <dt>Mã lớp</dt><dd>{{ classInfo.code || classInfo.id }}</dd>
             <dt>Niên khóa</dt><dd>{{ classInfo.academicYear }}</dd>
           </dl>
         } @else {
@@ -45,7 +45,7 @@
         <div class="table-wrap"><table>
           <thead><tr><th>Mã môn</th><th>Môn học</th><th>Điểm</th></tr></thead>
           <tbody>@for (grade of grades(); track grade.id) {
-            <tr><td>{{ grade.subjectId }}</td><td>{{ subjectName(grade.subjectId) }}</td><td>{{ grade.score | number:'1.1-2' }}</td></tr>
+            <tr><td>{{ subjectCode(grade.subjectId) }}</td><td>{{ subjectName(grade.subjectId) }}</td><td>{{ grade.score | number:'1.1-2' }}</td></tr>
           }</tbody>
         </table></div>
       } @else { <p class="muted">Sinh viên chưa có điểm.</p> }

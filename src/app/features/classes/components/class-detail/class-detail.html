@@ -18,7 +18,7 @@
       @if (students().length) {
         <div class="table-wrap"><table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Email</th><th>Hồ sơ</th></tr></thead><tbody>
           @for (student of students(); track student.id) {
-            <tr><td>{{ student.id }}</td><td>{{ student.name }}</td><td>{{ student.email }}</td><td><a [routerLink]="['/students', student.id]">Xem chi tiết</a></td></tr>
+            <tr><td>{{ student.code || student.id }}</td><td>{{ student.name }}</td><td>{{ student.email }}</td><td><a [routerLink]="['/students', student.id]">Xem chi tiết</a></td></tr>
           }
         </tbody></table></div>
       } @else { <p class="muted">Lớp hiện chưa có sinh viên.</p> }

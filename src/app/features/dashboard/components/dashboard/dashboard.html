@@ -53,7 +53,7 @@
         <tbody>
           @for (item of stats().classStats; track item.id) {
             <tr>
-              <td>{{ item.id }}</td>
+              <td>{{ item.code || item.id }}</td>
               <td>{{ item.name }}</td>
               <td>{{ item.department }}</td>
               <td>{{ item.studentCount }}</td>

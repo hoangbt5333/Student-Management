@@ -3,16 +3,27 @@
 
   <nav>
     <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="/students" routerLinkActive="active">Sinh viên</a>
-    <a routerLink="/classes" routerLinkActive="active">Lớp học</a>
-    <a routerLink="/teachers" routerLinkActive="active">Giảng viên</a>
-    <a routerLink="/subjects" routerLinkActive="active">Môn học</a>
-    <a routerLink="/grades" routerLinkActive="active">Điểm số</a>
+    @if (authFacade.can('view-students')) {
+      <a routerLink="/students" routerLinkActive="active">Sinh viên</a>
+    }
+    @if (authFacade.can('view-classes')){
+      <a routerLink="/classes" routerLinkActive="active">Lớp học</a>
+    }
+    @if (authFacade.can('view-teachers')) {
+      <a routerLink="/teachers" routerLinkActive="active">Giảng viên</a>
+    }
+    @if (authFacade.can('view-subjects')) {
+      <a routerLink="/subjects" routerLinkActive="active">Môn học</a>
+    }
+    @if (authFacade.can('view-grades')) {
+      <a routerLink="/grades" routerLinkActive="active">Điểm số</a>
+    }
     
+    @if (authFacade.role() === 'admin') {
+      <a routerLink="/users" routerLinkActive="active">Người dùng</a>
+    }
+
     <div class="nav-auth">
-      @if (authFacade.role() === 'admin') {
-        <a routerLink="/users" routerLinkActive="active">Người dùng</a>
-      }
       @if (authFacade.currentUser(); as user) {
         <span>{{ user.displayName }}</span>
         <button type="button" (click)="authFacade.logout()">Đăng xuất</button>
