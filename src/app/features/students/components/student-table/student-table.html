@@ -7,7 +7,9 @@
             <th>Số điện thoại</th>
             <th>Lớp</th>
             <th>Khoa</th>
-            <th>Hành động</th>
+            @if (authFacade.can('manage-students')){
+                <th>Hành động</th>
+            }
         </tr>
     </thead>
 
@@ -20,13 +22,13 @@
                 <td>{{ student.phone }}</td>
                 <td>{{ student.className || '—' }}</td>
                 <td>{{ student.faculty || '—' }}</td>
-                <td>
-                    @if (authFacade.can('manage-students')){
+                @if (authFacade.can('manage-students')){
+                    <td>
                         <button type="button" (click)="edit.emit(student)">Sửa</button>
 
                         <button type="button" (click)="delete.emit(student.id)">Xoá</button>
-                    } 
-                </td> 
+                    </td> 
+                }   
             </tr>
         } @empty {
             <tr>
