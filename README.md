@@ -26,6 +26,10 @@ npm run start
 
 Mở `http://localhost:4200`. Thanh điều hướng có Dashboard, Sinh viên, Lớp học, Giảng viên, Môn học và Điểm số.
 
+### Đăng nhập và phân quyền
+
+Tài khoản mẫu được đọc từ collection `users` trong `../mock-api/db.json`. Khi mở trang cần đăng nhập, ứng dụng chuyển đến `/login` và quay lại URL ban đầu sau khi đăng nhập thành công. Dashboard, sinh viên, lớp học, giảng viên, môn học và điểm số yêu cầu đăng nhập; `/users` chỉ dành cho Admin, còn `/grades` chỉ dành cho Admin và giảng viên. Tài khoản không đủ quyền được chuyển đến `/forbidden`. Chọn **Đăng xuất** để kết thúc phiên.
+
 JSON Server cung cấp CRUD cho các collection sau:
 
 | Thao tác | HTTP | Endpoint |

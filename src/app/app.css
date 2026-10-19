@@ -22,6 +22,13 @@ nav a.active {
   border-bottom: 2px solid #38bdf8;
 }
 
+.nav-auth {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .app-content {
   padding: 24px;
 }

@@ -1,0 +1,67 @@
+<div class="login-page">
+  <section class="login-card">
+    <h1>Student Management</h1>
+    <p class="subtitle">Đăng nhập vào hệ thống quản lý sinh viên</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Tên đăng nhập</label>
+
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          placeholder="Nhập tên đăng nhập"
+        />
+
+        @if (
+          form.controls.username.touched &&
+          form.controls.username.hasError('required')
+        ) {
+          <small class="error">Vui lòng nhập tên đăng nhập.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mật khẩu</label>
+
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Nhập mật khẩu"
+        />
+
+        @if (
+          form.controls.password.touched &&
+          form.controls.password.hasError('required')
+        ) {
+          <small class="error">Vui lòng nhập mật khẩu.</small>
+        }
+      </div>
+
+      @if (authFacade.errorMessage()) {
+        <div class="error-banner" role="alert">
+          {{ authFacade.errorMessage() }}
+        </div>
+      }
+
+      <button
+        type="submit"
+        [disabled]="authFacade.loading()"
+      >
+        @if (authFacade.loading()) {
+          Đang đăng nhập...
+        } @else {
+          Đăng nhập
+        }
+      </button>
+    </form>
+
+    <p class="demo-note">
+      Đây là môi trường đăng nhập mô phỏng phục vụ học tập.
+    </p>
+  </section>
+</div>

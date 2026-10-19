@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { roleGuard } from '../../core/auth/guards/role.guard';
 
 export const ACADEMIC_ROUTES: Routes = [
   {
@@ -29,6 +30,8 @@ export const ACADEMIC_ROUTES: Routes = [
   },
   {
     path: 'grades',
+    canActivate: [roleGuard],
+    data: { roles: ['admin', 'teacher'] },
     loadComponent: () => import('./components/grade-list/grade-list').then((m) => m.GradeListComponent),
   },
 ];

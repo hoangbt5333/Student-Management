@@ -8,6 +8,18 @@
     <a routerLink="/teachers" routerLinkActive="active">Giảng viên</a>
     <a routerLink="/subjects" routerLinkActive="active">Môn học</a>
     <a routerLink="/grades" routerLinkActive="active">Điểm số</a>
+    
+    <div class="nav-auth">
+      @if (authFacade.role() === 'admin') {
+        <a routerLink="/users" routerLinkActive="active">Người dùng</a>
+      }
+      @if (authFacade.currentUser(); as user) {
+        <span>{{ user.displayName }}</span>
+        <button type="button" (click)="authFacade.logout()">Đăng xuất</button>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active">Đăng nhập</a>
+      }
+    </div>
   </nav>
 </header>
 
@@ -33,5 +45,4 @@
                
   <router-outlet />
 </main>
-
 
