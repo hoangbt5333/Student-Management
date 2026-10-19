@@ -1,5 +1,16 @@
 <section class="catalog-page">
-  <header class="page-heading"><div><h1>Quản lý giảng viên</h1><p>Hồ sơ giảng viên và môn học phụ trách</p></div><button type="button" class="primary" (click)="openAdd()">+ Thêm giảng viên</button></header>
+  <header class="page-heading">
+    <div>
+      <h1>Quản lý giảng viên</h1>
+      <p>Hồ sơ giảng viên và môn học phụ trách</p>
+    </div>
+    @if (authFacade.can('manage-teachers')) {
+      <button type="button" class="primary" (click)="openAdd()">
+        + Thêm giảng viên
+      </button>
+    } 
+  </header>
+
   @if (errorMessage()) { <p class="message error" role="alert">{{ errorMessage() }}</p> }
   @if (successMessage()) { <p class="message success" role="status">{{ successMessage() }}</p> }
   <div class="toolbar"><input type="search" aria-label="Tìm giảng viên" placeholder="Tìm theo mã, tên hoặc email..." (input)="setSearch($any($event.target).value)"><span>{{ filteredTeachers().length }} / {{ teachers().length }} giảng viên</span></div>
@@ -19,10 +30,47 @@
   }
   @if (loading() && !teachers().length) { <p role="status">Đang tải giảng viên...</p> }
   @else {
-    <div class="table-wrap"><table><thead><tr><th>Mã GV</th><th>Họ tên</th><th>Email</th><th>Khoa</th><th>Thông tin</th><th>Thao tác</th></tr></thead><tbody>
-      @for (teacher of filteredTeachers(); track teacher.id) {
-        <tr><td>{{ teacher.code || teacher.id }}</td><td>{{ teacher.name }}</td><td>{{ teacher.email }}</td><td>{{ teacher.department }}</td><td><a [routerLink]="['/teachers', teacher.id]">Chi tiết</a></td><td class="actions"><button type="button" (click)="edit(teacher)">Sửa</button><button type="button" class="danger" (click)="delete(teacher)">Xóa</button></td></tr>
-      } @empty { <tr><td colspan="6" class="empty">Không tìm thấy giảng viên.</td></tr> }
-    </tbody></table></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã GV</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Khoa</th>
+            <th>Thông tin</th>
+            @if (authFacade.can('manage-teachers')){
+              <th>Thao tác</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (teacher of filteredTeachers(); track teacher.id) {
+            <tr>
+              <td>{{ teacher.code || teacher.id }}</td>
+              <td>{{ teacher.name }}</td>
+              <td>{{ teacher.email }}</td>
+              <td>{{ teacher.department }}</td>
+              <td><a [routerLink]="['/teachers', teacher.id]">Chi tiết</a></td>
+              @if (authFacade.can('manage-teachers')){
+                <td class="actions">
+                  <button type="button" (click)="edit(teacher)">
+                    Sửa
+                  </button>
+                  <button type="button" class="danger" (click)="delete(teacher)">
+                    Xóa
+                  </button>
+                </td>
+              }          
+            </tr>
+          } @empty { 
+            <tr>
+              <td colspan="6" class="empty">
+                Không tìm thấy giảng viên.
+              </td>
+            </tr> }
+        </tbody>
+      </table>
+    </div>
   }
 </section>

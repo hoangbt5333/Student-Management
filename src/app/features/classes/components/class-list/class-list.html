@@ -6,9 +6,12 @@
       <p>Quản lý danh sách lớp trong hệ thống</p>
     </div>
     
-    <button class="primary-button" (click)="openAddForm()">
-      + Thêm lớp
-    </button>
+    @if (authFacade.can('manage-classes')){
+      <button class="primary-button" (click)="openAddForm()">
+        + Thêm lớp
+      </button>
+    }
+    
   </header>
 
   @if (facade.errorMessage()) {
@@ -62,7 +65,10 @@
             </th>
             <th>Khoa / Ngành</th>
             <th>Năm học</th>
-            <th>Thao tác</th>
+            @if (authFacade.can('manage-classes')) {
+              <th>Thao tác</th>
+            }
+            
           </tr>
         </thead>
 
@@ -73,21 +79,24 @@
               <td><a [routerLink]="['/classes', item.id]">{{ item.name }}</a></td>
               <td>{{ item.department }}</td>
               <td>{{ item.academicYear }}</td>
-              <td class="actions">
-                <button
-                  class="secondary-button"
-                  (click)="openEditForm(item)"
-                >
-                  Sửa
-                </button>
+              @if (authFacade.can('manage-classes')){
+                <td class="actions">
+                  <button
+                    class="secondary-button"
+                    (click)="openEditForm(item)"
+                  >
+                    Sửa
+                  </button>
 
-                <button
-                  class="danger-button"
-                  (click)="onDelete(item)"
-                >
-                  Xóa
-                </button>
-              </td>
+                  <button
+                    class="danger-button"
+                    (click)="onDelete(item)"
+                  >
+                    Xóa
+                  </button>
+                </td>
+              }
+              
             </tr>
           } @empty {
             <tr>

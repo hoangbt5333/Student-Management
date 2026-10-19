@@ -4,6 +4,7 @@ import { ClassFacade } from '../../data-access/class.facade';
 import type { ClassModel } from '../../data-access/models/class.model';
 import { ClassForm } from '../class-form/class-form';
 import { StudentFacade } from '../../../students/data-access/student.facade';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
   imports: [ClassForm, RouterLink],
@@ -14,6 +15,7 @@ import { StudentFacade } from '../../../students/data-access/student.facade';
 export class ClassList implements OnInit {
   readonly facade = inject(ClassFacade);
   readonly studentFacede = inject(StudentFacade);
+  readonly authFacade = inject(AuthFacade);
 
   showForm = false;
   editingClass: ClassModel | null = null;

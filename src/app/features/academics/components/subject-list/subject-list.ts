@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AcademicService } from '../../data-access/academic.service';
 import type { Grade, Subject, Teacher } from '../../data-access/academic.model';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
   selector: 'app-subject-list',
@@ -14,6 +15,8 @@ import type { Grade, Subject, Teacher } from '../../data-access/academic.model';
 export class SubjectListComponent implements OnInit {
   private readonly service = inject(AcademicService);
   private readonly fb = inject(FormBuilder);
+  readonly authFacade = inject(AuthFacade);
+
   readonly subjects = signal<Subject[]>([]);
   readonly teachers = signal<Teacher[]>([]);
   readonly grades = signal<Grade[]>([]);

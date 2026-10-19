@@ -1,6 +1,7 @@
 import { Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { ClassModel } from '../../data-access/models/class.model';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
   imports: [ReactiveFormsModule],
@@ -10,6 +11,7 @@ import type { ClassModel } from '../../data-access/models/class.model';
 })
 export class ClassForm {
   private readonly fb = inject(FormBuilder);
+  readonly authFacade = inject(AuthFacade);
 
   classItem = input<ClassModel | null>(null);
   
