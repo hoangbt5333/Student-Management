@@ -34,13 +34,14 @@ export class LoginComponent {
   constructor() {
     effect(() => {
       if (this.authFacade.isAuthenticated()) {
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-        const destination =
-          returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
-            ? returnUrl
-            : '/dashboard';
+        // const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        // const destination =
+        //   returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
+        //     ? returnUrl
+        //     : '/dashboard';
 
-        void this.router.navigateByUrl(destination);
+        // void this.router.navigateByUrl(destination);
+        void this.router.navigateByUrl('/dashboard');
       }
     });
   }
