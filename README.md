@@ -125,6 +125,12 @@ Model lớp ban đầu không có giảng viên chủ nhiệm nên quan hệ đ�
 src/
 ├── app/
 │   ├── core/
+│   │   ├── auth/
+│   │   │   ├── facades/
+│   │   │   ├── guards/
+│   │   │   ├── models/
+│   │   │   ├── services/
+│   │   │   └── store/
 │   │   ├── interceptors/
 │   │   │   ├── client-header.interceptor.ts
 │   │   │   ├── error.interceptor.ts
@@ -134,15 +140,20 @@ src/
 │   │       └── notification.service.ts
 │   ├── features/
 │   │   ├── academics/  # Giảng viên, môn học, điểm và AcademicService
+│   │   ├── auth/
 │   │   ├── classes/    # Danh sách và chi tiết lớp
 │   │   ├── dashboard/
-│   │   └── students/  # CRUD, danh sách và hồ sơ chi tiết
+│   │   └── students/   # CRUD, danh sách và hồ sơ chi tiết
+│   ├── shared/
 │   ├── app.config.server.ts
 │   ├── app.config.ts
+│   ├── app.css
+│   ├── app.html
 │   ├── app.routes.server.ts
 │   ├── app.routes.ts
-│   ├── app.html
+│   ├── app.spec.ts
 │   └── app.ts
+├── index.html
 ├── main.server.ts
 ├── main.ts
 └── server.ts
