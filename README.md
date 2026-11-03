@@ -25,7 +25,7 @@ Luồng dữ liệu chính: `Component → Facade → Store → Service`. Compon
 
 ## 5. Cài đặt và chạy
 
-Cần cài Node.js tương thích với Angular CLI 22 và npm. Mở hai terminal tại thư mục workspace.
+Cần cài Node.js tương thích với Angular CLI 22 và npm. Mở hai terminal tại thư mục workspace. (với local thì dùng cd .. để mở thư mục chứa mock-api)
 
 ```bash
 cd mock-api

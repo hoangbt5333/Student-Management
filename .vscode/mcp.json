@@ -1,0 +1,30 @@
+{
+  "servers": {
+    "filesystem": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${workspaceFolder}"
+      ]
+    },
+
+    "github": {
+        "type": "http",
+        "url": "https://api.githubcopilot.com/mcp/readonly"
+    },
+
+    "student-mcp": {
+        "type": "stdio",
+        "command": "npm",
+        "args": [
+            "run",
+            "start"
+        ],
+        "cwd": "${workspaceFolder}/student-mcp"
+    }                                                                                   
+  }
+}
