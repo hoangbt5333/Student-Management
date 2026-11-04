@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { ClassList } from './class-list';
+import { ClassService } from '../../services/class.service';
+import { StudentService } from '../../../students/services/student.service';
 
 describe('ClassList', () => {
   let component: ClassList;
@@ -9,7 +12,21 @@ describe('ClassList', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ClassList],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ClassService,
+          useValue: {
+            getAll: () => of([]),
+          },
+        },
+        {
+          provide: StudentService,
+          useValue: {
+            getStudents: () => of([]),
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ClassList);

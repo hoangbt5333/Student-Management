@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, signal, effect, ViewChild } from '@angular/core';
 
-import type { Student } from '../../data-access/models/student.model';
+import type { Student } from '../../models/student.model';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
-import { StudentFacade } from '../../data-access/student.facade';
+import { StudentFacade } from '../../facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({

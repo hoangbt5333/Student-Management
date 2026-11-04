@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit } from '@angular/core';
-import { ClassFacade } from '../../../classes/data-access/class.facade';
-import { StudentFacade } from '../../../students/data-access/student.facade';
+import { ClassFacade } from '../../../classes/facades/class.facade';
+import { StudentFacade } from '../../../students/facades/student.facade';
 
 @Component({
   selector: 'app-dashboard',

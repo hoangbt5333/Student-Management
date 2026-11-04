@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ClassFacade } from '../../data-access/class.facade';
-import type { ClassModel } from '../../data-access/models/class.model';
+import { ClassFacade } from '../../facades/class.facade';
+import type { ClassModel } from '../../models/class.model';
 import { ClassForm } from '../class-form/class-form';
-import { StudentFacade } from '../../../students/data-access/student.facade';
+import { StudentFacade } from '../../../students/facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
@@ -14,7 +14,7 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 })
 export class ClassList implements OnInit {
   readonly facade = inject(ClassFacade);
-  readonly studentFacede = inject(StudentFacade);
+  readonly studentFacade = inject(StudentFacade);
   readonly authFacade = inject(AuthFacade);
 
   showForm = false;
@@ -39,7 +39,7 @@ export class ClassList implements OnInit {
 
   ngOnInit(): void {
     this.facade.loadClasses();
-    this.studentFacede.loadStudents();
+    this.studentFacade.loadStudents();
   }
 
   openAddForm(): void {
@@ -68,13 +68,13 @@ export class ClassList implements OnInit {
   }
 
   onDelete(classItem: ClassModel): void {
-    const students = this.studentFacede.students();
+    const students = this.studentFacade.students();
 
     const hasStudents = students.some(student =>
       student.classId
         ? student.classId === classItem.id
         : student.className === classItem.name
-    )
+    );
 
     if (hasStudents) {
       alert(`Không thể xóa lớp "${classItem.name}" vì vẫn còn sinh viên thuộc lớp này.`);

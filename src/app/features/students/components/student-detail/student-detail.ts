@@ -2,12 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { StudentService } from '../../data-access/student';
-import { ClassService } from '../../../classes/data-access/class.service';
-import { AcademicService } from '../../../academics/data-access/academic.service';
-import type { Student } from '../../data-access/models/student.model';
-import type { ClassModel } from '../../../classes/data-access/models/class.model';
-import type { Grade, Subject } from '../../../academics/data-access/academic.model';
+import { StudentService } from '../../services/student.service';
+import { ClassService } from '../../../classes/services/class.service';
+import { GradeService } from '../../../grades/services/grade.service';
+import { SubjectService } from '../../../subjects/services/subject.service';
+import type { Student } from '../../models/student.model';
+import type { ClassModel } from '../../../classes/models/class.model';
+import type { Grade } from '../../../grades/models/grade.model';
+import type { Subject } from '../../../subjects/models/subject.model';
 
 @Component({
   selector: 'app-student-detail',
@@ -20,7 +22,8 @@ export class StudentDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly studentService = inject(StudentService);
   private readonly classService = inject(ClassService);
-  private readonly academicService = inject(AcademicService);
+  private readonly gradeService = inject(GradeService);
+  private readonly subjectService = inject(SubjectService);
 
   readonly student = signal<Student | null>(null);
   readonly classItem = signal<ClassModel | null>(null);
@@ -44,8 +47,8 @@ export class StudentDetailComponent implements OnInit {
     forkJoin({
       students: this.studentService.getStudents(),
       classes: this.classService.getAll(),
-      grades: this.academicService.getGrades(),
-      subjects: this.academicService.getSubjects(),
+      grades: this.gradeService.getGrades(),
+      subjects: this.subjectService.getSubjects(),
     }).subscribe({
       next: ({ students, classes, grades, subjects }) => {
         const student = students.find((item) => item.id === id) ?? null;

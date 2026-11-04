@@ -75,6 +75,13 @@
       "name": "KHMT-K68-03",
       "department": "Khoa học máy tính",
       "academicYear": "2025-2026"
+    },
+    {
+      "name": "KTMT-K68-05",
+      "department": "Kỹ thuật máy tính",
+      "academicYear": "2025-2026",
+      "code": "CLS004",
+      "id": "qJvemMTMHRc"
     }
   ],
   "teachers": [
@@ -201,7 +208,7 @@
   ],
   "courses": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Angular Fundamentals",
       "description": "Learn Angular components and templates.",
       "instructor": "Nguyen An",
@@ -212,7 +219,7 @@
       "createdAt": "2026-10-01T08:00:00Z"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "TypeScript for Web Development",
       "description": "Understand types and interfaces.",
       "instructor": "Tran Minh",
@@ -223,7 +230,7 @@
       "createdAt": "2026-10-05T08:00:00Z"
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "Hello Angular",
       "description": "Explore Signals and RxJS.",
       "instructor": "Le Ha",
@@ -234,7 +241,7 @@
       "createdAt": "2026-10-10T08:00:00Z"
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "Angular for beginner",
       "description": "Explore Signals and RxJS.",
       "instructor": "Le Ha",
@@ -245,7 +252,7 @@
       "createdAt": "2026-10-10T08:00:00Z"
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "Advanced Angular",
       "description": "Explore Signals and RxJS.",
       "instructor": "Le Ha",
@@ -280,5 +287,6 @@
       "role": "student",
       "studentId": "SV001"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

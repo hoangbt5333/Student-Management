@@ -1,10 +1,10 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { ClassService } from '../../data-access/class.service';
-import { StudentService } from '../../../students/data-access/student';
-import type { ClassModel } from '../../data-access/models/class.model';
-import type { Student } from '../../../students/data-access/models/student.model';
+import { ClassService } from '../../services/class.service';
+import { StudentService } from '../../../students/services/student.service';
+import type { ClassModel } from '../../models/class.model';
+import type { Student } from '../../../students/models/student.model';
 
 @Component({
   selector: 'app-class-detail',

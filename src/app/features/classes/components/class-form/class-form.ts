@@ -1,6 +1,6 @@
 import { Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import type { ClassModel } from '../../data-access/models/class.model';
+import type { ClassModel } from '../../models/class.model';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({

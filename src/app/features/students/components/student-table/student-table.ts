@@ -1,6 +1,6 @@
 import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import type { Student } from '../../data-access/models/student.model';
+import type { Student } from '../../models/student.model';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 

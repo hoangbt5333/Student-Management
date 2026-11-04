@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
-import { StudentService } from '../../data-access/student';
-import type { Student } from '../../data-access/models/student.model';
+import { StudentService } from '../../services/student.service';
+import type { Student } from '../../models/student.model';
 import { StudentForm } from '../../components/student-form/student-form';
 import { StudentListComponent } from './student-list';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { ClassService } from '../../../classes/services/class.service';
 
 describe('StudentList', () => {
   let component: StudentListComponent;
@@ -19,6 +21,18 @@ describe('StudentList', () => {
           useValue: {
             getStudents: () => of([]),
             addStudent: (student: Student) => of(student),
+          },
+        },
+        {
+          provide: ClassService,
+          useValue: {
+            getAll: () => of([]),
+          },
+        },
+        {
+          provide: AuthFacade,
+          useValue: {
+            can: () => true,
           },
         },
       ],
@@ -37,7 +51,7 @@ describe('StudentList', () => {
   it('shows the student form only after clicking the add button', () => {
     expect(fixture.debugElement.query(By.directive(StudentForm))).toBeNull();
 
-    const addButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const addButton = fixture.nativeElement.querySelector('button.primary-button') as HTMLButtonElement;
     addButton.click();
     fixture.detectChanges();
 
@@ -53,20 +67,6 @@ describe('StudentList', () => {
 
     expect(fixture.debugElement.query(By.directive(StudentForm))).toBeNull();
   });
-
-  // it('should match Vietnamese names without typing their diacritics', () => {
-  //   const student = {
-  //     id: 'SV01',
-  //     name: 'Nguyễn Bình',
-  //     email: 'binh@example.com',
-  //     phone: '0123456789',
-  //   };
-
-  //   component.students.set([student]);
-  //   component.searchTerm.set('bi');
-
-  //   expect(component.filteredStudents()).toEqual([student]);
-  // });
 
   it('should clear the form after a student is added successfully', async () => {
     component.openAddStudent();

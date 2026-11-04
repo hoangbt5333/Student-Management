@@ -45,11 +45,25 @@ export const routes: Routes = [
                 .then((m) => m.CLASS_ROUTES)
     },
     {
-        path: '',
+        path: 'teachers',
         canActivate: [authGuard],
         loadChildren: () =>
-            import('./features/academics/academics.routes')
-                .then((m) => m.ACADEMIC_ROUTES)
+            import('./features/teachers/teachers.routes')
+                .then((m) => m.TEACHER_ROUTES)
+    },
+    {
+        path: 'subjects',
+        canActivate: [authGuard],
+        loadChildren: () =>
+            import('./features/subjects/subjects.routes')
+                .then((m) => m.SUBJECT_ROUTES)
+    },
+    {
+        path: 'grades',
+        canActivate: [authGuard],
+        loadChildren: () =>
+            import('./features/grades/grades.routes')
+                .then((m) => m.GRADE_ROUTES)
     },
     {
         path: '',
