@@ -1,16 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
-import { SubjectService } from '../../services/subject.service';
-import { TeacherService } from '../../../teachers/services/teacher.service';
-import type { Subject } from '../../models/subject.model';
-import type { Teacher } from '../../../teachers/models/teacher.model';
-
-interface GradeRef {
-  id: string;
-  subjectId: string;
-}
+import { SubjectFacade } from '../../facades/subject.facade';
+import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
+import { GradeFacade } from '../../../grades/facades/grade.facade';
 
 @Component({
   selector: 'app-subject-detail',
@@ -21,39 +13,49 @@ interface GradeRef {
 })
 export class SubjectDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly subjectService = inject(SubjectService);
-  private readonly teacherService = inject(TeacherService);
-  private readonly http = inject(HttpClient);
+  readonly subjectFacade = inject(SubjectFacade);
+  readonly teacherFacade = inject(TeacherFacade);
+  readonly gradeFacade = inject(GradeFacade);
 
-  readonly subject = signal<Subject | null>(null);
-  readonly teacher = signal<Teacher | null>(null);
-  readonly gradeCount = signal(0);
-  readonly loading = signal(true);
-  readonly errorMessage = signal('');
+  readonly subjectId = signal('');
+
+  readonly subject = computed(() => {
+    const id = this.subjectId();
+    if (!id) return null;
+    return this.subjectFacade.subjects().find((item) => item.id === id) ?? null;
+  });
+
+  readonly teacher = computed(() => {
+    const sub = this.subject();
+    if (!sub?.teacherId) return null;
+    return this.teacherFacade.teachers().find((item) => item.id === sub.teacherId) ?? null;
+  });
+
+  readonly gradeCount = computed(() => {
+    const id = this.subjectId();
+    if (!id) return 0;
+    return this.gradeFacade.grades().filter((grade) => grade.subjectId === id).length;
+  });
+
+  readonly loading = computed(() =>
+    this.subjectFacade.loading() || this.teacherFacade.loading() || this.gradeFacade.loading()
+  );
+
+  readonly errorMessage = computed(() => {
+    if (!this.subjectId()) return 'Không tìm thấy mã môn học.';
+    if (!this.loading() && !this.subject()) return 'Không tìm thấy môn học.';
+    return (
+      this.subjectFacade.errorMessage() ||
+      this.teacherFacade.errorMessage() ||
+      this.gradeFacade.errorMessage()
+    );
+  });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.loading.set(false);
-      this.errorMessage.set('Không tìm thấy mã môn học.');
-      return;
-    }
-
-    forkJoin({
-      subject: this.subjectService.getSubject(id),
-      teachers: this.teacherService.getTeachers(),
-      grades: this.http.get<GradeRef[]>('http://localhost:3001/grades')
-    }).subscribe({
-      next: ({ subject, teachers, grades }) => {
-        this.subject.set(subject);
-        this.teacher.set(teachers.find((item) => item.id === subject.teacherId) ?? null);
-        this.gradeCount.set(grades.filter((grade) => grade.subjectId === id).length);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Không thể tải thông tin môn học.');
-        this.loading.set(false);
-      },
-    });
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.subjectId.set(id);
+    this.subjectFacade.loadSubjects();
+    this.teacherFacade.loadTeachers();
+    this.gradeFacade.loadGrades();
   }
 }

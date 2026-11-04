@@ -1,105 +1,96 @@
 ---
 name: debugging
-description: Systematic debugging workflows and troubleshooting procedures for the Student Management application. Trigger when diagnosing errors, fixing broken unit tests, resolving build or SSR failures, troubleshooting SignalStore state issues, or debugging API communication problems.
+description: >
+  Systematic debugging workflows and troubleshooting procedures for the Student Management application.
+  Trigger when diagnosing errors, fixing broken unit tests, resolving build or SSR failures,
+  troubleshooting SignalStore state issues, or debugging API communication problems.
 ---
 
 # Debugging Skill — Student Management System
 
+This skill guides systematic diagnostic procedures and issue resolution across all layers of the Student Management application under **Option B (Explicit Layering)**.
+
+---
+
 ## 1. Troubleshooting Philosophy & Rules
 
-When debugging issues in `user-management`:
-1. **Reproduce with evidence:** Collect exact error messages, stack traces, and HTTP status codes before making changes.
-2. **Isolate the specific layer:** Pinpoint whether the bug originates in:
-   - **Template / Component UI** (bindings, signal reads, `@if` / `@for` control flow)
-   - **Facade / Store** (state mutations, computed derivations, `rxMethod` operators)
-   - **Service / Interceptor** (HTTP headers, URL construction, error catching)
-   - **API / Mock Data** (`json-server` port 3001, `db.json` schema)
-   - **SSR / Hydration** (Node.js runtime vs Browser environment)
-   - **Test Bed** (missing mocks or providers in Vitest specs)
-3. **Apply the minimal surgical fix:** Do not rewrite or refactor unrelated files when fixing a bug.
-4. **Verify through automated checks:** Run `npm test` or `npm run build` to confirm resolution without regressions.
+1. **Reproduce with Exact Evidence**: Capture the complete error message, stack trace, and exit codes before modifying any files.
+2. **Layer-by-Layer Isolation**: Trace bugs along the explicit layer path:
+   `Component UI ➔ Facade ➔ SignalStore ➔ Service ➔ REST API`.
+3. **Minimal Surgical Edit**: Fix only the root cause. Avoid broad rewrites of functional code outside the bug's scope.
+4. **Automated Verification**: Always verify fixes by running the full verification pipeline:
+   ```bash
+   cmd /c npm run verify
+   ```
 
 ---
 
-## 2. Common Project Failure Modes & Solutions
+## 2. Quick Troubleshooting Matrix
 
-### 2.1. Vitest Test Failures
-- **Symptom:** `AssertionError: expected null not to be null` when querying elements in tests (e.g. [student-list.spec.ts](file:///c:/Users/hoang/Desktop/VSCode/user-management/src/app/features/students/components/student-list/student-list.spec.ts)).
-  - **Root Cause:** The template guards elements with `@if (authFacade.can(...))` or `@if (authFacade.role() === ...)`, but the test bed did not mock `AuthFacade`. By default, unauthenticated state returns `false`, causing the element not to be rendered.
-  - **Solution:** Provide a mock `AuthFacade` in `TestBed.configureTestingModule({ providers: [...] })` with methods like `can: () => true` or the required role/permissions.
-- **Symptom:** `Http failure response for http://localhost:3001/...: 500 Internal Server Error` in specs.
-  - **Root Cause:** Testing stores with `HttpTestingController` where unexpected requests were emitted or not properly flushed.
-  - **Solution:** Verify `httpMock.expectOne(...)` and call `httpMock.verify()` in `afterEach()`.
-
-### 2.2. SSR & Hydration Crashes
-- **Symptom:** `ReferenceError: sessionStorage is not defined` or `window is not defined` during `npm run build` or SSR runtime (`npm run serve:ssr:user-management`).
-  - **Root Cause:** Accessing browser-only APIs during prerender or server execution without checking runtime environment.
-  - **Solution:** Guard browser APIs with `if (typeof sessionStorage !== 'undefined')` or use `isPlatformBrowser(inject(PLATFORM_ID))`.
-  - **Check Server Routes:** Inspect [src/app/app.routes.server.ts](file:///c:/Users/hoang/Desktop/VSCode/user-management/src/app/app.routes.server.ts). Parameterized routes (`:id`) must have `renderMode: RenderMode.Client` to avoid executing dynamic data fetching on Node.js at build time.
-
-### 2.3. SignalStore & Reactivity Issues
-- **Symptom:** UI does not update after adding, editing, or deleting an entity.
-  - **Root Cause 1:** Missing `patchState(store, ...)` inside `tap()` or `finalize()` in `rxMethod`.
-  - **Root Cause 2:** Using `exhaustMap` vs `switchMap`: if an action is fired while another request is active, `exhaustMap` ignores subsequent triggers.
-  - **Root Cause 3:** Store reloading data but replacing state with an array reference that failed to trigger downstream derivations. Check `computed()` selectors.
-- **Symptom:** Maximum call stack size exceeded or infinite loop in components.
-  - **Root Cause:** Modifying a Signal inside an `effect()` that directly or indirectly reads the same Signal, triggering cyclic updates.
-  - **Solution:** Remove circular Signal dependency or use `untracked()` to read values without subscribing.
-
-### 2.4. Reactive Form Quirks
-- **Symptom:** Submitting an update loses the entity ID (`undefined` or empty string).
-  - **Root Cause:** The ID control is disabled (`this.form.controls.id.disable()`) and the submission reads `this.form.value` instead of `this.form.getRawValue()`.
-  - **Solution:** Always use `this.form.getRawValue()` when controls may be disabled.
-- **Symptom:** Form values do not sync when selecting an item to edit.
-  - **Root Cause:** `effect()` in constructor not triggering or not referencing the input signal (`this.student()`, `this.classItem()`).
-  - **Solution:** Verify that the signal is called inside the `effect()` body (`const item = this.item()`) so Angular registers the dependency.
-
-### 2.5. Mock API & json-server Communication
-- **Symptom:** HTTP Status 0 (`Không thể kết nối đến máy chủ. Hãy kiểm tra API`).
-  - **Root Cause:** The json-server backend is not running on port 3001.
-  - **Verification:** Run `npx json-server --watch db.json --port 3001` or check if port 3001 is listening.
-- **Symptom:** Entity ID becomes a random alphanumeric string (e.g. `"R2J5VkW"`).
-  - **Root Cause:** `StudentService.addStudent` or `ClassService.create` strips `id` before `POST`, causing json-server to generate a random ID and save the original code under `code`.
-  - **Solution:** When displaying, filtering, or checking uniqueness, always check both: `item.code ?? item.id`.
-- **Symptom:** HTTP 404 on Update/Delete.
-  - **Root Cause 1:** Missing `encodeURIComponent(id)` when passing IDs containing special characters.
-  - **Root Cause 2:** Wrong HTTP method used (e.g. using `PUT` for `classes` instead of `PATCH`, or calling `AcademicService` which lacks `deleteGrade()`).
-
-### 2.6. Routing & Auth Flow Bugs
-- **Symptom:** User is redirected to `/dashboard` instead of the original page after logging in.
-  - **Root Cause:** [login.component.ts](file:///c:/Users/hoang/Desktop/VSCode/user-management/src/app/features/auth/components/login/login.component.ts#L37-L44) has the `returnUrl` parsing commented out.
-  - **Solution:** Restore query param extraction (`this.route.snapshot.queryParamMap.get('returnUrl')`) and validate against open-redirect before navigating.
-- **Symptom:** Immediate redirect to `/forbidden` upon navigating to a route.
-  - **Root Cause:** `roleGuard` in [role.guard.ts](file:///c:/Users/hoang/Desktop/VSCode/user-management/src/app/core/auth/guards/role.guard.ts) checks `route.data['roles']`. Verify the logged-in user's role (`authFacade.role()`) matches the allowed roles.
+| Symptom | Likely Layer | Root Cause | Immediate Action |
+| :--- | :--- | :--- | :--- |
+| **`check:arch` fails** | Architecture Gate | Component directly imports Service or Store; Facade imports `HttpClient`. | Decouple via Facade; remove disallowed imports. |
+| **`AssertionError: expected null` in tests** | Template / RBAC | `@if (authFacade.can(...))` hides element in unauthenticated test run. | Provide mock `AuthFacade` returning `can: () => true`. |
+| **`ECONNREFUSED :3001` in specs** | Test Bed | Service not mocked in `TestBed`, attempting real HTTP calls. | Mock service with `{ getAll: () => of([]) }`. |
+| **`ReferenceError: sessionStorage`** | SSR Prerender | Browser object accessed during Node.js prerender. | Guard with `if (typeof sessionStorage !== 'undefined')`. |
+| **Form loses ID on edit submit** | Reactive Form | ID control is disabled and submission reads `form.value`. | Use `form.getRawValue()` instead of `form.value`. |
+| **UI does not update after save** | SignalStore | Missing `patchState` in `tap()` or dropped in `exhaustMap`. | Ensure `patchState` is called on HTTP response in `rxMethod`. |
+| **PowerShell `PSSecurityException`** | Environment | Windows execution policy blocks `npm.ps1`. | Prefix command with `cmd /c npm ...`. |
 
 ---
 
-## 3. Step-by-Step Diagnostic Protocol
+## 3. The 4-Phase Diagnostic Protocol
 
-When tasked with debugging an issue:
+```mermaid
+flowchart TD
+    P1["Phase 1: Triage & Reproduction\n(Capture command, logs, stack trace)"] --> P2["Phase 2: Layer-by-Layer Tracing\n(Component -> Facade -> Store -> Service -> API)"]
+    P2 --> P3["Phase 3: Surgical Root-Cause Fix\n(Minimal edit, preserve contracts)"]
+    P3 --> P4["Phase 4: Full Automated Verification\n(cmd /c npm run verify)"]
+```
 
-1. **Phase 1: Triage & Reproduction**
-   - Run the relevant command (`npm test`, `npm run build`, or check dev server logs).
-   - Locate the exact file and line number from the stack trace.
-2. **Phase 2: Trace the Data Path**
-   - Trace backwards: UI event -> Facade -> Store -> Service -> Interceptor -> API.
-   - For UI issues: check `@if`, `can(...)`, signals, form controls.
-   - For async issues: check RxJS pipes, error interceptor mapping, network response.
-3. **Phase 3: Formulate & Apply Hypothesis**
-   - Identify the single root cause.
-   - Make the smallest surgical code edit addressing that cause.
-4. **Phase 4: Verification**
-   - Re-run the failing test or build to confirm the fix works.
-   - Run the full test suite (`npm test`) to guarantee no regressions.
+### Phase 1: Triage & Reproduction
+1. Execute the failing step:
+   - For architecture violations: `cmd /c npm run check:arch`
+   - For build/SSR errors: `cmd /c npm run build`
+   - For test failures: `cmd /c npm run test:ci`
+2. Record the exact failure message, file, and line number.
+
+### Phase 2: Layer-by-Layer Tracing
+- **UI / Template**: Are bindings, `@if` permissions, and signals emitting expected values?
+- **Facade**: Is the facade exposing the correct signals and forwarding calls to Store?
+- **Store**: Is `patchState` invoked? Is `rxMethod` handling errors without crashing?
+- **Service**: Is the HTTP endpoint correct (`http://localhost:3001/...`)? Is the ID URL-encoded?
+- **Mock API**: Is `json-server` running and `db.json` accessible?
+
+### Phase 3: Surgical Root-Cause Fix
+- Formulate a testable hypothesis.
+- Apply the minimal code modification needed to solve the problem.
+- Preserve existing comments, docstrings, and unrelated code.
+
+### Phase 4: Full Automated Verification
+Execute the 3-in-1 verification pipeline:
+```bash
+cmd /c npm run verify
+```
+Confirm:
+- Architecture boundary checks: **PASSED (0 violations)**.
+- Angular build & SSR build: **PASSED (0 errors)**.
+- Vitest test suite: **PASSED (100% pass rate)**.
 
 ---
 
 ## 4. Debugging Response Format
 
-When helping debug an issue, provide:
+When reporting debugging findings to the user or team, provide:
+1. **Problem Summary**: Concise description of what failed and under what conditions.
+2. **Root Cause Analysis**: The exact file, line number, and mechanical reason for the failure.
+3. **Surgical Fix**: The precise code change applied.
+4. **Verification Evidence**: Output from `npm run verify` demonstrating green checks.
 
-1. **Problem Summary:** Clear explanation of what failed and why.
-2. **Root Cause Analysis:** Specific file paths, line references, and the underlying mechanism of the bug.
-3. **Proposed Fix:** The exact code changes needed (file-by-file diffs or replacements).
-4. **Verification Evidence:** Results of running tests, build commands, or manual verification steps.
-5. **Regression Risk Assessment:** Note if any related features or edge cases could be affected.
+---
+
+## 5. References
+
+- Detailed troubleshooting patterns: [debugging-guide.md](references/debugging-guide.md)
+- 4-Tier validation rules: `.github/skills/code-validation/references/validation-rules.md`
+- Architecture boundaries: `.github/skills/project-architecture/references/architecture.md`

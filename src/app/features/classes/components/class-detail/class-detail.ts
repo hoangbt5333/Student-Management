@@ -1,10 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { ClassService } from '../../services/class.service';
-import { StudentService } from '../../../students/services/student.service';
-import type { ClassModel } from '../../models/class.model';
-import type { Student } from '../../../students/models/student.model';
+import { ClassFacade } from '../../facades/class.facade';
+import { StudentFacade } from '../../../students/facades/student.facade';
 
 @Component({
   selector: 'app-class-detail',
@@ -15,34 +12,37 @@ import type { Student } from '../../../students/models/student.model';
 })
 export class ClassDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly classService = inject(ClassService);
-  private readonly studentService = inject(StudentService);
+  readonly classFacade = inject(ClassFacade);
+  readonly studentFacade = inject(StudentFacade);
 
-  readonly classItem = signal<ClassModel | null>(null);
-  readonly students = signal<Student[]>([]);
-  readonly loading = signal(true);
-  readonly errorMessage = signal('');
+  readonly classId = signal('');
+
+  readonly classItem = computed(() => {
+    const id = this.classId();
+    if (!id) return null;
+    return this.classFacade.classes().find((item) => item.id === id) ?? null;
+  });
+
+  readonly students = computed(() => {
+    const id = this.classId();
+    const currentClass = this.classItem();
+    if (!id) return [];
+    return this.studentFacade.students().filter(
+      (student) => student.classId === id || (!student.classId && student.className === currentClass?.name)
+    );
+  });
+
+  readonly loading = computed(() => this.classFacade.loading() || this.studentFacade.loading());
+  readonly errorMessage = computed(() => {
+    if (!this.classId()) return 'Không tìm thấy mã lớp.';
+    if (!this.loading() && !this.classItem()) return 'Không tìm thấy lớp học.';
+    return this.classFacade.errorMessage() || this.studentFacade.errorMessage();
+  });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.errorMessage.set('Không tìm thấy mã lớp.');
-      this.loading.set(false);
-      return;
-    }
-
-    forkJoin({ classes: this.classService.getAll(), students: this.studentService.getStudents() }).subscribe({
-      next: ({ classes, students }) => {
-        const classItem = classes.find((item) => item.id === id) ?? null;
-        this.classItem.set(classItem);
-        this.students.set(students.filter((student) => student.classId === id || (!student.classId && student.className === classItem?.name)));
-        if (!classItem) this.errorMessage.set('Không tìm thấy lớp học.');
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Không thể tải thông tin lớp học. Hãy kiểm tra Mock API.');
-        this.loading.set(false);
-      },
-    });
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.classId.set(id);
+    this.classFacade.loadClasses();
+    this.studentFacade.loadStudents();
   }
 }

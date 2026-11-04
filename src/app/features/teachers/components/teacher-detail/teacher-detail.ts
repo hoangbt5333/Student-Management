@@ -1,17 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
-import { TeacherService } from '../../services/teacher.service';
-import type { Teacher } from '../../models/teacher.model';
-
-interface SubjectRef {
-  id: string;
-  code?: string;
-  name: string;
-  credits: number;
-  teacherId?: string;
-}
+import { TeacherFacade } from '../../facades/teacher.facade';
+import { SubjectFacade } from '../../../subjects/facades/subject.facade';
 
 @Component({
   selector: 'app-teacher-detail',
@@ -22,35 +12,34 @@ interface SubjectRef {
 })
 export class TeacherDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly teacherService = inject(TeacherService);
-  private readonly http = inject(HttpClient);
+  readonly teacherFacade = inject(TeacherFacade);
+  readonly subjectFacade = inject(SubjectFacade);
 
-  readonly teacher = signal<Teacher | null>(null);
-  readonly subjects = signal<SubjectRef[]>([]);
-  readonly loading = signal(true);
-  readonly errorMessage = signal('');
+  readonly teacherId = signal('');
+
+  readonly teacher = computed(() => {
+    const id = this.teacherId();
+    if (!id) return null;
+    return this.teacherFacade.teachers().find((item) => item.id === id) ?? null;
+  });
+
+  readonly subjects = computed(() => {
+    const id = this.teacherId();
+    if (!id) return [];
+    return this.subjectFacade.subjects().filter((subject) => subject.teacherId === id);
+  });
+
+  readonly loading = computed(() => this.teacherFacade.loading() || this.subjectFacade.loading());
+  readonly errorMessage = computed(() => {
+    if (!this.teacherId()) return 'Không tìm thấy mã giảng viên.';
+    if (!this.loading() && !this.teacher()) return 'Không tìm thấy giảng viên.';
+    return this.teacherFacade.errorMessage() || this.subjectFacade.errorMessage();
+  });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.loading.set(false);
-      this.errorMessage.set('Không tìm thấy mã giảng viên.');
-      return;
-    }
-
-    forkJoin({
-      teacher: this.teacherService.getTeacher(id),
-      subjects: this.http.get<SubjectRef[]>('http://localhost:3001/subjects')
-    }).subscribe({
-      next: ({ teacher, subjects }) => {
-        this.teacher.set(teacher);
-        this.subjects.set(subjects.filter((subject) => subject.teacherId === id));
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Không thể tải hồ sơ giảng viên.');
-        this.loading.set(false);
-      },
-    });
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.teacherId.set(id);
+    this.teacherFacade.loadTeachers();
+    this.subjectFacade.loadSubjects();
   }
 }

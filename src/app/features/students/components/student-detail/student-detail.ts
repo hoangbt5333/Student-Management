@@ -1,15 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { StudentService } from '../../services/student.service';
-import { ClassService } from '../../../classes/services/class.service';
-import { GradeService } from '../../../grades/services/grade.service';
-import { SubjectService } from '../../../subjects/services/subject.service';
-import type { Student } from '../../models/student.model';
-import type { ClassModel } from '../../../classes/models/class.model';
-import type { Grade } from '../../../grades/models/grade.model';
-import type { Subject } from '../../../subjects/models/subject.model';
+import { StudentFacade } from '../../facades/student.facade';
+import { ClassFacade } from '../../../classes/facades/class.facade';
+import { GradeFacade } from '../../../grades/facades/grade.facade';
+import { SubjectFacade } from '../../../subjects/facades/subject.facade';
 
 @Component({
   selector: 'app-student-detail',
@@ -20,50 +15,60 @@ import type { Subject } from '../../../subjects/models/subject.model';
 })
 export class StudentDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly studentService = inject(StudentService);
-  private readonly classService = inject(ClassService);
-  private readonly gradeService = inject(GradeService);
-  private readonly subjectService = inject(SubjectService);
+  readonly studentFacade = inject(StudentFacade);
+  readonly classFacade = inject(ClassFacade);
+  readonly gradeFacade = inject(GradeFacade);
+  readonly subjectFacade = inject(SubjectFacade);
 
-  readonly student = signal<Student | null>(null);
-  readonly classItem = signal<ClassModel | null>(null);
-  readonly grades = signal<Grade[]>([]);
-  readonly subjects = signal<Subject[]>([]);
-  readonly loading = signal(true);
-  readonly errorMessage = signal('');
+  readonly studentId = signal('');
+
+  readonly student = computed(() => {
+    const id = this.studentId();
+    if (!id) return null;
+    return this.studentFacade.students().find((item) => item.id === id) ?? null;
+  });
+
+  readonly classItem = computed(() => {
+    const st = this.student();
+    if (!st) return null;
+    return this.classFacade.classes().find((item) => item.id === st.classId || item.name === st.className) ?? null;
+  });
+
+  readonly grades = computed(() => {
+    const id = this.studentId();
+    if (!id) return [];
+    return this.gradeFacade.grades().filter((grade) => grade.studentId === id);
+  });
+
+  readonly subjects = this.subjectFacade.subjects;
+
+  readonly loading = computed(() =>
+    this.studentFacade.loading() || this.classFacade.loading() || this.gradeFacade.loading() || this.subjectFacade.loading()
+  );
+
+  readonly errorMessage = computed(() => {
+    if (!this.studentId()) return 'Không tìm thấy mã sinh viên.';
+    if (!this.loading() && !this.student()) return 'Không tìm thấy sinh viên.';
+    return (
+      this.studentFacade.errorMessage() ||
+      this.classFacade.errorMessage() ||
+      this.gradeFacade.errorMessage() ||
+      this.subjectFacade.errorMessage()
+    );
+  });
+
   readonly average = computed(() => {
     const scores = this.grades().map((grade) => grade.score).filter((score) => score >= 0 && score <= 10);
     return scores.length ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2) : 'Chưa có';
   });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.errorMessage.set('Không tìm thấy mã sinh viên.');
-      this.loading.set(false);
-      return;
-    }
-
-    forkJoin({
-      students: this.studentService.getStudents(),
-      classes: this.classService.getAll(),
-      grades: this.gradeService.getGrades(),
-      subjects: this.subjectService.getSubjects(),
-    }).subscribe({
-      next: ({ students, classes, grades, subjects }) => {
-        const student = students.find((item) => item.id === id) ?? null;
-        this.student.set(student);
-        this.classItem.set(classes.find((item) => item.id === student?.classId || item.name === student?.className) ?? null);
-        this.grades.set(grades.filter((grade) => grade.studentId === id));
-        this.subjects.set(subjects);
-        if (!student) this.errorMessage.set('Không tìm thấy sinh viên.');
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Không thể tải hồ sơ sinh viên. Hãy kiểm tra Mock API.');
-        this.loading.set(false);
-      },
-    });
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.studentId.set(id);
+    this.studentFacade.loadStudents();
+    this.classFacade.loadClasses();
+    this.gradeFacade.loadGrades();
+    this.subjectFacade.loadSubjects();
   }
 
   subjectName(id: string): string {

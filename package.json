@@ -8,6 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false",
+    "check:arch": "node scripts/check-architecture.mjs",
+    "verify": "npm run check:arch && npm run build && npm run test:ci",
     "serve:ssr:user-management": "node dist/user-management/server/server.mjs"
   },
   "private": true,
