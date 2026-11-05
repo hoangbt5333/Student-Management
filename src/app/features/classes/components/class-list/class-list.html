@@ -12,12 +12,17 @@
     }
   </header>
 
-  @if (showForm) {
-    <app-class-form
-      [classItem]="editingClass"
-      (saved)="onSave($event)"
-      (cancelled)="closeForm()"
-    />
+  @if (showForm()) {
+    <app-modal
+      [title]="editingClass() ? 'Cập nhật lớp học' : 'Thêm lớp học mới'"
+      (close)="closeForm()"
+    >
+      <app-class-form
+        [classItem]="editingClass()"
+        (saved)="onSave($event)"
+        (cancelled)="closeForm()"
+      />
+    </app-modal>
   }
 
   @if (facade.errorMessage()) {

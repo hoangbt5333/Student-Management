@@ -1,9 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
 import { ClassList } from './class-list';
 import { ClassService } from '../../services/class.service';
 import { StudentService } from '../../../students/services/student.service';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ClassForm } from '../class-form/class-form';
+import type { ClassModel } from '../../models/class.model';
 
 describe('ClassList', () => {
   let component: ClassList;
@@ -36,5 +40,51 @@ describe('ClassList', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should not display modal initially', () => {
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
+  });
+
+  it('should show modal with add class title when openAddForm is called', () => {
+    component.openAddForm();
+    fixture.detectChanges();
+
+    const modalDe = fixture.debugElement.query(By.directive(ModalComponent));
+    expect(modalDe).not.toBeNull();
+    const modalComp = modalDe.componentInstance as ModalComponent;
+    expect(modalComp.title()).toBe('Thêm lớp học mới');
+    expect(fixture.debugElement.query(By.directive(ClassForm))).not.toBeNull();
+  });
+
+  it('should show modal with edit class title and data when openEditForm is called', () => {
+    const mockClass: ClassModel = {
+      id: 'CLS001',
+      code: 'CLS001',
+      name: 'CNTT-K68-01',
+      department: 'Công nghệ thông tin',
+      academicYear: '2025-2026'
+    };
+
+    component.openEditForm(mockClass);
+    fixture.detectChanges();
+
+    const modalDe = fixture.debugElement.query(By.directive(ModalComponent));
+    expect(modalDe).not.toBeNull();
+    const modalComp = modalDe.componentInstance as ModalComponent;
+    expect(modalComp.title()).toBe('Cập nhật lớp học');
+    expect(component.editingClass()).toEqual(mockClass);
+  });
+
+  it('should close modal when closeForm is called', () => {
+    component.openAddForm();
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).not.toBeNull();
+
+    component.closeForm();
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
+    expect(component.editingClass()).toBeNull();
   });
 });

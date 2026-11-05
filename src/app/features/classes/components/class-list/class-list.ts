@@ -1,13 +1,14 @@
-import { Component, inject, OnInit, effect } from '@angular/core';
+import { Component, inject, OnInit, effect, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ClassFacade } from '../../facades/class.facade';
 import type { ClassModel } from '../../models/class.model';
 import { ClassForm } from '../class-form/class-form';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { StudentFacade } from '../../../students/facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
-  imports: [ClassForm, RouterLink],
+  imports: [ClassForm, RouterLink, ModalComponent],
   selector: 'app-class-list',
   styleUrl: './class-list.css',
   templateUrl: './class-list.html',
@@ -17,8 +18,8 @@ export class ClassList implements OnInit {
   readonly studentFacade = inject(StudentFacade);
   readonly authFacade = inject(AuthFacade);
 
-  showForm = false;
-  editingClass: ClassModel | null = null;
+  readonly showForm = signal(false);
+  readonly editingClass = signal<ClassModel | null>(null);
 
   private waitingForSave = false;
   private readonly saveEffect = effect(() => {
@@ -43,20 +44,20 @@ export class ClassList implements OnInit {
   }
 
   openAddForm(): void {
-    this.editingClass = null;
-    this.showForm = true;
+    this.editingClass.set(null);
+    this.showForm.set(true);
     this.facade.clearMessages();
   }
 
   openEditForm(classItem: ClassModel): void {
-    this.editingClass = { ...classItem };
-    this.showForm = true;
+    this.editingClass.set({ ...classItem });
+    this.showForm.set(true);
     this.facade.clearMessages();
   }
 
   closeForm(): void {
-    this.showForm = false;
-    this.editingClass = null;
+    this.showForm.set(false);
+    this.editingClass.set(null);
   }
 
   onSave(event: {
