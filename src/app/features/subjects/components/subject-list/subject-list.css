@@ -2,6 +2,16 @@
   display: block;
 }
 
+/* Modal Form Styles */
+.form-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  width: 100%;
+}
+
 /* Search Toolbar */
 .search-toolbar {
   display: flex;

@@ -8,6 +8,7 @@ import { SubjectListComponent } from './subject-list';
 import { SubjectFacade } from '../../facades/subject.facade';
 import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import type { Subject } from '../../models/subject.model';
 import type { Teacher } from '../../../teachers/models/teacher.model';
 
@@ -106,5 +107,33 @@ describe('SubjectListComponent', () => {
 
     expect(component.showForm()).toBe(true);
     expect(fixture.debugElement.query(By.css('.form-card'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeTruthy();
+    const modalComp = fixture.debugElement.query(By.directive(ModalComponent)).componentInstance as ModalComponent;
+    expect(modalComp.title()).toBe('Thêm môn học mới');
+  });
+
+  it('should show modal with edit title and populate data on edit', () => {
+    const subject = mockSubjectsSignal()[0];
+    component.edit(subject);
+    fixture.detectChanges();
+
+    expect(component.showForm()).toBe(true);
+    const modalDe = fixture.debugElement.query(By.directive(ModalComponent));
+    expect(modalDe).toBeTruthy();
+    const modalComp = modalDe.componentInstance as ModalComponent;
+    expect(modalComp.title()).toBe('Cập nhật môn học');
+    expect(component.editingId()).toBe('MH001');
+    expect(component.form.getRawValue().name).toBe('Lap trinh Web');
+  });
+
+  it('should close modal when closeForm is called', () => {
+    component.openAdd();
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeTruthy();
+
+    component.closeForm();
+    fixture.detectChanges();
+    expect(component.showForm()).toBe(false);
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
   });
 });

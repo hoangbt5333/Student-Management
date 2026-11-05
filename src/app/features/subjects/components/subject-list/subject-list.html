@@ -13,12 +13,11 @@
   </header>
 
   @if (showForm()) {
-    <section class="form-card">
-      <header class="form-header">
-        <h2>{{ editingId() ? 'Cập nhật môn học' : 'Thêm môn học mới' }}</h2>
-      </header>
-
-      <form [formGroup]="form" (ngSubmit)="save()">
+    <app-modal
+      [title]="editingId() ? 'Cập nhật môn học' : 'Thêm môn học mới'"
+      (close)="closeForm()"
+    >
+      <form class="form-card subject-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="form-grid">
           <div class="form-group field">
             <label for="subjectId">Mã môn học *</label>
@@ -26,6 +25,7 @@
               id="subjectId"
               formControlName="id"
               placeholder="Ví dụ: MH001"
+              [readonly]="!!editingId()"
             />
             @if (form.controls.id.touched && form.controls.id.invalid) {
               <small class="error form-error field-error">Mã bắt buộc, định dạng MH001.</small>
@@ -79,7 +79,7 @@
           </button>
         </footer>
       </form>
-    </section>
+    </app-modal>
   }
 
   @if (errorMessage()) {

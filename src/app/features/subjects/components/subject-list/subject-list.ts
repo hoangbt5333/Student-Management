@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { SubjectFacade } from '../../facades/subject.facade';
 import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
 import type { Subject } from '../../models/subject.model';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 interface GradeRef {
@@ -15,7 +16,7 @@ interface GradeRef {
 @Component({
   selector: 'app-subject-list',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent],
   templateUrl: './subject-list.html',
   styleUrl: './subject-list.css',
 })
