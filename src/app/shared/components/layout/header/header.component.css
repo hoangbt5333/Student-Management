@@ -1,0 +1,71 @@
+:host {
+  display: block;
+}
+
+.app-header {
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  background: var(--color-slate-800, #1e293b);
+  color: #ffffff;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: var(--font-size-xl, 1.25rem);
+  font-weight: var(--font-weight-bold, 700);
+  line-height: var(--line-height-tight, 1.25);
+  color: #ffffff;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5, 20px);
+  margin-top: var(--space-3, 12px);
+}
+
+nav a {
+  color: var(--color-slate-300, #cbd5e1);
+  text-decoration: none;
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: var(--font-weight-medium, 500);
+  transition: color var(--transition-fast, 150ms cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+nav a:hover {
+  color: #ffffff;
+}
+
+nav a.active {
+  color: #ffffff;
+  font-weight: var(--font-weight-bold, 700);
+  border-bottom: 2px solid var(--color-info, #38bdf8);
+}
+
+.nav-auth {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.nav-auth span {
+  color: var(--color-slate-200, #e2e8f0);
+}
+
+.nav-auth button {
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: var(--font-size-xs, 0.75rem);
+  background-color: var(--color-slate-700, #334155);
+  color: #ffffff;
+  border: 1px solid var(--color-slate-600, #475569);
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 150ms cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.nav-auth button:hover {
+  background-color: var(--color-slate-600, #475569);
+}

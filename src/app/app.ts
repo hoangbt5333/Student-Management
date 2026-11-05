@@ -1,21 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { LoadingService } from './core/services/loading.service';
 import { NotificationService } from './core/services/notification.service';
-import { AuthFacade } from './core/auth/facades/auth.facade';
-
-
+import { HeaderComponent } from './shared/components/layout/header/header.component';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, HeaderComponent],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
 })
 export class App {
-   private loadingService = inject(LoadingService);
-   readonly notification = inject(NotificationService);
-   readonly authFacade = inject(AuthFacade);
+  private readonly loadingService = inject(LoadingService);
+  readonly notification = inject(NotificationService);
 
-   loading = this.loadingService.loading;
+  readonly loading = this.loadingService.loading;
 }
