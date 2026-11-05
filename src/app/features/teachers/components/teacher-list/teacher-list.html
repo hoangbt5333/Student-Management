@@ -13,12 +13,11 @@
   </header>
 
   @if (showForm()) {
-    <section class="form-card">
-      <header class="form-header">
-        <h2>{{ editingId() ? 'Cập nhật giảng viên' : 'Thêm giảng viên mới' }}</h2>
-      </header>
-
-      <form [formGroup]="form" (ngSubmit)="save()">
+    <app-modal
+      [title]="editingId() ? 'Cập nhật giảng viên' : 'Thêm giảng viên mới'"
+      (close)="closeForm()"
+    >
+      <form class="form-card teacher-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="form-grid">
           <div class="form-group field">
             <label for="teacherId">Mã giảng viên *</label>
@@ -26,6 +25,7 @@
               id="teacherId"
               formControlName="id"
               placeholder="Ví dụ: GV001"
+              [readonly]="!!editingId()"
             />
             @if (form.controls.id.touched && form.controls.id.invalid) {
               <small class="error form-error field-error">Mã bắt buộc, định dạng GV001.</small>
@@ -52,7 +52,10 @@
               formControlName="email"
               placeholder="Ví dụ: nguyenvanb@university.edu.vn"
             />
-            @if (form.controls.email.touched && form.controls.email.invalid) {
+            @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+              <small class="error form-error field-error">Vui lòng nhập email.</small>
+            }
+            @if (form.controls.email.touched && form.controls.email.hasError('email')) {
               <small class="error form-error field-error">Email không đúng định dạng.</small>
             }
           </div>
@@ -79,7 +82,7 @@
           </button>
         </footer>
       </form>
-    </section>
+    </app-modal>
   }
 
   @if (errorMessage()) {

@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { TeacherFacade } from '../../facades/teacher.facade';
 import type { Teacher } from '../../models/teacher.model';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 interface SubjectRef {
@@ -14,7 +15,7 @@ interface SubjectRef {
 @Component({
   selector: 'app-teacher-list',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent],
   templateUrl: './teacher-list.html',
   styleUrl: './teacher-list.css',
 })
