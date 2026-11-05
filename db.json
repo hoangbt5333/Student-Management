@@ -7852,10 +7852,10 @@
       "displayName": "Lê Hoàng",
       "email": "hoang.lh003@university.edu.vn",
       "role": "student",
-      "status": "inactive",
+      "status": "active",
       "studentId": "SV003",
       "createdAt": "2026-01-03T09:00:00.000Z",
-      "updatedAt": "2026-11-05T09:34:03.057Z"
+      "updatedAt": "2026-11-05T10:13:43.667Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
