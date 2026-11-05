@@ -1,0 +1,29 @@
+<div
+  class="modal-backdrop"
+  (click)="onBackdropClick($event)"
+  role="presentation"
+>
+  <div
+    class="modal-dialog modal-{{ size() }}"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="title()"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="modal-header">
+      <h2 class="modal-title">{{ title() }}</h2>
+      <button
+        type="button"
+        class="modal-close-button"
+        aria-label="Đóng popup"
+        (click)="onClose()"
+      >
+        ✕
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <ng-content />
+    </div>
+  </div>
+</div>

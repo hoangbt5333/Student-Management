@@ -12,11 +12,16 @@
   </header>
 
   @if (showForm()) {
-    <app-student-form
-      [student]="selectedStudent()"
-      (save)="saveStudent($event)"
-      (cancel)="cancelEdit()"
-    />
+    <app-modal
+      [title]="selectedStudent() ? 'Cập nhật sinh viên' : 'Thêm sinh viên mới'"
+      (close)="cancelEdit()"
+    >
+      <app-student-form
+        [student]="selectedStudent()"
+        (save)="saveStudent($event)"
+        (cancel)="cancelEdit()"
+      />
+    </app-modal>
   }
 
   @if (facade.errorMessage()) {

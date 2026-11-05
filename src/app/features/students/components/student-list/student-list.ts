@@ -3,13 +3,14 @@ import { Component, inject, OnInit, signal, effect, ViewChild } from '@angular/c
 import type { Student } from '../../models/student.model';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { StudentFacade } from '../../facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [StudentForm, StudentTable],
+  imports: [StudentForm, StudentTable, ModalComponent],
   templateUrl: './student-list.html',
   styleUrl: './student-list.css'
 })

@@ -1,8 +1,4 @@
 <section class="form-card">
-  <header class="form-header">
-    <h2>{{ student() ? 'Cập nhật sinh viên' : 'Thêm sinh viên mới' }}</h2>
-  </header>
-
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="form-grid">
       <div class="form-group field">
