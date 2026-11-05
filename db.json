@@ -7843,7 +7843,8 @@
       "role": "student",
       "status": "active",
       "studentId": "SV002",
-      "createdAt": "2026-01-03T08:30:00.000Z"
+      "createdAt": "2026-01-03T08:30:00.000Z",
+      "updatedAt": "2026-11-05T10:33:42.949Z"
     },
     {
       "id": "USR006",
