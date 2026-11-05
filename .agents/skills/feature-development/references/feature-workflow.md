@@ -1,6 +1,6 @@
 # Feature Workflow Reference - Student Management
 
-This document provides the standard implementation sequence and code patterns for developing features under **Option B (Explicit Layering)** in the Student Management project.
+This document provides the standard implementation sequence and code patterns for developing features under **Explicit Layering** in the Student Management project.
 
 ---
 

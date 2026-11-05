@@ -17,7 +17,7 @@ interface GradeRef {
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './subject-list.html',
-  styleUrl: '../../../../shared/styles/catalog.css',
+  styleUrl: './subject-list.css',
 })
 export class SubjectListComponent implements OnInit {
   readonly facade = inject(SubjectFacade);

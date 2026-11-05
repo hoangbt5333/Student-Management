@@ -17,7 +17,7 @@ This skill guides the systematic visual modernization and standardization of all
 1. **Design Token Uniformity**: All colors, font sizes, margins, border radii, and shadows must derive from the CSS Variables defined in `src/styles.css`.
 2. **Component Pattern Consistency**: Every screen must use the standardized structures from `design-system.css` (`.page-container`, `.page-header`, `.toolbar`, `.table-card`, `.data-table`, `.form-card`, `.badge`).
 3. **Zero Test Regressions (Test Hook Preservation)**: Never remove CSS classes or selectors that are queried by Vitest unit tests (e.g., `button.primary-button`, `.search-box`, form inputs). Always include test-critical classes as secondary aliases if renaming.
-4. **Strict Architecture Boundaries (Option B)**: UI changes must only touch templates (`.html`) and styles (`.css`). Components must continue to communicate **exclusively via Facades**.
+4. **Strict Architecture Boundaries**: UI changes must only touch templates (`.html`) and styles (`.css`). Components must continue to communicate **exclusively via Facades**.
 
 ---
 

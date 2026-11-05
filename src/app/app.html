@@ -19,7 +19,7 @@
       <a routerLink="/grades" routerLinkActive="active">Điểm số</a>
     }
     
-    @if (authFacade.role() === 'admin') {
+    @if (authFacade.can('manage-users')) {
       <a routerLink="/users" routerLinkActive="active">Người dùng</a>
     }
 
@@ -56,4 +56,3 @@
                
   <router-outlet />
 </main>
-

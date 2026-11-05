@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, throwError } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import {
   AuthUser,
@@ -13,7 +13,9 @@ interface DemoAccount {
   username: string;
   password: string;
   displayName: string;
+  email?: string;
   role: UserRole;
+  status?: 'active' | 'locked' | 'inactive';
   studentId?: string;
   teacherId?: string;
 }
@@ -37,11 +39,21 @@ export class AuthService {
           throw new Error('Tên đăng nhập hoặc mật khẩu không chính xác.');
         }
 
+        if (account.status === 'locked') {
+          throw new Error('Tài khoản đã bị khóa. Vui lòng liên hệ Quản trị viên để được hỗ trợ.');
+        }
+
+        if (account.status === 'inactive') {
+          throw new Error('Tài khoản đã bị vô hiệu hóa.');
+        }
+
         return {
           id: account.id,
           username: account.username,
           displayName: account.displayName,
+          email: account.email,
           role: account.role,
+          status: account.status ?? 'active',
           studentId: account.studentId,
           teacherId: account.teacherId
         };

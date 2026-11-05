@@ -1,6 +1,6 @@
 # Coding Conventions - Student Management
 
-## 1. Directory Structure per Feature (Option B)
+## 1. Directory Structure per Feature (Explicit Layering)
 
 Every domain feature under `src/app/features/<feature>/` strictly contains:
 

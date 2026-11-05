@@ -26,9 +26,9 @@ export const routes: Routes = [
         path: 'users',
         canActivate: [authGuard, roleGuard],
         data: { roles: ['admin'] },
-        loadComponent: () =>
-            import('./features/auth/components/users/users.component')
-                .then(m => m.UsersComponent)
+        loadChildren: () =>
+            import('./features/users/users.routes')
+                .then(m => m.USER_ROUTES)
     },
     {
         path: 'students',

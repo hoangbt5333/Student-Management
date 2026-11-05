@@ -1,27 +1,115 @@
-<section class="detail-page">
-  <a routerLink="/classes" class="back-link">← Danh sách lớp</a>
+<div class="page-container detail-page">
+  <nav aria-label="Điều hướng">
+    <a routerLink="/classes" class="back-link">← Danh sách lớp học</a>
+  </nav>
+
   @if (loading()) {
-    <p role="status">Đang tải thông tin lớp...</p>
+    <div class="message alert-info" role="status">
+      <span>Đang tải thông tin lớp học...</span>
+    </div>
   } @else if (errorMessage()) {
-    <p class="error" role="alert">{{ errorMessage() }}</p>
+    <div class="message error error-banner" role="alert">
+      <span>{{ errorMessage() }}</span>
+    </div>
   } @else if (classItem(); as item) {
-    <header class="page-heading">
-      <div><p class="eyebrow">Chi tiết lớp học</p><h1>{{ item.name }}</h1></div>
-      <strong class="count">{{ students().length }} sinh viên</strong>
+    <header class="page-header page-heading">
+      <div>
+        <p class="eyebrow">Chi tiết lớp học</p>
+        <h1>{{ item.name }}</h1>
+        <p class="muted">Mã lớp: <code>{{ item.code || item.id }}</code></p>
+      </div>
+
+      <div class="actions">
+        <span class="badge badge-info count-badge">
+          Sĩ số: <strong class="score">{{ students().length }}</strong> sinh viên
+        </span>
+      </div>
     </header>
-    <section class="panel">
-      <h2>Thông tin lớp</h2>
-      <dl><dt>Mã lớp</dt><dd>{{ item.code || item.id }}</dd><dt>Tên lớp</dt><dd>{{ item.name }}</dd><dt>Khoa / Ngành</dt><dd>{{ item.department }}</dd><dt>Niên khóa</dt><dd>{{ item.academicYear }}</dd></dl>
-    </section>
-    <section class="panel">
-      <h2>Danh sách sinh viên</h2>
+
+    <div class="detail-grid">
+      <section class="panel">
+        <h2>Thông tin lớp học</h2>
+        <dl>
+          <dt>Mã lớp</dt>
+          <dd><code>{{ item.code || item.id }}</code></dd>
+
+          <dt>Tên lớp</dt>
+          <dd><strong>{{ item.name }}</strong></dd>
+
+          <dt>Khoa / Ngành</dt>
+          <dd>{{ item.department || 'Chưa phân khoa' }}</dd>
+
+          <dt>Niên khóa</dt>
+          <dd><span class="badge badge-neutral">{{ item.academicYear }}</span></dd>
+        </dl>
+      </section>
+
+      <section class="panel stats-summary-panel">
+        <h2>Quy mô & Thống kê</h2>
+        <div class="metric-card info">
+          <div class="metric-header">
+            <span class="metric-label label">Tổng sinh viên</span>
+            <span class="badge" [class.badge-success]="students().length > 0" [class.badge-warning]="students().length === 0">
+              {{ students().length > 0 ? 'Hoạt động' : 'Chưa phân bổ' }}
+            </span>
+          </div>
+          <strong class="metric-value score">{{ students().length }}</strong>
+          <small class="metric-hint hint">
+            {{ students().length > 0 ? 'Sinh viên chính thức trong lớp' : 'Lớp hiện chưa có sinh viên nào' }}
+          </small>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel students-panel">
+      <div class="panel-header section-heading">
+        <div>
+          <h2>Danh sách sinh viên trong lớp</h2>
+          <p class="panel-subtitle">Danh sách sinh viên chính thức thuộc {{ item.name }}</p>
+        </div>
+        <span class="count">Tổng cộng: {{ students().length }} sinh viên</span>
+      </div>
+
       @if (students().length) {
-        <div class="table-wrap"><table><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Email</th><th>Hồ sơ</th></tr></thead><tbody>
-          @for (student of students(); track student.id) {
-            <tr><td>{{ student.code || student.id }}</td><td>{{ student.name }}</td><td>{{ student.email }}</td><td><a [routerLink]="['/students', student.id]">Xem chi tiết</a></td></tr>
-          }
-        </tbody></table></div>
-      } @else { <p class="muted">Lớp hiện chưa có sinh viên.</p> }
+        <div class="table-card table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã SV</th>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (student of students(); track student.id) {
+                <tr>
+                  <td><code>{{ student.code || student.id }}</code></td>
+                  <td>
+                    <a [routerLink]="['/students', student.id]" class="student-name-link">
+                      <strong>{{ student.name }}</strong>
+                    </a>
+                  </td>
+                  <td>
+                    <a [href]="'mailto:' + student.email" class="email-link">{{ student.email }}</a>
+                  </td>
+                  <td><code>{{ student.phone }}</code></td>
+                  <td class="actions">
+                    <a [routerLink]="['/students', student.id]" class="btn btn-secondary">
+                      Xem chi tiết
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state empty muted">
+          <p>Lớp học hiện chưa có sinh viên nào.</p>
+        </div>
+      }
     </section>
   }
-</section>
+</div>

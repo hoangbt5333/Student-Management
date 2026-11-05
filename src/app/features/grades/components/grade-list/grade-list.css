@@ -1,0 +1,203 @@
+/* ==========================================================================
+   Grade List Page Scoped Styles — Student Management System
+   ========================================================================== */
+
+.grade-list-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-slate-900);
+}
+
+.page-subtitle {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-slate-500);
+}
+
+/* Form Layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.required {
+  color: var(--color-danger);
+}
+
+.error-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin-top: var(--space-1);
+}
+
+/* Toolbar Filters & Stats */
+.grade-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+  background: var(--color-bg-card);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-item label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-slate-600);
+  white-space: nowrap;
+}
+
+.filter-select {
+  min-width: 180px;
+  max-width: 260px;
+}
+
+.toolbar-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.toolbar-stats .count-badge,
+.toolbar-stats .average-badge {
+  font-size: var(--font-size-sm);
+  padding: 6px 12px;
+}
+
+/* Table links & Code */
+.entity-link {
+  color: var(--color-primary-600);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+}
+
+.entity-link:hover {
+  color: var(--color-primary-800);
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  background: var(--color-slate-100);
+  color: var(--color-slate-700);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-slate-200);
+}
+
+/* Score Pills */
+.score-pill {
+  display: inline-block;
+  min-width: 48px;
+  padding: 4px 10px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-full);
+  text-align: center;
+}
+
+.score-pill.score-high {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+}
+
+.score-pill.score-medium {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  border: 1px solid var(--color-primary-200);
+}
+
+.score-pill.score-low {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger-border);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10);
+  color: var(--color-slate-500);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .score-form-group {
+    grid-column: span 2;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .score-form-group {
+    grid-column: span 1;
+    max-width: 100%;
+  }
+  .grade-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filters-row,
+  .filter-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-select {
+    max-width: 100%;
+    width: 100%;
+  }
+  .toolbar-stats {
+    margin-left: 0;
+    justify-content: space-between;
+  }
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  .form-actions button {
+    width: 100%;
+  }
+}

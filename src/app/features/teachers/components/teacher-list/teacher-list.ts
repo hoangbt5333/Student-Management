@@ -16,7 +16,7 @@ interface SubjectRef {
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './teacher-list.html',
-  styleUrl: '../../../../shared/styles/catalog.css',
+  styleUrl: './teacher-list.css',
 })
 export class TeacherListComponent implements OnInit {
   readonly facade = inject(TeacherFacade);

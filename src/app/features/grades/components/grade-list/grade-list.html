@@ -1,123 +1,248 @@
-<section class="catalog-page">
-  <header class="page-heading">
+<div class="page-container grade-list-page">
+  <header class="page-header">
     <div>
-      <h1>Quản lý điểm số</h1>
-      <p>Bảng điểm liên kết sinh viên và môn học</p>
+      <h1 class="page-title">Quản lý điểm số</h1>
+      <p class="page-subtitle">Bảng điểm và đánh giá kết quả học tập của sinh viên theo môn học</p>
     </div>
-    <button type="button" class="primary" (click)="add()" [disabled]="!students().length || !subjects().length">
-      + Nhập điểm
-    </button>
+    @if (canManage()) {
+      <div class="actions">
+        <button
+          type="button"
+          class="btn btn-primary primary-button primary"
+          (click)="add()"
+          [disabled]="!students().length || !subjects().length"
+        >
+          + Nhập điểm
+        </button>
+      </div>
+    }
   </header>
 
-  @if (errorMessage()) { 
-    <p class="message error" role="alert">{{ errorMessage() }}</p> 
+  @if (errorMessage()) {
+    <div class="message error" role="alert">
+      <span>{{ errorMessage() }}</span>
+    </div>
   }
-  @if (successMessage()) { 
-    <p class="message success" role="status">{{ successMessage() }}</p> 
+  @if (successMessage()) {
+    <div class="message success" role="status">
+      <span>{{ successMessage() }}</span>
+    </div>
   }
-
-  <div class="toolbar filters">
-    <label>
-      Sinh viên
-      <select [value]="studentFilter()" (change)="setStudentFilter($any($event.target).value)">
-        <option value="">Tất cả sinh viên</option>
-        @for (student of students(); track student.id) { 
-          <option [value]="student.id">{{ student.code || student.id }} · {{ student.name }}</option> 
-        }
-      </select>
-    </label>
-    
-    <label>
-      Môn học
-      <select [value]="subjectFilter()" (change)="setSubjectFilter($any($event.target).value)">
-        <option value="">Tất cả môn</option>
-        @for (subject of subjects(); track subject.id) { 
-          <option [value]="subject.id">{{ subject.code || subject.id }} · {{ subject.name }}</option> 
-        }
-      </select>
-    </label>
-    <span>{{ filteredGrades().length }} kết quả · Điểm TB {{ averageScore() }}</span>
-  </div>
 
   @if (showForm()) {
-    <form class="edit-form" [formGroup]="form" (ngSubmit)="save()">
-      <h2>{{ editingId() ? 'Cập nhật điểm' : 'Nhập điểm' }}</h2>
-      
-      <label>
-        Sinh viên
-        <select formControlName="studentId">
-          <option value="">Chọn sinh viên</option>
-          @for (student of students(); track student.id) { 
-            <option [value]="student.id">{{ student.code || student.id }} · {{ student.name }}</option> 
-          }
-        </select>
-      </label>
-      @if (form.controls.studentId.touched && form.controls.studentId.invalid) { 
-        <small>Vui lòng chọn sinh viên.</small> 
-      }
+    <div class="card form-card">
+      <header class="form-header">
+        <h2>{{ editingId() ? 'Cập nhật điểm sinh viên' : 'Nhập điểm mới' }}</h2>
+      </header>
 
-      <label>
-        Môn học
-        <select formControlName="subjectId">
-          <option value="">Chọn môn học</option>
-          @for (subject of subjects(); track subject.id) { 
-            <option [value]="subject.id">{{ subject.code || subject.id }} · {{ subject.name }}</option> 
-          }
-        </select>
-      </label>
-      @if (form.controls.subjectId.touched && form.controls.subjectId.invalid) { 
-        <small>Vui lòng chọn môn học.</small> 
-      }
+      <form [formGroup]="form" (ngSubmit)="save()" class="form-body">
+        <div class="form-grid">
+          <div class="form-group field">
+            <label for="studentSelect">
+              Sinh viên <span class="required">*</span>
+            </label>
+            <select
+              id="studentSelect"
+              class="form-control"
+              formControlName="studentId"
+              [class.invalid]="form.controls.studentId.touched && form.controls.studentId.invalid"
+            >
+              <option value="">-- Chọn sinh viên --</option>
+              @for (student of students(); track student.id) {
+                <option [value]="student.id">
+                  {{ student.code || student.id }} · {{ student.name }}
+                </option>
+              }
+            </select>
+            @if (form.controls.studentId.touched && form.controls.studentId.invalid) {
+              <small class="error-text">Vui lòng chọn sinh viên.</small>
+            }
+          </div>
 
-      <label>
-        Điểm (0–10)
-        <input type="number" min="0" max="10" step="0.1" formControlName="score">
-      </label>
-      @if (form.controls.score.touched && form.controls.score.invalid) { 
-        <small>Điểm phải nằm trong khoảng từ 0 đến 10.</small> 
-      }
+          <div class="form-group field">
+            <label for="subjectSelect">
+              Môn học <span class="required">*</span>
+            </label>
+            <select
+              id="subjectSelect"
+              class="form-control"
+              formControlName="subjectId"
+              [class.invalid]="form.controls.subjectId.touched && form.controls.subjectId.invalid"
+            >
+              <option value="">-- Chọn môn học --</option>
+              @for (subject of subjects(); track subject.id) {
+                <option [value]="subject.id">
+                  {{ subject.code || subject.id }} · {{ subject.name }} ({{ subject.credits }} tín chỉ)
+                </option>
+              }
+            </select>
+            @if (form.controls.subjectId.touched && form.controls.subjectId.invalid) {
+              <small class="error-text">Vui lòng chọn môn học.</small>
+            }
+          </div>
 
-      <div class="form-actions">
-        <button type="submit" class="primary" [disabled]="loading()">Lưu điểm</button>
-        <button type="button" (click)="closeForm()">Hủy</button>
-      </div>
-    </form>
+          <div class="form-group field score-form-group">
+            <label for="scoreInput">
+              Điểm số (0–10) <span class="required">*</span>
+            </label>
+            <input
+              id="scoreInput"
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              class="form-control"
+              formControlName="score"
+              placeholder="VD: 8.5"
+              [class.invalid]="form.controls.score.touched && form.controls.score.invalid"
+            />
+            @if (form.controls.score.touched && form.controls.score.invalid) {
+              <small class="error-text">Điểm phải nằm trong khoảng từ 0 đến 10.</small>
+            }
+          </div>
+        </div>
+
+        <footer class="form-actions actions">
+          <button type="button" class="btn btn-secondary cancel-button" (click)="closeForm()">
+            Hủy
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary primary-button primary"
+            [disabled]="loading()"
+          >
+            {{ editingId() ? 'Lưu thay đổi' : 'Lưu điểm' }}
+          </button>
+        </footer>
+      </form>
+    </div>
   }
 
-  @if (loading() && !grades().length) { 
-    <p role="status">Đang tải bảng điểm...</p> 
-  } @else { 
-    <div class="table-wrap">
-      <table>
+  <!-- Toolbar Bộ lọc và Thống kê -->
+  <section class="toolbar grade-toolbar" aria-label="Bộ lọc bảng điểm">
+    <div class="filters-row filters">
+      <div class="filter-item">
+        <label for="studentFilterSelect">Sinh viên:</label>
+        <select
+          id="studentFilterSelect"
+          class="filter-select"
+          [value]="studentFilter()"
+          (change)="setStudentFilter($any($event.target).value)"
+        >
+          <option value="">Tất cả sinh viên</option>
+          @for (student of students(); track student.id) {
+            <option [value]="student.id">
+              {{ student.code || student.id }} · {{ student.name }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label for="subjectFilterSelect">Môn học:</label>
+        <select
+          id="subjectFilterSelect"
+          class="filter-select"
+          [value]="subjectFilter()"
+          (change)="setSubjectFilter($any($event.target).value)"
+        >
+          <option value="">Tất cả môn</option>
+          @for (subject of subjects(); track subject.id) {
+            <option [value]="subject.id">
+              {{ subject.code || subject.id }} · {{ subject.name }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar-stats">
+      <span class="badge badge-info count-badge">
+        <strong>{{ filteredGrades().length }}</strong> kết quả
+      </span>
+      <span class="badge badge-neutral average-badge">
+        Điểm TB: <strong>{{ averageScore() }}</strong>
+      </span>
+    </div>
+  </section>
+
+  @if (loading() && !grades().length) {
+    <div class="loading-state" role="status">
+      <p>Đang tải bảng điểm...</p>
+    </div>
+  } @else {
+    <div class="table-card">
+      <table class="data-table">
         <thead>
           <tr>
             <th>Mã SV</th>
             <th>Sinh viên</th>
             <th>Mã môn</th>
             <th>Môn học</th>
-            <th>Điểm</th>
-            <th>Hồ sơ</th>
-            <th>Thao tác</th>
+            <th class="text-center">Điểm số</th>
+            <th>Đánh giá</th>
+            @if (canManage()) {
+              <th class="text-right">Thao tác</th>
+            }
           </tr>
         </thead>
         <tbody>
-          @for (grade of filteredGrades(); track grade.id) { 
+          @for (grade of filteredGrades(); track grade.id) {
             <tr>
-              <td>{{ studentCode(grade.studentId) }}</td>
-              <td>{{ studentName(grade.studentId) }}</td>
-              <td>{{ subjectCode(grade.subjectId) }}</td>
-              <td>{{ subjectName(grade.subjectId) }}</td>
-              <td class="score">{{ grade.score | number:'1.1-2' }}</td>
-              <td><a [routerLink]="['/students', grade.studentId]">Sinh viên</a></td>
-              <td><button type="button" (click)="edit(grade)">Sửa điểm</button></td>
-            </tr> 
-          } @empty { 
+              <td><code>{{ studentCode(grade.studentId) }}</code></td>
+              <td>
+                <a [routerLink]="['/students', grade.studentId]" class="entity-link">
+                  <strong>{{ studentName(grade.studentId) }}</strong>
+                </a>
+              </td>
+              <td><code>{{ subjectCode(grade.subjectId) }}</code></td>
+              <td>
+                <a [routerLink]="['/subjects', grade.subjectId]" class="entity-link">
+                  {{ subjectName(grade.subjectId) }}
+                </a>
+              </td>
+              <td class="text-center">
+                <span
+                  class="score score-pill"
+                  [class.score-high]="grade.score >= 8.5"
+                  [class.score-medium]="grade.score >= 5.0 && grade.score < 8.5"
+                  [class.score-low]="grade.score < 5.0"
+                >
+                  {{ grade.score | number:'1.1-2' }}
+                </span>
+              </td>
+              <td>
+                @if (grade.score >= 8.5) {
+                  <span class="badge badge-success">Giỏi / Xuất sắc</span>
+                } @else if (grade.score >= 7.0) {
+                  <span class="badge badge-info">Khá</span>
+                } @else if (grade.score >= 5.0) {
+                  <span class="badge badge-neutral">Đạt</span>
+                } @else {
+                  <span class="badge badge-danger">Chưa đạt</span>
+                }
+              </td>
+              @if (canManage()) {
+                <td class="text-right">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    (click)="edit(grade)"
+                  >
+                    Sửa điểm
+                  </button>
+                </td>
+              }
+            </tr>
+          } @empty {
             <tr>
-              <td colspan="7" class="empty">Không có điểm phù hợp với bộ lọc.</td>
-            </tr> 
+              <td [attr.colspan]="canManage() ? 7 : 6" class="empty">
+                Không có điểm phù hợp với bộ lọc.
+              </td>
+            </tr>
           }
         </tbody>
       </table>
-    </div> 
+    </div>
   }
-</section>
+</div>

@@ -1,54 +1,116 @@
-<section class="detail-page">
-  <a routerLink="/students" class="back-link">← Danh sách sinh viên</a>
+<div class="page-container detail-page">
+  <nav aria-label="Điều hướng">
+    <a routerLink="/students" class="back-link">← Danh sách sinh viên</a>
+  </nav>
+
   @if (loading()) {
-    <p role="status">Đang tải hồ sơ...</p>
+    <div class="message alert-info" role="status">
+      <span>Đang tải hồ sơ sinh viên...</span>
+    </div>
   } @else if (errorMessage()) {
-    <p class="error" role="alert">{{ errorMessage() }}</p>
+    <div class="message error error-banner" role="alert">
+      <span>{{ errorMessage() }}</span>
+    </div>
   } @else if (student(); as item) {
-    <header class="page-heading">
+    <header class="page-header page-heading">
       <div>
         <p class="eyebrow">Hồ sơ sinh viên</p>
         <h1>{{ item.name }}</h1>
-        <p class="muted">{{ item.code || item.id }}</p>
+        <p class="muted">Mã sinh viên: <code>{{ item.code || item.id }}</code></p>
       </div>
-      <a routerLink="/grades" [queryParams]="{ studentId: item.id }" class="button-link">Xem bảng điểm</a>
+
+      <div class="actions">
+        <a routerLink="/grades" [queryParams]="{ studentId: item.id }" class="btn btn-primary primary-button button-link">
+          Xem bảng điểm
+        </a>
+      </div>
     </header>
 
     <div class="detail-grid">
       <section class="panel">
         <h2>Thông tin cá nhân</h2>
         <dl>
-          <dt>Mã sinh viên</dt><dd>{{ item.code || item.id }}</dd>
-          <dt>Họ và tên</dt><dd>{{ item.name }}</dd>
-          <dt>Email</dt><dd><a [href]="'mailto:' + item.email">{{ item.email }}</a></dd>
-          <dt>Số điện thoại</dt><dd>{{ item.phone }}</dd>
-          <dt>Khoa</dt><dd>{{ item.faculty || 'Chưa cập nhật' }}</dd>
+          <dt>Mã sinh viên</dt>
+          <dd><code>{{ item.code || item.id }}</code></dd>
+
+          <dt>Họ và tên</dt>
+          <dd><strong>{{ item.name }}</strong></dd>
+
+          <dt>Email</dt>
+          <dd><a [href]="'mailto:' + item.email">{{ item.email }}</a></dd>
+
+          <dt>Số điện thoại</dt>
+          <dd><code>{{ item.phone }}</code></dd>
+
+          <dt>Khoa / Ngành</dt>
+          <dd>{{ item.faculty || 'Chưa cập nhật' }}</dd>
         </dl>
       </section>
+
       <section class="panel">
         <h2>Thông tin học tập</h2>
         @if (classItem(); as classInfo) {
           <dl>
-            <dt>Lớp</dt><dd><a [routerLink]="['/classes', classInfo.id]">{{ classInfo.name }}</a></dd>
-            <dt>Mã lớp</dt><dd>{{ classInfo.code || classInfo.id }}</dd>
-            <dt>Niên khóa</dt><dd>{{ classInfo.academicYear }}</dd>
+            <dt>Lớp</dt>
+            <dd>
+              <a [routerLink]="['/classes', classInfo.id]">
+                <strong>{{ classInfo.name }}</strong>
+              </a>
+            </dd>
+
+            <dt>Mã lớp</dt>
+            <dd><code>{{ classInfo.code || classInfo.id }}</code></dd>
+
+            <dt>Niên khóa</dt>
+            <dd>{{ classInfo.academicYear }}</dd>
+
+            <dt>Khoa quản lý</dt>
+            <dd>{{ classInfo.department || 'Chưa cập nhật' }}</dd>
           </dl>
         } @else {
-          <p class="muted">Chưa có thông tin lớp học.</p>
+          <p class="empty-state empty muted">Chưa có thông tin lớp học.</p>
         }
       </section>
     </div>
 
     <section class="panel results-panel">
-      <div class="section-heading"><h2>Kết quả học tập</h2><strong>Điểm trung bình: {{ average() }}</strong></div>
+      <div class="panel-header section-heading">
+        <h2>Kết quả học tập</h2>
+        <span class="badge badge-info">
+          Điểm trung bình: <strong class="score">{{ average() }}</strong>
+        </span>
+      </div>
+
       @if (grades().length) {
-        <div class="table-wrap"><table>
-          <thead><tr><th>Mã môn</th><th>Môn học</th><th>Điểm</th></tr></thead>
-          <tbody>@for (grade of grades(); track grade.id) {
-            <tr><td>{{ subjectCode(grade.subjectId) }}</td><td>{{ subjectName(grade.subjectId) }}</td><td>{{ grade.score | number:'1.1-2' }}</td></tr>
-          }</tbody>
-        </table></div>
-      } @else { <p class="muted">Sinh viên chưa có điểm.</p> }
+        <div class="table-card table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã môn</th>
+                <th>Môn học</th>
+                <th>Điểm số</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (grade of grades(); track grade.id) {
+                <tr>
+                  <td><code>{{ subjectCode(grade.subjectId) }}</code></td>
+                  <td><strong>{{ subjectName(grade.subjectId) }}</strong></td>
+                  <td><span class="score">{{ grade.score | number:'1.1-2' }}</span></td>
+                  <td>
+                    <span class="badge" [class.badge-success]="grade.score >= 5.0" [class.badge-danger]="grade.score < 5.0">
+                      {{ grade.score >= 5.0 ? 'Đạt' : 'Chưa đạt' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty-state empty muted">Sinh viên chưa có điểm môn học nào.</p>
+      }
     </section>
   }
-</section>
+</div>

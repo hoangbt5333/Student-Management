@@ -21,7 +21,7 @@ The Student Management application is an Angular 22 application with Server-Side
 - `dashboard`: High-level summary metrics.
 - `auth`: Role-based access control (`admin`, `teacher`, `student`).
 
-## 2. Architecture Rules (Option B - Explicit Layering)
+## 2. Architecture Rules (Explicit Layering)
 
 Every feature follows the strict unidirectional dependency flow:
 

@@ -1,39 +1,56 @@
-<table>
+<div class="table-card">
+  <table class="data-table">
     <thead>
-        <tr>
-            <th>Mã SV</th>
-            <th>Họ tên</th>
-            <th>Email</th>
-            <th>Số điện thoại</th>
-            <th>Lớp</th>
-            <th>Khoa</th>
-            @if (authFacade.can('manage-students')){
-                <th>Hành động</th>
-            }
-        </tr>
+      <tr>
+        <th>Mã SV</th>
+        <th>Họ tên</th>
+        <th>Email</th>
+        <th>Số điện thoại</th>
+        <th>Lớp</th>
+        <th>Khoa / Ngành</th>
+        @if (authFacade.can('manage-students')) {
+          <th class="actions-header">Thao tác</th>
+        }
+      </tr>
     </thead>
 
     <tbody>
-        @for (student of students(); track student.id) {
-            <tr>
-                <td>{{ student.code || student.id }}</td>
-                <td><a [routerLink]="['/students', student.id]">{{ student.name }}</a></td>
-                <td>{{ student.email }}</td>
-                <td>{{ student.phone }}</td>
-                <td>{{ student.className || '—' }}</td>
-                <td>{{ student.faculty || '—' }}</td>
-                @if (authFacade.can('manage-students')){
-                    <td>
-                        <button type="button" (click)="edit.emit(student)">Sửa</button>
-
-                        <button type="button" (click)="delete.emit(student.id)">Xoá</button>
-                    </td> 
-                }   
-            </tr>
-        } @empty {
-            <tr>
-                <td colspan="7">Không có sinh viên nào phù hợp.</td>
-            </tr>
-        }
+      @for (student of students(); track student.id) {
+        <tr>
+          <td><code>{{ student.code || student.id }}</code></td>
+          <td>
+            <a [routerLink]="['/students', student.id]" class="student-name-link">
+              <strong>{{ student.name }}</strong>
+            </a>
+          </td>
+          <td>
+            <a [href]="'mailto:' + student.email" class="email-link">{{ student.email }}</a>
+          </td>
+          <td><code>{{ student.phone }}</code></td>
+          <td>
+            @if (student.className) {
+              <span class="badge badge-info">{{ student.className }}</span>
+            } @else {
+              <span class="badge badge-neutral">—</span>
+            }
+          </td>
+          <td>{{ student.faculty || '—' }}</td>
+          @if (authFacade.can('manage-students')) {
+            <td class="actions">
+              <button type="button" class="btn btn-secondary edit-button" (click)="edit.emit(student)">
+                Sửa
+              </button>
+              <button type="button" class="btn btn-danger delete-button" (click)="delete.emit(student.id)">
+                Xoá
+              </button>
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="empty empty-state">Không có sinh viên nào phù hợp.</td>
+        </tr>
+      }
     </tbody>
-</table>
+  </table>
+</div>

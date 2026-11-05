@@ -15,7 +15,7 @@ This skill provides an automated and systematic 4-tier validation framework to r
 
 | Tier | Focus | Method / Tool | Pass Criteria |
 | :--- | :--- | :--- | :--- |
-| **Tier 1** | **Architecture Boundaries** | `npm run check:arch` | 0 Component -> Service/Store imports; 0 Facade -> HttpClient imports; strict Option B directories. |
+| **Tier 1** | **Architecture Boundaries** | `npm run check:arch` | 0 Component -> Service/Store imports; 0 Facade -> HttpClient imports; strict explicit layering directories. |
 | **Tier 2** | **TypeScript & Angular** | `npm run build` | 0 TypeScript errors, 0 `any`, pure Signals, strictly typed reactive forms, SSR safety. |
 | **Tier 3** | **Domain Business Logic** | Code Review & Specs | Valid regex codes (CLS/GV/MH), grades 0–10, foreign key deletion safety, RBAC permissions. |
 | **Tier 4** | **Automated Pipeline** | `npm run verify` | All gates pass sequentially (`check:arch` ➔ `build` ➔ `test:ci`) with 100% pass rate. |
@@ -38,7 +38,7 @@ If any sub-step fails, diagnose and fix according to the **Failure Remediation G
 ### Phase 2: Layer & Boundary Verification (`Tier 1`)
 - [ ] Inspect modified components: Do they inject **only Facades**, `FormBuilder`, and `Router`?
 - [ ] Inspect modified facades: Are they free from `HttpClient` imports?
-- [ ] Verify feature directories contain only standard Option B folders (`components`, `facades`, `models`, `services`, `store`, `<feature>.routes.ts`).
+- [ ] Verify feature directories contain only standard folders (`components`, `facades`, `models`, `services`, `store`, `<feature>.routes.ts`).
 
 ### Phase 3: Technical & Reactivity Check (`Tier 2`)
 - [ ] Check for `any`: Zero occurrences allowed.

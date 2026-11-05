@@ -8,7 +8,7 @@ import { SubjectFacade } from '../../../subjects/facades/subject.facade';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './teacher-detail.html',
-  styleUrl: '../../../../shared/styles/catalog.css',
+  styleUrl: './teacher-detail.css',
 })
 export class TeacherDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

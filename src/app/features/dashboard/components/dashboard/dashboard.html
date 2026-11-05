@@ -1,68 +1,134 @@
-<section class="dashboard">
+<div class="page-container dashboard">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Tổng quan</p>
       <h1>Dashboard quản lý sinh viên</h1>
+      <p>Tổng quan số liệu thống kê sinh viên và tình hình phân bổ lớp học trong hệ thống.</p>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" (click)="refresh()" [disabled]="loading()">
+        Làm mới
+      </button>
+      <a routerLink="/students" class="btn btn-secondary">
+        Quản lý sinh viên
+      </a>
+      <a routerLink="/classes" class="btn btn-primary primary-button">
+        Quản lý lớp học
+      </a>
     </div>
   </header>
 
-  <div class="stats-grid">
-    <article class="stat-card accent">
-      <span class="label">Tổng sinh viên</span>
-      <strong>{{ stats().totalStudents }}</strong>
-      <small>Đã có trong hệ thống</small>
+  @if (errorMessage()) {
+    <div class="message error" role="alert">
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="message alert-info" role="status">
+      <span>Đang cập nhật số liệu thống kê...</span>
+    </div>
+  }
+
+  <section class="metrics-grid stats-grid" aria-label="Thống kê tổng quan">
+    <article class="metric-card stat-card accent">
+      <div class="metric-header">
+        <span class="metric-label label">Tổng sinh viên</span>
+        <span class="badge badge-info">Hồ sơ</span>
+      </div>
+      <strong class="metric-value">{{ stats().totalStudents }}</strong>
+      <small class="metric-hint hint">Đã đăng ký trong hệ thống</small>
     </article>
 
-    <article class="stat-card info">
-      <span class="label">Tổng lớp học</span>
-      <strong>{{ stats().totalClasses }}</strong>
-      <small>Đang quản lý</small>
+    <article class="metric-card stat-card info">
+      <div class="metric-header">
+        <span class="metric-label label">Tổng lớp học</span>
+        <span class="badge badge-neutral">Đào tạo</span>
+      </div>
+      <strong class="metric-value">{{ stats().totalClasses }}</strong>
+      <small class="metric-hint hint">Lớp học đang quản lý</small>
     </article>
 
-    <article class="stat-card success">
-      <span class="label">TB sinh viên / lớp</span>
-      <strong>{{ stats().averageStudentsPerClass }}</strong>
-      <small>Trung bình</small>
+    <article class="metric-card stat-card success">
+      <div class="metric-header">
+        <span class="metric-label label">TB sinh viên / lớp</span>
+        <span class="badge badge-success">Quy mô</span>
+      </div>
+      <strong class="metric-value">{{ stats().averageStudentsPerClass }}</strong>
+      <small class="metric-hint hint">Trung bình trên mỗi lớp</small>
     </article>
 
-    <article class="stat-card warning">
-      <span class="label">Lớp chưa có sinh viên</span>
-      <strong>{{ stats().inactiveClasses.length }}</strong>
-      <small>Chưa được phân bổ</small>
+    <article class="metric-card stat-card warning">
+      <div class="metric-header">
+        <span class="metric-label label">Lớp chưa có sinh viên</span>
+        <span class="badge" [class.badge-warning]="stats().inactiveClasses.length > 0" [class.badge-success]="stats().inactiveClasses.length === 0">
+          {{ stats().inactiveClasses.length > 0 ? 'Cần phân bổ' : 'Tối ưu' }}
+        </span>
+      </div>
+      <strong class="metric-value">{{ stats().inactiveClasses.length }}</strong>
+      <small class="metric-hint hint">Lớp học sĩ số bằng 0</small>
     </article>
-  </div>
+  </section>
 
-  <div class="panel">
+  <section class="panel table-card">
     <div class="panel-header">
-      <h2>Thống kê theo lớp</h2>
-      <!-- @if (stats().topClass) {
-        <span class="badge">Đang dẫn đầu: {{ stats().topClass.name }}</span>
-      } -->
+      <div>
+        <h2>Thống kê chi tiết theo lớp</h2>
+        <p class="panel-subtitle">Xếp hạng các lớp học theo sĩ số sinh viên</p>
+      </div>
+
+      @if (stats().topClass && stats().topClass.studentCount > 0) {
+        <span class="badge badge-success">
+          Lớp đông nhất: {{ stats().topClass.name }} ({{ stats().topClass.studentCount }} SV)
+        </span>
+      }
     </div>
 
     @if (stats().classStats.length) {
-      <table>
+      <table class="data-table">
         <thead>
           <tr>
             <th>Mã lớp</th>
             <th>Tên lớp</th>
-            <th>Khoa</th>
+            <th>Khoa / Ngành</th>
             <th>Sĩ số</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           @for (item of stats().classStats; track item.id) {
             <tr>
-              <td>{{ item.code || item.id }}</td>
-              <td>{{ item.name }}</td>
-              <td>{{ item.department }}</td>
-              <td>{{ item.studentCount }}</td>
+              <td><code>{{ item.code || item.id }}</code></td>
+              <td>
+                <a [routerLink]="['/classes', item.id]" class="class-name-link">
+                  <strong>{{ item.name }}</strong>
+                </a>
+              </td>
+              <td>{{ item.department || 'Chưa phân khoa' }}</td>
+              <td>
+                <span class="score">{{ item.studentCount }}</span>
+              </td>
+              <td>
+                @if (item.studentCount > 0) {
+                  <span class="badge badge-success">Có sinh viên</span>
+                } @else {
+                  <span class="badge badge-warning">Chưa có sinh viên</span>
+                }
+              </td>
+              <td class="actions">
+                <a [routerLink]="['/classes', item.id]" class="btn btn-secondary">
+                  Chi tiết
+                </a>
+              </td>
             </tr>
           }
         </tbody>
       </table>
     } @else {
-      <p class="empty-state">Chưa có dữ liệu lớp học để thống kê.</p>
+      <div class="empty-state empty">
+        <p>Chưa có dữ liệu lớp học để thống kê.</p>
+      </div>
     }
-  </div>
-</section>
+  </section>
+</div>

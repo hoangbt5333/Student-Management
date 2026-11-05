@@ -1,14 +1,11 @@
 <section class="form-card">
   <header class="form-header">
     <h2>{{ classItem() ? 'Cập nhật lớp học' : 'Thêm lớp học' }}</h2>
-    <button type="button" class="close-button" (click)="cancel()">
-      Đóng
-    </button>
   </header>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="form-grid">
-      <div class="field">
+      <div class="field form-group">
         <label for="id">Mã lớp</label>
         <input
           id="id"
@@ -34,7 +31,7 @@
         }
       </div>
 
-      <div class="field">
+      <div class="field form-group">
         <label for="name">Tên lớp</label>
         <input
           id="name"
@@ -59,7 +56,7 @@
         }
       </div>
 
-      <div class="field">
+      <div class="field form-group">
         <label for="department">Khoa / Ngành</label>
         <input
           id="department"
@@ -86,7 +83,7 @@
         }
       </div>
 
-      <div class="field">
+      <div class="field form-group">
         <label for="academicYear">Năm học</label>
         <input
           id="academicYear"
@@ -113,11 +110,11 @@
     </div>
 
     <footer class="form-actions">
-      <button type="button" class="cancel-button" (click)="cancel()">
+      <button type="button" class="btn btn-secondary cancel-button" (click)="cancel()">
         Hủy
       </button>
 
-      <button type="submit" class="submit-button">
+      <button type="submit" class="btn btn-primary submit-button">
         {{ classItem() ? 'Lưu thay đổi' : 'Thêm lớp' }}
       </button>
     </footer>

@@ -1,6 +1,6 @@
 # Refactoring Patterns Reference - Student Management
 
-This document catalogues safe, proven refactoring patterns established during the architectural standardization of the Student Management application under **Option B (Explicit Layering)**.
+This document catalogues safe, proven refactoring patterns established during the architectural standardization of the Student Management application under **Explicit Layering**.
 
 ---
 
@@ -22,7 +22,7 @@ flowchart TD
    - Extract shared CSS (e.g. `catalog.css`) to `src/app/shared/styles/catalog.css`.
    - Update existing components to point to the shared style path.
 2. **Create Independent Target Features**:
-   - For each entity, generate the standard Option B structure: `models/`, `services/`, `store/`, `facades/`, `components/`, and `<feature>.routes.ts`.
+   - For each entity, generate the standard explicit layering structure: `models/`, `services/`, `store/`, `facades/`, `components/`, and `<feature>.routes.ts`.
 3. **Migrate Logic & Wire Routes**:
    - Migrate domain interfaces, HTTP methods, and UI components into each independent feature folder.
    - Update `src/app/app.routes.ts` with top-level routes for each decoupled feature.
@@ -52,7 +52,7 @@ export class ClassDetailComponent implements OnInit {
 }
 ```
 
-### After (Compliant with Option B):
+### After (Compliant with Explicit Layering):
 ```typescript
 @Component({...})
 export class ClassDetailComponent implements OnInit {
@@ -86,7 +86,7 @@ export class ClassDetailComponent implements OnInit {
 
 ## Pattern 3: Eliminating `data-access/` in Favor of Explicit Layers
 
-Migrating from mixed `data-access/` folders into clean Option B layers:
+Migrating from mixed `data-access/` folders into clean explicit layers:
 
 ### Transformation Map:
 - `data-access/<feature>.model.ts` ➔ `models/<feature>.model.ts`

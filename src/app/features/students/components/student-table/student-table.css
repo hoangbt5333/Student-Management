@@ -1,28 +1,32 @@
-
 :host {
   display: block;
-  overflow-x: auto;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
+.student-name-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--transition-fast);
 }
 
-th,
-td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
+.student-name-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
 }
 
-th {
-  background: #f3f4f6;
+.email-link {
+  color: var(--color-slate-700);
+  text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
-button {
-  margin-right: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
+.email-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }

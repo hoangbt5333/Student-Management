@@ -4,7 +4,7 @@
 
 The Student Management application is built on Angular 22 with Server-Side Rendering (SSR), NgRx SignalStore (`@ngrx/signals`), and Vitest.
 
-The project strictly follows the **Option B (Explicit Layering)** architecture across all features:
+The project strictly follows the **Explicit Layering** architecture across all features:
 
 ```
 Component ──> Facade ──> Store ──> Service ──> REST API

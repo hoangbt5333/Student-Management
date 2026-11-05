@@ -1,0 +1,123 @@
+@if (user(); as u) {
+  <div class="form-card detail-card">
+    <div class="form-header">
+      <div>
+        <h2>Chi tiết tài khoản #{{ u.username }}</h2>
+        <p>Thông tin định danh và hồ sơ nghiệp vụ liên kết của tài khoản.</p>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="onClose()">Đóng</button>
+    </div>
+
+    <div class="detail-grid">
+      <!-- Section 1: Account Info -->
+      <div class="detail-section">
+        <h3>Thông tin tài khoản</h3>
+        <dl class="detail-list">
+          <div class="detail-item">
+            <dt>Mã tài khoản:</dt>
+            <dd><code>{{ u.id }}</code></dd>
+          </div>
+          <div class="detail-item">
+            <dt>Tên đăng nhập:</dt>
+            <dd><strong>{{ u.username }}</strong></dd>
+          </div>
+          <div class="detail-item">
+            <dt>Tên hiển thị:</dt>
+            <dd>{{ u.displayName }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>Email:</dt>
+            <dd>{{ u.email }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>Vai trò:</dt>
+            <dd>
+              <span class="badge" [class]="'badge-role-' + u.role">
+                {{ u.role === 'admin' ? 'Quản trị viên' : (u.role === 'teacher' ? 'Giảng viên' : 'Sinh viên') }}
+              </span>
+            </dd>
+          </div>
+          <div class="detail-item">
+            <dt>Trạng thái:</dt>
+            <dd>
+              <span class="badge" [class]="u.status === 'active' ? 'badge-success' : (u.status === 'locked' ? 'badge-danger' : 'badge-warning')">
+                {{ u.status === 'active' ? 'Đang hoạt động' : (u.status === 'locked' ? 'Bị khóa' : 'Vô hiệu hóa') }}
+              </span>
+            </dd>
+          </div>
+          <div class="detail-item">
+            <dt>Ngày tạo:</dt>
+            <dd>{{ u.createdAt }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Section 2: Linked Profile -->
+      <div class="detail-section">
+        <h3>Hồ sơ nghiệp vụ liên kết</h3>
+
+        @if (u.role === 'student') {
+          @if (userFacade.selectedStudentProfile(); as student) {
+            <dl class="detail-list">
+              <div class="detail-item">
+                <dt>Mã sinh viên:</dt>
+                <dd><code>{{ student.id }}</code></dd>
+              </div>
+              <div class="detail-item">
+                <dt>Họ và tên SV:</dt>
+                <dd><strong>{{ student.name }}</strong></dd>
+              </div>
+              <div class="detail-item">
+                <dt>Email sinh viên:</dt>
+                <dd>{{ student.email }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Số điện thoại:</dt>
+                <dd>{{ student.phone }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Lớp học:</dt>
+                <dd>{{ student.className ?? student.classId ?? 'Chưa phân lớp' }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Khoa / Ngành:</dt>
+                <dd>{{ student.faculty ?? 'Chưa cập nhật' }}</dd>
+              </div>
+            </dl>
+          } @else {
+            <p class="empty-hint">Không tìm thấy hồ sơ sinh viên tương ứng với mã #{{ u.studentId }}.</p>
+          }
+        } @else if (u.role === 'teacher') {
+          @if (userFacade.selectedTeacherProfile(); as teacher) {
+            <dl class="detail-list">
+              <div class="detail-item">
+                <dt>Mã giảng viên:</dt>
+                <dd><code>{{ teacher.id }}</code></dd>
+              </div>
+              <div class="detail-item">
+                <dt>Họ và tên GV:</dt>
+                <dd><strong>{{ teacher.name }}</strong></dd>
+              </div>
+              <div class="detail-item">
+                <dt>Email giảng viên:</dt>
+                <dd>{{ teacher.email }}</dd>
+              </div>
+              <div class="detail-item">
+                <dt>Khoa / Bộ môn:</dt>
+                <dd>{{ teacher.department }}</dd>
+              </div>
+            </dl>
+          } @else {
+            <p class="empty-hint">Không tìm thấy hồ sơ giảng viên tương ứng với mã #{{ u.teacherId }}.</p>
+          }
+        } @else {
+          <p class="empty-hint">Tài khoản Quản trị viên (Admin) là tài khoản hệ thống độc lập, không liên kết với hồ sơ học vụ hay nhân sự.</p>
+        }
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onClose()">Đóng</button>
+    </div>
+  </div>
+}

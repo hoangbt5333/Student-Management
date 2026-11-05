@@ -2,12 +2,12 @@
 name: feature-development
 description: >
   Step-by-step workflow and standards for implementing new features or extending existing ones
-  in the Student Management Angular application under Option B (Explicit Layering).
+  in the Student Management Angular application under Explicit Layering.
 ---
 
 # Feature Development Skill
 
-This skill defines the authoritative process and standards for developing new features or extending existing modules in the Student Management application using **Option B (Explicit Layering)**.
+This skill defines the authoritative process and standards for developing new features or extending existing modules in the Student Management application using **Explicit Layering**.
 
 ---
 

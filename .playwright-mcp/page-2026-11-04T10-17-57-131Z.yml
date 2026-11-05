@@ -1,0 +1,23 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - heading "Student Management System" [level=1] [ref=e4]
+    - navigation [ref=e5]:
+      - link "Dashboard" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Đăng nhập" [ref=e8] [cursor=pointer]:
+        - /url: /login
+  - main [ref=e9]:
+    - generic [ref=e12]:
+      - heading "Student Management" [level=1] [ref=e13]
+      - paragraph [ref=e14]: Đăng nhập vào hệ thống quản lý sinh viên
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]: Tên đăng nhập
+          - textbox "Tên đăng nhập" [ref=e18]:
+            - /placeholder: Nhập tên đăng nhập
+        - generic [ref=e19]:
+          - generic [ref=e20]: Mật khẩu
+          - textbox "Mật khẩu" [ref=e21]:
+            - /placeholder: Nhập mật khẩu
+        - button "Đăng nhập" [ref=e22] [cursor=pointer]
+      - paragraph [ref=e23]: Đây là môi trường đăng nhập mô phỏng phục vụ học tập.

@@ -8,7 +8,7 @@ description: >
 
 # Debugging Skill — Student Management System
 
-This skill guides systematic diagnostic procedures and issue resolution across all layers of the Student Management application under **Option B (Explicit Layering)**.
+This skill guides systematic diagnostic procedures and issue resolution across all layers of the Student Management application under **Explicit Layering**.
 
 ---
 

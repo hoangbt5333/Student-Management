@@ -55,6 +55,16 @@
       "className": "KHMT-K68-03",
       "faculty": "Công nghệ thông tin",
       "id": "-iOIAoe"
+    },
+    {
+      "code": "SV007",
+      "name": "Nguyễn Văn F",
+      "email": "fvan@gmail.com",
+      "phone": "0512416325",
+      "classId": "qJvemMTMHRc",
+      "className": "KTMT-K68-05",
+      "faculty": "Kỹ thuật máy tính",
+      "id": "sbHwGdamJcU"
     }
   ],
   "classes": [
@@ -269,23 +279,44 @@
       "username": "admin",
       "password": "Admin123!",
       "displayName": "Quản trị viên",
-      "role": "admin"
+      "email": "admin@school.edu.vn",
+      "role": "admin",
+      "status": "active",
+      "createdAt": "2026-01-01T08:00:00.000Z"
     },
     {
       "id": "USR002",
       "username": "gv001",
       "password": "Gv123456!",
-      "displayName": "Nguyễn Văn Giảng",
+      "displayName": "Nguyễn Minh An",
+      "email": "minhan@example.com",
       "role": "teacher",
-      "teacherId": "GV001"
+      "status": "active",
+      "teacherId": "GV001",
+      "createdAt": "2026-01-02T08:00:00.000Z"
     },
     {
       "id": "USR003",
       "username": "sv001",
       "password": "Sv123456!",
-      "displayName": "Trần Văn Sinh",
+      "displayName": "Nguyen Van A",
+      "email": "a@example.com",
       "role": "student",
-      "studentId": "SV001"
+      "status": "active",
+      "studentId": "SV001",
+      "createdAt": "2026-01-03T08:00:00.000Z",
+      "updatedAt": "2026-11-04T09:34:56.716Z"
+    },
+    {
+      "id": "4-ceZ3dQ9fE",
+      "username": "sv02",
+      "displayName": "Tran Thi B",
+      "email": "b@example.com",
+      "role": "student",
+      "status": "active",
+      "password": "Sv123456!",
+      "studentId": "SV002",
+      "createdAt": "2026-11-04T09:31:13.965Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

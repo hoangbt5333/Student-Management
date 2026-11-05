@@ -1,6 +1,6 @@
 # Debugging Guide Reference - Student Management
 
-This guide provides deep-dive troubleshooting procedures, root-cause analyses, and proven fixes for common failure modes across all layers of the Student Management application under **Option B (Explicit Layering)**.
+This guide provides deep-dive troubleshooting procedures, root-cause analyses, and proven fixes for common failure modes across all layers of the Student Management application under **Explicit Layering**.
 
 ---
 

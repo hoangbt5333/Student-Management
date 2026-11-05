@@ -1,18 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ClassFacade } from '../../../classes/facades/class.facade';
 import { StudentFacade } from '../../../students/facades/student.facade';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
 export class DashboardComponent implements OnInit {
   readonly studentFacade = inject(StudentFacade);
   readonly classFacade = inject(ClassFacade);
+
+  readonly loading = computed(() => this.studentFacade.loading() || this.classFacade.loading());
+  readonly errorMessage = computed(() => this.studentFacade.errorMessage() || this.classFacade.errorMessage());
 
   readonly stats = computed(() => {
     const students = this.studentFacade.students();
@@ -21,7 +25,7 @@ export class DashboardComponent implements OnInit {
     const classStats = classes
       .map((classItem) => ({
         id: classItem.id,
-        code: classItem.code,
+        code: classItem.code || classItem.id,
         name: classItem.name,
         department: classItem.department,
         studentCount: students.filter((student) => {
@@ -36,7 +40,7 @@ export class DashboardComponent implements OnInit {
 
     const totalStudents = students.length;
     const totalClasses = classes.length;
-    const averageStudentsPerClass = totalClasses === 0 ? 0 : (totalStudents / totalClasses).toFixed(1);
+    const averageStudentsPerClass = totalClasses === 0 ? '0.0' : (totalStudents / totalClasses).toFixed(1);
 
     return {
       totalStudents,
@@ -49,6 +53,10 @@ export class DashboardComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.refresh();
+  }
+
+  refresh(): void {
     this.studentFacade.loadStudents();
     this.classFacade.loadClasses();
   }

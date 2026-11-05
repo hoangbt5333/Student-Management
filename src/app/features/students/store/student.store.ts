@@ -20,6 +20,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { StudentService } from '../services/student.service';
 import type { Student } from '../models/student.model';
 import { ClassStore } from '../../classes/store/class.store';
+import { normalizeVietnamese } from '../../../shared/utils/vietnamese.util';
 
 type StudentState = {
   students: Student[];
@@ -41,15 +42,6 @@ type SaveStudentRequest = {
   student: Student;
   mode: 'add' | 'update';
 };
-
-function normalizeText(value: string | undefined): string {
-  return (value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLocaleLowerCase('vi');
-}
 
 const initialState: StudentState = {
   students: [],
@@ -98,7 +90,7 @@ export const StudentStore = signalStore(
     };
 
     const filteredStudents = computed(() => {
-      const keyword = normalizeText(searchTerm().trim());
+      const keyword = normalizeVietnamese(searchTerm());
       const selectedClassId = classFilter();
 
       return students()
@@ -113,7 +105,7 @@ export const StudentStore = signalStore(
             student.phone,
             className,
             student.faculty
-          ].some(value => normalizeText(value ?? '').includes(keyword));
+          ].some(value => normalizeVietnamese(value).includes(keyword));
 
           const matchesClass = !selectedClassId
             || (

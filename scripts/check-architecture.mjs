@@ -20,7 +20,7 @@ function walk(dir, fileCallback) {
   }
 }
 
-console.log('🔍 Running Architecture Boundary Checks (Option B)...\n');
+console.log('🔍 Running Architecture Boundary Checks (Explicit Layering)...\n');
 
 // 1. Check feature folder structure
 if (fs.existsSync(FEATURES_DIR)) {
@@ -124,7 +124,7 @@ walk(FEATURES_DIR, (filePath) => {
 // 3. Report Results
 if (violations.length === 0) {
   console.log('✅ ALL ARCHITECTURE BOUNDARY CHECKS PASSED!\n');
-  console.log('  ✔ Folder structure strictly conforms to Option B');
+  console.log('  ✔ Folder structure strictly conforms to Explicit Layering');
   console.log('  ✔ Components communicate exclusively through Facades');
   console.log('  ✔ Zero direct Component -> Service calls');
   console.log('  ✔ Zero direct Component -> Store calls');

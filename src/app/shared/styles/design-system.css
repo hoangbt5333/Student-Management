@@ -281,11 +281,19 @@ tbody tr:last-child td {
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-xs);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-4);
 }
 
+.form-card {
+  display: block;
+}
+
+.form-header {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.form-header h2,
 .form-card h2,
 .edit-form h2 {
   grid-column: 1 / -1;
@@ -295,7 +303,15 @@ tbody tr:last-child td {
   color: var(--color-slate-800);
 }
 
+.form-grid,
+.edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
 .form-group,
+.field,
 .edit-form label,
 form label {
   display: flex;
@@ -308,11 +324,13 @@ form label {
 
 .form-group input,
 .form-group select,
+.field input,
+.field select,
 .edit-form input,
 .edit-form select,
 form input,
 form select {
-  min-height: 38px;
+  min-height: 40px;
   padding: 8px 12px;
   font-size: var(--font-size-sm);
   color: var(--color-slate-800);
@@ -320,20 +338,26 @@ form select {
   border: 1px solid var(--color-slate-300);
   border-radius: var(--radius-md);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
 .form-group select:focus,
+.field input:focus,
+.field select:focus,
 .edit-form input:focus,
 .edit-form select:focus,
 form input:focus,
 form select:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-100);
+  outline: none;
 }
 
 .form-error,
 .error,
+.field-error,
 .error-message,
 .edit-form small {
   color: var(--color-danger);
@@ -346,7 +370,16 @@ form select:focus {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
-  margin-top: var(--space-2);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .form-grid,
+  .edit-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Feedback Messages */
@@ -390,6 +423,125 @@ form select:focus {
   padding: var(--space-8) var(--space-4);
   color: var(--color-slate-500);
   font-size: var(--font-size-sm);
+}
+
+/* Metric Summary Cards (Dashboard) - Pattern 5 */
+.metrics-grid,
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.metric-card,
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card:hover,
+.stat-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-hover);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.metric-label,
+.stat-card .label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-slate-600);
+}
+
+.metric-value,
+.stat-card strong {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-slate-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-hint,
+.stat-card small,
+.stat-card .hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-slate-500);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Accent Borders for Metric Cards */
+.metric-card.accent,
+.stat-card.accent {
+  border-top: 4px solid var(--color-primary);
+}
+
+.metric-card.info,
+.stat-card.info {
+  border-top: 4px solid var(--color-info);
+}
+
+.metric-card.success,
+.stat-card.success {
+  border-top: 4px solid var(--color-success);
+}
+
+.metric-card.warning,
+.stat-card.warning {
+  border-top: 4px solid var(--color-warning);
+}
+
+.metric-card.danger,
+.stat-card.danger {
+  border-top: 4px solid var(--color-danger);
+}
+
+/* Panel / Section Container */
+.panel {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-xs);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-slate-800);
+}
+
+.panel-subtitle {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-slate-500);
 }
 
 /* Pagination */

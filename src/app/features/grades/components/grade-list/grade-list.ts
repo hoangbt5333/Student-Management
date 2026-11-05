@@ -6,6 +6,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { GradeFacade } from '../../facades/grade.facade';
 import { StudentFacade } from '../../../students/facades/student.facade';
 import { SubjectFacade } from '../../../subjects/facades/subject.facade';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import type { Grade } from '../../models/grade.model';
 import type { Student } from '../../../students/models/student.model';
 import type { Subject } from '../../../subjects/models/subject.model';
@@ -15,12 +16,13 @@ import type { Subject } from '../../../subjects/models/subject.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './grade-list.html',
-  styleUrl: '../../../../shared/styles/catalog.css',
+  styleUrl: './grade-list.css',
 })
 export class GradeListComponent implements OnInit {
   readonly gradeFacade = inject(GradeFacade);
   readonly studentFacade = inject(StudentFacade);
   readonly subjectFacade = inject(SubjectFacade);
+  readonly authFacade = inject(AuthFacade, { optional: true });
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
 
@@ -76,12 +78,16 @@ export class GradeListComponent implements OnInit {
     this.subjectFacade.loadSubjects();
   }
 
+  canManage(): boolean {
+    return this.authFacade ? this.authFacade.can('manage-grades') : true;
+  }
+
   add(): void {
     this.editingId.set('');
     this.form.reset({
       studentId: this.studentFilter(),
       subjectId: this.subjectFilter(),
-      score: 0
+      score: 0,
     });
     this.showForm.set(true);
     this.gradeFacade.clearMessages();
@@ -92,7 +98,7 @@ export class GradeListComponent implements OnInit {
     this.form.reset({
       studentId: grade.studentId,
       subjectId: grade.subjectId,
-      score: grade.score
+      score: grade.score,
     });
     this.showForm.set(true);
     this.gradeFacade.clearMessages();
@@ -109,7 +115,7 @@ export class GradeListComponent implements OnInit {
     this.gradeFacade.saveGrade(
       {
         id: this.editingId() || undefined,
-        ...value
+        ...value,
       },
       this.editingId() ? 'update' : 'add'
     );
@@ -143,5 +149,11 @@ export class GradeListComponent implements OnInit {
 
   closeForm(): void {
     this.showForm.set(false);
+    this.editingId.set('');
+    this.form.reset({
+      studentId: '',
+      subjectId: '',
+      score: 0,
+    });
   }
 }

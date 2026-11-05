@@ -9,7 +9,7 @@ import { GradeFacade } from '../../../grades/facades/grade.facade';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './subject-detail.html',
-  styleUrl: '../../../../shared/styles/catalog.css',
+  styleUrl: './subject-detail.css',
 })
 export class SubjectDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

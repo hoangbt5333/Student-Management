@@ -19,6 +19,7 @@ import {
 
 import { TeacherService } from '../services/teacher.service';
 import type { Teacher } from '../models/teacher.model';
+import { normalizeVietnamese } from '../../../shared/utils/vietnamese.util';
 
 type TeacherState = {
   teachers: Teacher[];
@@ -48,14 +49,14 @@ export const TeacherStore = signalStore(
 
   withComputed(({ teachers, searchTerm }) => {
     const filteredTeachers = computed(() => {
-      const keyword = searchTerm().trim().toLocaleLowerCase('vi');
+      const keyword = normalizeVietnamese(searchTerm());
       if (!keyword) {
         return teachers();
       }
 
       return teachers().filter((teacher) =>
         [teacher.code ?? teacher.id, teacher.name, teacher.email, teacher.department].some(
-          (value) => value.toLocaleLowerCase('vi').includes(keyword)
+          (value) => normalizeVietnamese(value).includes(keyword)
         )
       );
     });

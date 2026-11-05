@@ -1,0 +1,108 @@
+.detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.back-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: fit-content;
+  transition: color var(--transition-fast);
+}
+
+.back-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.page-heading h1 {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-slate-900);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-1);
+  color: var(--color-slate-500);
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.05em;
+  font-weight: var(--font-weight-semibold);
+}
+
+.muted {
+  margin: var(--space-1) 0 0;
+  color: var(--color-slate-500);
+  font-size: var(--font-size-sm);
+}
+
+.count-badge {
+  font-size: var(--font-size-sm);
+  padding: 6px 12px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.panel h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-slate-800);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.7fr) 1fr;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+dt {
+  color: var(--color-slate-500);
+  font-weight: var(--font-weight-medium);
+}
+
+dd {
+  margin: 0;
+  color: var(--color-slate-800);
+  overflow-wrap: anywhere;
+}
+
+.teacher-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--transition-fast);
+}
+
+.teacher-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

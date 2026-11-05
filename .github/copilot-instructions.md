@@ -6,7 +6,7 @@
 - **Unit Testing**: Vitest (`@angular/build:unit-test`).
 - **REST Mock API**: json-server on port 3001.
 
-## 2. Architecture Standard (Option B - Explicit Layering)
+## 2. Architecture Standard (Explicit Layering)
 All domain features under `src/app/features/` (`students`, `classes`, `teachers`, `subjects`, `grades`) MUST follow:
 
 ```text

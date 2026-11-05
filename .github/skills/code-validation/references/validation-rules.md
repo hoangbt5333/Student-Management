@@ -6,7 +6,7 @@ This document defines the comprehensive 4-tier validation framework for all code
 
 ## Tier 1: Architecture & Structural Boundaries
 
-All domain features in `src/app/features/<feature>/` strictly adhere to **Option B (Explicit Layering)**:
+All domain features in `src/app/features/<feature>/` strictly adhere to **Explicit Layering**:
 
 ```mermaid
 flowchart LR
@@ -110,7 +110,7 @@ cmd /c npm run verify
    - Scans all files in `src/app/features/`.
    - Validates that 0 components import services or store.
    - Validates that 0 facades import `HttpClient`.
-   - Validates clean Option B directory structures.
+   - Validates clean directory structures conforming to explicit layering.
 2. **`npm run build`**:
    - Compiles TypeScript with Angular AOT compiler.
    - Validates SSR server build (`src/server.ts`).

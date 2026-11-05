@@ -1,93 +1,113 @@
+<section class="form-card">
+  <header class="form-header">
+    <h2>{{ student() ? 'Cập nhật sinh viên' : 'Thêm sinh viên mới' }}</h2>
+  </header>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <h2>{{ student() ? 'Sửa sinh viên' : 'Thêm sinh viên' }}</h2>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <div class="form-group field">
+        <label for="id">Mã sinh viên *</label>
+        <input
+          id="id"
+          type="text"
+          formControlName="id"
+          placeholder="Ví dụ: SV001"
+        />
 
-  <div class="form-group">
-    <label for="id">Mã sinh viên</label>
-    <input id="id" type="text" formControlName="id" />
+        @if (form.controls.id.touched && form.controls.id.invalid) {
+          <small class="error form-error field-error">Vui lòng nhập mã sinh viên.</small>
+        }
+      </div>
 
-    @if (form.controls.id.touched && form.controls.id.invalid) {
-      <small class="error">Vui lòng nhập mã sinh viên.</small>
-    }
-  </div>
+      <div class="form-group field">
+        <label for="name">Họ và tên *</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Ví dụ: Nguyễn Văn A"
+        />
 
-  <div class="form-group">
-    <label for="name">Họ và tên</label>
-    <input id="name" type="text" formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <small class="error form-error field-error">Vui lòng nhập họ và tên.</small>
+        }
+      </div>
 
-    @if (form.controls.name.touched && form.controls.name.invalid) {
-      <small class="error">Vui lòng nhập họ tên.</small>
-    }
-  </div>
+      <div class="form-group field">
+        <label for="email">Email *</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Ví dụ: nva@example.com"
+        />
 
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input id="email" type="email" formControlName="email" />
+        @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+          <small class="error form-error field-error">Vui lòng nhập email.</small>
+        }
 
-    @if (form.controls.email.touched && form.controls.email.hasError('required')) {
-      <small class="error">Vui lòng nhập email.</small>
-    }
+        @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+          <small class="error form-error field-error">Email không đúng định dạng.</small>
+        }
+      </div>
 
-    @if (form.controls.email.touched && form.controls.email.hasError('email')) {
-      <small class="error">Email không đúng định dạng.</small>
-    }
-  </div>
+      <div class="form-group field">
+        <label for="phone">Số điện thoại *</label>
+        <input
+          id="phone"
+          type="text"
+          formControlName="phone"
+          placeholder="Ví dụ: 0912345678"
+        />
 
-  <div class="form-group">
-    <label for="phone">Số điện thoại</label>
-    <input id="phone" type="text" formControlName="phone" />
+        @if (form.controls.phone.touched && form.controls.phone.invalid) {
+          <small class="error form-error field-error">Vui lòng nhập số điện thoại hợp lệ (10 chữ số).</small>
+        }
+      </div>
 
-    @if (form.controls.phone.touched && form.controls.phone.invalid) {
-      <small class="error">Vui lòng nhập số điện thoại.</small>
-    }
-  </div>
+      <div class="form-group field">
+        <label for="classId">Lớp học *</label>
+        <select id="classId" formControlName="classId">
+          <option value="">-- Chọn lớp học --</option>
+          @for (classItem of classFacade.classes(); track classItem.id) {
+            <option [value]="classItem.id">
+              {{ classItem.name }}
+            </option>
+          }
+        </select>
 
-  <div class="form-group">
-    <label for="classId">Lớp</label>
+        @if (form.controls.classId.touched && form.controls.classId.hasError('required')) {
+          <small class="error form-error field-error">Vui lòng chọn lớp học.</small>
+        }
 
-    <select id="classId" formControlName="classId">
-      <option value="">-- Chọn lớp học --</option>
+        @if (form.controls.classId.touched && form.controls.classId.hasError('classNotFound')) {
+          <small class="error form-error field-error">Lớp đã chọn không còn tồn tại. Vui lòng chọn lại.</small>
+        }
+      </div>
 
-      @for (classItem of classFacade.classes(); track classItem.id) {
-        <option [value]="classItem.id">
-          {{ classItem.name }}
-        </option>
-      }
-    </select>
+      <div class="form-group field">
+        <label for="faculty">Khoa / Ngành *</label>
+        <input
+          id="faculty"
+          type="text"
+          formControlName="faculty"
+          placeholder="Ví dụ: Công nghệ thông tin"
+        />
 
-    @if (form.controls.classId.touched && form.controls.classId.hasError('required')) {
-      <small class="error">Vui lòng chọn lớp.</small>
-    }
+        @if (form.controls.faculty.touched && form.controls.faculty.invalid) {
+          <small class="error form-error field-error">Vui lòng nhập khoa/ngành.</small>
+        }
+      </div>
+    </div>
 
-    @if (form.controls.classId.touched && form.controls.classId.hasError('classNotFound')) {
-      <small class="error">Lớp đã chọn không còn tồn tại. Vui lòng chọn lại.</small>
-    }
-  </div>
-
-  <div class="form-group">
-    <label for="faculty">Khoa</label>
-    <input id="faculty" type="text" formControlName="faculty" />
-
-    @if (form.controls.faculty.touched && form.controls.faculty.invalid) {
-      <small class="error">Vui lòng nhập khoa.</small>
-    }
-  </div>
-
-  <div class="actions">
-    <button type="submit">
-      {{ student() ? 'Cập nhật' : 'Thêm sinh viên' }}
-    </button>
-
-    <!-- @if (student()) {
-      <button type="button" (click)="onCancel()">
-        Hủy sửa
+    <footer class="form-actions actions">
+      <button type="button" class="btn btn-secondary cancel-button" (click)="onCancel()">
+        Hủy
       </button>
-    } -->
 
-    <button type="button" (click)="onCancel()">
-      Hủy
-    </button>
-
-    
-  </div>
-</form>
+      <button type="submit" class="btn btn-primary submit-button">
+        {{ student() ? 'Lưu thay đổi' : 'Thêm sinh viên' }}
+      </button>
+    </footer>
+  </form>
+</section>

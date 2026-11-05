@@ -19,6 +19,7 @@ import {
 
 import { ClassService } from '../services/class.service';
 import { ClassModel, CreateClassDto, UpdateClassDto } from '../models/class.model';
+import { normalizeVietnamese } from '../../../shared/utils/vietnamese.util';
 
 type ClassSortField = keyof ClassModel;
 
@@ -47,15 +48,6 @@ const initialState: ClassState = {
   sortDirection: 'asc'
 };
 
-function normalizeText(value: string | undefined): string {
-  return (value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLocaleLowerCase('vi');
-}
-
 export const ClassStore = signalStore(
   { providedIn: 'root' },
 
@@ -68,7 +60,7 @@ export const ClassStore = signalStore(
     sortDirection
   }) => {
     const filteredClasses = computed(() => {
-      const keyword = normalizeText(searchTerm().trim());
+      const keyword = normalizeVietnamese(searchTerm());
 
       return classes()
         .filter((classItem) => {
@@ -82,7 +74,7 @@ export const ClassStore = signalStore(
             classItem.name,
             classItem.department,
             classItem.academicYear
-          ].some((value) => normalizeText(value ?? '').includes(keyword));
+          ].some((value) => normalizeVietnamese(value ?? '').includes(keyword));
         })
         .sort((first, second) => {
           const field = sortBy();

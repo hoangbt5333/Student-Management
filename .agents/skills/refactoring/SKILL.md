@@ -2,12 +2,12 @@
 name: refactoring
 description: >
   Safe, incremental refactoring workflows and proven patterns for standardizing code
-  under Option B (Explicit Layering) without regressions in the Student Management project.
+  under Explicit Layering without regressions in the Student Management project.
 ---
 
 # Refactoring Skill — Student Management System
 
-This skill guides safe, incremental refactoring of existing modules, services, and components in the Student Management project to conform to **Option B (Explicit Layering)** without introducing behavioral or build regressions.
+This skill guides safe, incremental refactoring of existing modules, services, and components in the Student Management project to conform to **Explicit Layering** without introducing behavioral or build regressions.
 
 ---
 
@@ -47,7 +47,7 @@ Confirm:
 
 ### Step 3: Atomic Transformation
 1. Extract shared dependencies first (e.g., shared CSS, common interfaces).
-2. Create or rename destination files to conform to Option B standards.
+2. Create or rename destination files to conform to architectural standards.
 3. Update imports within the refactored module first.
 4. Update external consumers (other features, router, specs).
 

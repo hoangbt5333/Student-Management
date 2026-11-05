@@ -19,6 +19,7 @@ import {
 
 import { SubjectService } from '../services/subject.service';
 import type { Subject } from '../models/subject.model';
+import { normalizeVietnamese } from '../../../shared/utils/vietnamese.util';
 
 type SubjectState = {
   subjects: Subject[];
@@ -48,14 +49,14 @@ export const SubjectStore = signalStore(
 
   withComputed(({ subjects, searchTerm }) => {
     const filteredSubjects = computed(() => {
-      const keyword = searchTerm().trim().toLocaleLowerCase('vi');
+      const keyword = normalizeVietnamese(searchTerm());
       if (!keyword) {
         return subjects();
       }
 
       return subjects().filter((subject) =>
         [subject.code ?? subject.id, subject.name].some((value) =>
-          value.toLocaleLowerCase('vi').includes(keyword)
+          normalizeVietnamese(value).includes(keyword)
         )
       );
     });

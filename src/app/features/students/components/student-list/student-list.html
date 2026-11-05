@@ -1,131 +1,149 @@
+<div class="page-container student-list-page">
+  <header class="page-header">
+    <div>
+      <h1>Quản lý sinh viên</h1>
+      <p>Danh sách hồ sơ sinh viên, thông tin lớp học và trạng thái học tập.</p>
+    </div>
+    @if (authFacade.can('manage-students')) {
+      <button type="button" class="btn btn-primary primary-button" (click)="openAddStudent()">
+        + Thêm sinh viên
+      </button>
+    }
+  </header>
 
-<header class="page-header">
-  <h1>Quản lý sinh viên</h1>
-  @if (authFacade.can('manage-students')) {
-    <button type="button" class="primary-button" (click)="openAddStudent()">
-      + Thêm sinh viên
-    </button>
+  @if (showForm()) {
+    <app-student-form
+      [student]="selectedStudent()"
+      (save)="saveStudent($event)"
+      (cancel)="cancelEdit()"
+    />
   }
-  
-</header>
 
-@if (showForm()) {
-  <app-student-form
-    [student]="selectedStudent()"
-    (save)="saveStudent($event)"
-    (cancel)="cancelEdit()"
-  />
-}
+  @if (facade.errorMessage()) {
+    <div class="message error error-banner" role="alert">
+      <span class="error-message">{{ facade.errorMessage() }}</span>
+    </div>
+  }
 
-@if (facade.errorMessage()) {
-  <p class="error-message">{{ facade.errorMessage() }}</p>
-}
+  @if (facade.successMessage()) {
+    <div class="message success alert-success" role="status">
+      <span class="success-message">{{ facade.successMessage() }}</span>
+    </div>
+  }
 
-@if (facade.successMessage()) {
-  <p class="success-message">{{ facade.successMessage() }}</p>
-}
+  <!-- B. Khu vực tìm kiếm riêng biệt -->
+  <section class="toolbar search-toolbar">
+    <div class="search-box">
+      <input
+        type="search"
+        placeholder="Tìm theo mã, họ tên, email, lớp hoặc khoa..."
+        [value]="facade.searchTerm()"
+        (input)="search($any($event.target).value)"
+      />
+    </div>
 
-<div class="search-box">
-  <input
-    type="text"
-    placeholder="Tìm theo mã, họ tên, email, lớp hoặc khoa..."
-    [value]="facade.searchTerm()"
-    (input)="search($any($event.target).value)"
-  />
+    <div class="count-badge">
+      <span class="count-text">
+        Tổng số: <strong>{{ filteredStudentCount() }}</strong> / {{ studentCount() }} sinh viên
+      </span>
+    </div>
+  </section>
+
+  <!-- C. Khu vực bộ lọc -->
+  <section class="list-controls filter-toolbar">
+    <label class="filter-item">
+      <span>Lớp</span>
+      <select
+        [value]="facade.classFilter()"
+        (change)="facade.setClassFilter($any($event.target).value)"
+      >
+        <option value="">Tất cả lớp</option>
+        @for (classItem of facade.classOptions(); track classItem.id) {
+          <option [value]="classItem.id">
+            {{ classItem.name }}
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="filter-item">
+      <span>Khoa</span>
+      <select
+        [value]="facade.facultyFilter()"
+        (change)="setFacultyFilter($any($event.target).value)"
+      >
+        <option value="">Tất cả khoa</option>
+        @for (faculty of facultyOptions(); track faculty) {
+          <option [value]="faculty">{{ faculty }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="filter-item">
+      <span>Sắp xếp theo</span>
+      <select
+        [value]="facade.sortBy()"
+        (change)="setSortBy($any($event.target).value)"
+      >
+        @for (field of sortFields; track field.value) {
+          <option [value]="field.value">{{ field.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="filter-item">
+      <span>Thứ tự</span>
+      <select
+        [value]="facade.sortDirection()"
+        (change)="setSortDirection($any($event.target).value)"
+      >
+        <option value="asc">Tăng dần</option>
+        <option value="desc">Giảm dần</option>
+      </select>
+    </label>
+
+    <label class="filter-item">
+      <span>Hiển thị</span>
+      <select
+        [value]="pageSize()"
+        (change)="setPageSize($any($event.target).value)"
+      >
+        <option value="5">5 / trang</option>
+        <option value="10">10 / trang</option>
+        <option value="20">20 / trang</option>
+      </select>
+    </label>
+  </section>
+
+  @if (facade.loading()) {
+    <div class="message alert-info" role="status">
+      <span>Đang tải danh sách sinh viên...</span>
+    </div>
+  } @else {
+    <app-student-table
+      [students]="pageStudents()"
+      (edit)="editStudent($event)"
+      (delete)="deleteStudent($event)"
+    />
+
+    <nav class="pagination" aria-label="Phân trang danh sách sinh viên">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="currentPage() <= 1"
+        (click)="setPage(currentPage() - 1)"
+      >
+        ← Trước
+      </button>
+      <span class="pagination-info">Trang {{ currentPage() }} / {{ totalPages() }}</span>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="currentPage() >= totalPages()"
+        (click)="setPage(currentPage() + 1)"
+      >
+        Sau →
+      </button>
+    </nav>
+  }
 </div>
-
-<div class="list-controls">
-  <label>
-    Lớp
-    <select
-      [value]="facade.classFilter()"
-      (change)="facade.setClassFilter($any($event.target).value)"
-    >
-      <option value="">Tất cả lớp</option>
-
-      @for (classItem of facade.classOptions(); track classItem.id) {
-        <option [value]="classItem.id">
-          {{ classItem.name }}
-        </option>
-      }
-    </select>
-  </label>
-
-  <label>
-    Khoa
-    <select
-      [value]="facade.facultyFilter()"
-      (change)="setFacultyFilter($any($event.target).value)"
-    >
-      <option value="">Tất cả khoa</option>
-      @for (faculty of facultyOptions(); track faculty) {
-        <option [value]="faculty">{{ faculty }}</option>
-      }
-    </select>
-  </label>
-
-  <label>
-    Sắp xếp theo
-    <select
-      [value]="facade.sortBy()"
-      (change)="setSortBy($any($event.target).value)"
-    >
-      @for (field of sortFields; track field.value) {
-        <option [value]="field.value">{{ field.label }}</option>
-      }
-    </select>
-  </label>
-
-  <label>
-    Thứ tự
-    <select
-      [value]="facade.sortDirection()"
-      (change)="setSortDirection($any($event.target).value)"
-    >
-      <option value="asc">Tăng dần</option>
-      <option value="desc">Giảm dần</option>
-    </select>
-  </label>
-
-  <label>
-    Số dòng mỗi trang
-    <select
-      [value]="pageSize()"
-      (change)="setPageSize($any($event.target).value)"
-    >
-      <option value="5">5</option>
-      <option value="10">10</option>
-      <option value="20">20</option>
-    </select>
-  </label>
-</div>
-
-<p>Có {{ filteredStudentCount() }} / {{ studentCount() }} sinh viên phù hợp.</p>
-
-@if (facade.loading()) {
-  <p>Đang tải danh sách...</p>
-} @else {
-  <app-student-table
-    [students]="pageStudents()"
-    (edit)="editStudent($event)"
-    (delete)="deleteStudent($event)"
-  />
-
-  <nav class="pagination" aria-label="Phân trang danh sách sinh viên">
-    <button
-      type="button"
-      [disabled]="currentPage() <= 1"
-      (click)="setPage(currentPage() - 1)"
-    >
-      Trước
-    </button>
-    <span>Trang {{ currentPage() }} / {{ totalPages() }}</span>
-    <button
-      type="button"
-      [disabled]="currentPage() >= totalPages()"
-      (click)="setPage(currentPage() + 1)"
-    >
-      Sau
-    </button>
-  </nav>
-}

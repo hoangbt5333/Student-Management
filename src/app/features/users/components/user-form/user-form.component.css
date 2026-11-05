@@ -1,0 +1,15 @@
+.required {
+  color: var(--color-danger);
+  font-weight: bold;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-hint {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-slate-500);
+}

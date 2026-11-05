@@ -1,9 +1,75 @@
-<section class="catalog-page">
-  <a routerLink="/subjects">← Danh sách môn học</a>
-  @if (loading()) { <p role="status">Đang tải môn học...</p> }
-  @else if (errorMessage()) { <p class="message error" role="alert">{{ errorMessage() }}</p> }
-  @else if (subject(); as item) {
-    <header class="page-heading"><div><p>Chi tiết môn học</p><h1>{{ item.name }}</h1></div></header>
-    <section class="edit-form"><h2>Thông tin môn học</h2><p><strong>Mã môn:</strong> {{ item.code || item.id }}</p><p><strong>Tên môn:</strong> {{ item.name }}</p><p><strong>Số tín chỉ:</strong> {{ item.credits }}</p><p><strong>Giảng viên:</strong> @if (teacher(); as teacherInfo) { <a [routerLink]="['/teachers', teacherInfo.id]">{{ teacherInfo.name }}</a> } @else { Chưa phân công }</p><p><strong>Số bản ghi điểm:</strong> {{ gradeCount() }}</p></section>
+<div class="page-container detail-page">
+  <nav aria-label="Điều hướng">
+    <a routerLink="/subjects" class="back-link">← Danh sách môn học</a>
+  </nav>
+
+  @if (loading()) {
+    <div class="message alert-info" role="status">
+      <span>Đang tải thông tin môn học...</span>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="message error error-banner" role="alert">
+      <span>{{ errorMessage() }}</span>
+    </div>
+  } @else if (subject(); as item) {
+    <header class="page-header page-heading">
+      <div>
+        <p class="eyebrow">Chi tiết môn học</p>
+        <h1>{{ item.name }}</h1>
+        <p class="muted">Mã môn học: <code>{{ item.code || item.id }}</code></p>
+      </div>
+
+      <div class="actions">
+        <span class="badge badge-info count-badge">
+          Khối lượng: <strong class="score">{{ item.credits }}</strong> tín chỉ
+        </span>
+      </div>
+    </header>
+
+    <div class="detail-grid">
+      <section class="panel">
+        <h2>Thông tin môn học</h2>
+        <dl>
+          <dt>Mã môn học</dt>
+          <dd><code>{{ item.code || item.id }}</code></dd>
+
+          <dt>Tên môn học</dt>
+          <dd><strong>{{ item.name }}</strong></dd>
+
+          <dt>Số tín chỉ</dt>
+          <dd><span class="score">{{ item.credits }}</span> tín chỉ</dd>
+
+          <dt>Giảng viên phụ trách</dt>
+          <dd>
+            @if (teacher(); as teacherInfo) {
+              <a [routerLink]="['/teachers', teacherInfo.id]" class="teacher-link">
+                <strong>{{ teacherInfo.name }}</strong>
+                @if (teacherInfo.department) {
+                  ({{ teacherInfo.department }})
+                }
+              </a>
+            } @else {
+              <span class="badge badge-neutral">Chưa phân công</span>
+            }
+          </dd>
+        </dl>
+      </section>
+
+      <section class="panel stats-summary-panel">
+        <h2>Dữ liệu điểm số</h2>
+        <div class="metric-card info">
+          <div class="metric-header">
+            <span class="metric-label label">Bản ghi điểm</span>
+            <span class="badge" [class.badge-success]="gradeCount() > 0" [class.badge-neutral]="gradeCount() === 0">
+              {{ gradeCount() > 0 ? 'Đã nhập điểm' : 'Chưa có điểm' }}
+            </span>
+          </div>
+          <strong class="metric-value score">{{ gradeCount() }}</strong>
+          <small class="metric-hint hint">
+            {{ gradeCount() > 0 ? 'Sinh viên đã có điểm môn học này' : 'Chưa có dữ liệu điểm sinh viên' }}
+          </small>
+        </div>
+      </section>
+    </div>
   }
-</section>
+</div>

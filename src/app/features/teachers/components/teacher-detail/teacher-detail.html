@@ -1,13 +1,111 @@
-<section class="catalog-page">
-  <a routerLink="/teachers">← Danh sách giảng viên</a>
-  @if (loading()) { <p role="status">Đang tải hồ sơ...</p> }
-  @else if (errorMessage()) { <p class="message error" role="alert">{{ errorMessage() }}</p> }
-  @else if (teacher(); as item) {
-    <header class="page-heading"><div><p>Hồ sơ giảng viên</p><h1>{{ item.name }}</h1></div></header>
-    <section class="edit-form"><h2>Thông tin cơ bản</h2><p><strong>Mã giảng viên:</strong> {{ item.code || item.id }}</p><p><strong>Email:</strong> <a [href]="'mailto:' + item.email">{{ item.email }}</a></p><p><strong>Khoa:</strong> {{ item.department }}</p></section>
-    <section><h2>Môn học phụ trách</h2>
-      @if (subjects().length) { <div class="table-wrap"><table><thead><tr><th>Mã môn</th><th>Tên môn</th><th>Tín chỉ</th></tr></thead><tbody>@for (subject of subjects(); track subject.id) { <tr><td>{{ subject.code || subject.id }}</td><td><a [routerLink]="['/subjects', subject.id]">{{ subject.name }}</a></td><td>{{ subject.credits }}</td></tr> }</tbody></table></div> }
-      @else { <p class="empty">Chưa được phân công môn học.</p> }
+<div class="page-container detail-page">
+  <nav aria-label="Điều hướng">
+    <a routerLink="/teachers" class="back-link">← Danh sách giảng viên</a>
+  </nav>
+
+  @if (loading()) {
+    <div class="message alert-info" role="status">
+      <span>Đang tải hồ sơ giảng viên...</span>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="message error error-banner" role="alert">
+      <span>{{ errorMessage() }}</span>
+    </div>
+  } @else if (teacher(); as item) {
+    <header class="page-header page-heading">
+      <div>
+        <p class="eyebrow">Hồ sơ giảng viên</p>
+        <h1>{{ item.name }}</h1>
+        <p class="muted">Mã giảng viên: <code>{{ item.code || item.id }}</code></p>
+      </div>
+
+      <div class="actions">
+        <span class="badge badge-info count-badge">
+          Phụ trách: <strong class="score">{{ subjects().length }}</strong> môn học
+        </span>
+      </div>
+    </header>
+
+    <div class="detail-grid">
+      <section class="panel">
+        <h2>Thông tin cơ bản</h2>
+        <dl>
+          <dt>Mã giảng viên</dt>
+          <dd><code>{{ item.code || item.id }}</code></dd>
+
+          <dt>Họ và tên</dt>
+          <dd><strong>{{ item.name }}</strong></dd>
+
+          <dt>Email</dt>
+          <dd><a [href]="'mailto:' + item.email" class="email-link">{{ item.email }}</a></dd>
+
+          <dt>Khoa / Bộ môn</dt>
+          <dd>{{ item.department || 'Chưa cập nhật' }}</dd>
+        </dl>
+      </section>
+
+      <section class="panel stats-summary-panel">
+        <h2>Phân công giảng dạy</h2>
+        <div class="metric-card info">
+          <div class="metric-header">
+            <span class="metric-label label">Môn học phụ trách</span>
+            <span class="badge" [class.badge-success]="subjects().length > 0" [class.badge-warning]="subjects().length === 0">
+              {{ subjects().length > 0 ? 'Đang giảng dạy' : 'Chưa phân công' }}
+            </span>
+          </div>
+          <strong class="metric-value score">{{ subjects().length }}</strong>
+          <small class="metric-hint hint">
+            {{ subjects().length > 0 ? 'Môn học được giao trong hệ thống' : 'Hiện chưa phụ trách môn nào' }}
+          </small>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel subjects-panel">
+      <div class="panel-header section-heading">
+        <div>
+          <h2>Danh sách môn học phụ trách</h2>
+          <p class="panel-subtitle">Các học phần do giảng viên {{ item.name }} trực tiếp giảng dạy</p>
+        </div>
+        <span class="count">Tổng cộng: {{ subjects().length }} môn học</span>
+      </div>
+
+      @if (subjects().length) {
+        <div class="table-card table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã môn</th>
+                <th>Tên môn học</th>
+                <th>Số tín chỉ</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (subject of subjects(); track subject.id) {
+                <tr>
+                  <td><code>{{ subject.code || subject.id }}</code></td>
+                  <td>
+                    <a [routerLink]="['/subjects', subject.id]" class="subject-name-link">
+                      <strong>{{ subject.name }}</strong>
+                    </a>
+                  </td>
+                  <td><span class="score">{{ subject.credits }}</span> tín chỉ</td>
+                  <td class="actions">
+                    <a [routerLink]="['/subjects', subject.id]" class="btn btn-secondary">
+                      Chi tiết
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state empty muted">
+          <p>Giảng viên hiện chưa được phân công phụ trách môn học nào.</p>
+        </div>
+      }
     </section>
   }
-</section>
+</div>

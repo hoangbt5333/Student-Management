@@ -1,0 +1,59 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - heading "Student Management System" [level=1] [ref=f1e4]
+    - navigation [ref=f1e5]:
+      - link "Dashboard" [ref=f1e6] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Sinh viên" [ref=f1e24] [cursor=pointer]:
+        - /url: /students
+      - link "Lớp học" [ref=f1e25] [cursor=pointer]:
+        - /url: /classes
+      - link "Giảng viên" [ref=f1e26] [cursor=pointer]:
+        - /url: /teachers
+      - link "Môn học" [ref=f1e27] [cursor=pointer]:
+        - /url: /subjects
+      - link "Điểm số" [ref=f1e28] [cursor=pointer]:
+        - /url: /grades
+      - link "Người dùng" [ref=f1e29] [cursor=pointer]:
+        - /url: /users
+      - generic [ref=f1e7]:
+        - generic [ref=f1e30]: Quản trị viên
+        - button "Đăng xuất" [ref=f1e31] [cursor=pointer]
+  - main [ref=f1e9]:
+    - generic [ref=f1e132]:
+      - generic [ref=f1e133]:
+        - generic [ref=f1e134]:
+          - heading "Quản lý môn học" [level=1] [ref=f1e135]
+          - paragraph [ref=f1e136]: Danh mục môn học, số tín chỉ và giảng viên phụ trách trong chương trình đào tạo.
+        - button "+ Thêm môn học" [ref=f1e137] [cursor=pointer]
+      - generic [ref=f1e138]:
+        - searchbox "Tìm môn học" [active] [ref=f1e140]: Lập trình
+        - generic [ref=f1e142]:
+          - text: "Tổng số:"
+          - strong [ref=f1e143]: "1"
+          - text: / 6 môn học
+      - table [ref=f1e145]:
+        - rowgroup [ref=f1e146]:
+          - row [ref=f1e147]:
+            - columnheader "Mã môn" [ref=f1e148]
+            - columnheader "Tên môn học" [ref=f1e149]
+            - columnheader "Số tín chỉ" [ref=f1e150]
+            - columnheader "Giảng viên phụ trách" [ref=f1e151]
+            - columnheader "Thông tin" [ref=f1e152]
+            - columnheader "Thao tác" [ref=f1e153]
+        - rowgroup [ref=f1e154]:
+          - row [ref=f1e155]:
+            - cell [ref=f1e156]:
+              - code [ref=f1e157]: MH001
+            - cell [ref=f1e158]:
+              - link [ref=f1e159] [cursor=pointer]:
+                - /url: /subjects/MH001
+                - strong [ref=f1e160]: Lập trình Web
+            - cell "3 tín chỉ" [ref=f1e161]
+            - cell "Nguyễn Minh An" [ref=f1e162]
+            - cell [ref=f1e164]:
+              - link "Chi tiết" [ref=f1e165] [cursor=pointer]:
+                - /url: /subjects/MH001
+            - cell [ref=f1e166]:
+              - button "Sửa" [ref=f1e167] [cursor=pointer]
+              - button "Xóa" [ref=f1e168] [cursor=pointer]

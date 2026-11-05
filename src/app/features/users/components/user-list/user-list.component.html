@@ -1,0 +1,264 @@
+<div class="page-container">
+  <!-- Notifications -->
+  @if (userFacade.errorMessage(); as error) {
+    <div class="alert alert-danger" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" class="close-btn" (click)="userFacade.clearMessages()">×</button>
+    </div>
+  }
+  @if (userFacade.successMessage(); as success) {
+    <div class="alert alert-success" role="alert">
+      <span>{{ success }}</span>
+      <button type="button" class="close-btn" (click)="userFacade.clearMessages()">×</button>
+    </div>
+  }
+
+  <!-- Form Dialog Area -->
+  @if (showForm()) {
+    <app-user-form
+      [user]="editingUser()"
+      (save)="closeForm()"
+      (cancel)="closeForm()"
+    />
+  }
+
+  <!-- Detail Dialog Area -->
+  @if (showDetail()) {
+    <app-user-detail
+      [user]="detailedUser()"
+      (close)="closeDetail()"
+    />
+  }
+
+  <!-- Header -->
+  <header class="page-header">
+    <div>
+      <h1>Quản lý người dùng</h1>
+      <p>Quản lý tài khoản đăng nhập, ủy quyền vai trò và hồ sơ nghiệp vụ liên kết.</p>
+    </div>
+    <button type="button" class="btn btn-primary primary-button" (click)="openCreate()">
+      + Thêm tài khoản
+    </button>
+  </header>
+
+  <!-- Toolbar: Search, Filters, Sort -->
+  <section class="toolbar">
+    <div class="search-box">
+      <input
+        type="search"
+        [value]="userFacade.searchTerm()"
+        (input)="onSearch($any($event.target).value)"
+        placeholder="Tìm kiếm tài khoản, họ tên, email..."
+        aria-label="Tìm kiếm người dùng"
+      />
+    </div>
+
+    <div class="filters">
+      <!-- Role Filter -->
+      <label for="filter-role" class="visually-hidden">Lọc vai trò</label>
+      <select
+        id="filter-role"
+        [value]="userFacade.roleFilter()"
+        (change)="onRoleFilter($any($event.target).value)"
+      >
+        <option value="all">Tất cả vai trò</option>
+        <option value="admin">Quản trị viên</option>
+        <option value="teacher">Giảng viên</option>
+        <option value="student">Sinh viên</option>
+      </select>
+
+      <!-- Status Filter -->
+      <label for="filter-status" class="visually-hidden">Lọc trạng thái</label>
+      <select
+        id="filter-status"
+        [value]="userFacade.statusFilter()"
+        (change)="onStatusFilter($any($event.target).value)"
+      >
+        <option value="all">Tất cả trạng thái</option>
+        <option value="active">Đang hoạt động</option>
+        <option value="locked">Bị khóa</option>
+        <option value="inactive">Vô hiệu hóa</option>
+      </select>
+
+      <!-- Sort By -->
+      <label for="sort-by" class="visually-hidden">Sắp xếp theo</label>
+      <select
+        id="sort-by"
+        [value]="userFacade.sortBy()"
+        (change)="onSort($any($event.target).value)"
+      >
+        <option value="createdAt">Ngày tạo</option>
+        <option value="username">Tên đăng nhập</option>
+        <option value="displayName">Họ và tên</option>
+        <option value="role">Vai trò</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Users Table Card -->
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Tên đăng nhập</th>
+          <th>Tên hiển thị & Email</th>
+          <th>Vai trò</th>
+          <th>Hồ sơ liên kết</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (userFacade.loading()) {
+          <tr>
+            <td colspan="6" class="loading-state">
+              <span class="spinner"></span> Đang tải dữ liệu...
+            </td>
+          </tr>
+        } @else if (userFacade.pageUsers().length === 0) {
+          <tr>
+            <td colspan="6" class="empty-state">
+              Không tìm thấy tài khoản nào phù hợp với điều kiện tìm kiếm.
+            </td>
+          </tr>
+        } @else {
+          @for (user of userFacade.pageUsers(); track user.id) {
+            <tr [class.self-row]="isSelf(user)">
+              <!-- Username -->
+              <td>
+                <span class="username-cell">
+                  <strong>{{ user.username }}</strong>
+                  @if (isSelf(user)) {
+                    <span class="badge badge-self">Bạn</span>
+                  }
+                </span>
+              </td>
+
+              <!-- Display Name & Email -->
+              <td>
+                <div class="user-identity">
+                  <span class="display-name">{{ user.displayName }}</span>
+                  <span class="email-sub">{{ user.email }}</span>
+                </div>
+              </td>
+
+              <!-- Role Badge -->
+              <td>
+                <span class="badge" [class]="'badge-role-' + user.role">
+                  {{ user.role === 'admin' ? 'Quản trị viên' : (user.role === 'teacher' ? 'Giảng viên' : 'Sinh viên') }}
+                </span>
+              </td>
+
+              <!-- Linked Profile -->
+              <td>
+                @if (user.role === 'student' && user.studentId) {
+                  <span class="linked-tag linked-student">SV: {{ user.studentId }}</span>
+                } @else if (user.role === 'teacher' && user.teacherId) {
+                  <span class="linked-tag linked-teacher">GV: {{ user.teacherId }}</span>
+                } @else {
+                  <span class="text-muted">Hệ thống</span>
+                }
+              </td>
+
+              <!-- Status Badge -->
+              <td>
+                <span
+                  class="badge"
+                  [class]="user.status === 'active' ? 'badge-success' : (user.status === 'locked' ? 'badge-danger' : 'badge-warning')"
+                >
+                  {{ user.status === 'active' ? 'Hoạt động' : (user.status === 'locked' ? 'Đã khóa' : 'Vô hiệu hóa') }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <div class="action-buttons">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm btn-view-detail"
+                    (click)="openDetail(user)"
+                    title="Xem chi tiết tài khoản"
+                  >
+                    Chi tiết
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm btn-edit-user"
+                    (click)="openEdit(user)"
+                    title="Chỉnh sửa thông tin"
+                  >
+                    Sửa
+                  </button>
+
+                  <!-- Lock / Unlock button -->
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-lock-user"
+                    [class]="user.status === 'locked' ? 'btn-secondary' : 'btn-warning'"
+                    [disabled]="isSelf(user) || isLastActiveAdmin(user)"
+                    [title]="isSelf(user) ? 'Không thể tự khóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể khóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'))"
+                    (click)="toggleLock(user)"
+                  >
+                    {{ user.status === 'locked' ? 'Mở khóa' : 'Khóa' }}
+                  </button>
+
+                  <!-- Activate / Deactivate button -->
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-deactivate-user"
+                    [class]="user.status === 'inactive' ? 'btn-secondary' : 'btn-danger'"
+                    [disabled]="isSelf(user) || isLastActiveAdmin(user)"
+                    [title]="isSelf(user) ? 'Không thể tự vô hiệu hóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể vô hiệu hóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'inactive' ? 'Kích hoạt lại' : 'Vô hiệu hóa'))"
+                    (click)="toggleDeactivate(user)"
+                  >
+                    {{ user.status === 'inactive' ? 'Kích hoạt' : 'Vô hiệu' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <div class="pagination-info">
+        Hiển thị {{ userFacade.pageUsers().length }} / {{ userFacade.totalFilteredCount() }} tài khoản
+        (Trang {{ userFacade.page() }} / {{ userFacade.totalPages() }})
+      </div>
+
+      <div class="pagination-controls">
+        <label for="page-size-select" class="visually-hidden">Số bản ghi mỗi trang</label>
+        <select
+          id="page-size-select"
+          [value]="userFacade.pageSize()"
+          (change)="onPageSizeChange($any($event.target).value)"
+        >
+          <option [value]="5">5 / trang</option>
+          <option [value]="10">10 / trang</option>
+          <option [value]="20">20 / trang</option>
+        </select>
+
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="userFacade.page() <= 1"
+          (click)="onPageChange(userFacade.page() - 1)"
+        >
+          Trang trước
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="userFacade.page() >= userFacade.totalPages()"
+          (click)="onPageChange(userFacade.page() + 1)"
+        >
+          Trang sau
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

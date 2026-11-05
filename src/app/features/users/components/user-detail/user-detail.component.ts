@@ -1,0 +1,21 @@
+import { Component, inject, input, output } from '@angular/core';
+
+import { UserFacade } from '../../facades/user.facade';
+import type { User } from '../../models/user.model';
+
+@Component({
+  selector: 'app-user-detail',
+  standalone: true,
+  templateUrl: './user-detail.component.html',
+  styleUrl: './user-detail.component.css'
+})
+export class UserDetailComponent {
+  readonly userFacade = inject(UserFacade);
+
+  user = input<User | null>(null);
+  close = output<void>();
+
+  onClose(): void {
+    this.close.emit();
+  }
+}

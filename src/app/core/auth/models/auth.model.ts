@@ -6,6 +6,8 @@ export interface AuthUser {
     username: string;
     displayName: string;
     role: UserRole;
+    email?: string;
+    status?: 'active' | 'locked' | 'inactive';
     studentId?: string;
     teacherId?: string;
 }
