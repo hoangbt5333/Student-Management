@@ -219,6 +219,7 @@
                       type="button"
                       class="btn btn-secondary btn-sm btn-view-detail"
                       (click)="openDetail(user)"
+                      appTooltip="Xem chi tiết tài khoản"
                       title="Xem chi tiết tài khoản"
                     >
                       Chi tiết
@@ -228,6 +229,7 @@
                       type="button"
                       class="btn btn-secondary btn-sm btn-edit-user"
                       (click)="openEdit(user)"
+                      appTooltip="Chỉnh sửa thông tin"
                       title="Chỉnh sửa thông tin"
                     >
                       Sửa
@@ -239,6 +241,7 @@
                       class="btn btn-sm btn-lock-user"
                       [class]="user.status === 'locked' ? 'btn-secondary' : 'btn-warning'"
                       [disabled]="isSelf(user) || isLastActiveAdmin(user)"
+                      [appTooltip]="isSelf(user) ? 'Không thể tự khóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể khóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'))"
                       [title]="isSelf(user) ? 'Không thể tự khóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể khóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'))"
                       (click)="toggleLock(user)"
                     >
@@ -251,6 +254,7 @@
                       class="btn btn-sm btn-deactivate-user"
                       [class]="user.status === 'inactive' ? 'btn-secondary' : 'btn-danger'"
                       [disabled]="isSelf(user) || isLastActiveAdmin(user)"
+                      [appTooltip]="isSelf(user) ? 'Không thể tự vô hiệu hóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể vô hiệu hóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'inactive' ? 'Kích hoạt lại' : 'Vô hiệu hóa'))"
                       [title]="isSelf(user) ? 'Không thể tự vô hiệu hóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể vô hiệu hóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'inactive' ? 'Kích hoạt lại' : 'Vô hiệu hóa'))"
                       (click)="toggleDeactivate(user)"
                     >

@@ -7,12 +7,13 @@ import { UserFormComponent } from '../user-form/user-form.component';
 import { UserDetailComponent } from '../user-detail/user-detail.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 import type { User, UserRole, UserStatus } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [UserFormComponent, UserDetailComponent, ModalComponent, PaginationComponent, DatePipe],
+  imports: [UserFormComponent, UserDetailComponent, ModalComponent, PaginationComponent, TooltipDirective, DatePipe],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
 })

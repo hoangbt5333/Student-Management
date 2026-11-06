@@ -552,3 +552,70 @@ form select:focus {
   gap: var(--space-2);
   margin-top: var(--space-3);
 }
+
+
+/* ==========================================================================
+   Tooltip Component
+   ========================================================================== */
+.app-tooltip {
+  position: fixed;
+  z-index: 10050;
+  background-color: #111e35;
+  color: #ffffff;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(17, 30, 53, 0.25);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-tooltip.app-tooltip-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.app-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.app-tooltip[data-position="top"] .app-tooltip-arrow {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px 4px 0 4px;
+  border-color: #111e35 transparent transparent transparent;
+}
+
+.app-tooltip[data-position="bottom"] .app-tooltip-arrow {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 4px 4px 4px;
+  border-color: transparent transparent #111e35 transparent;
+}
+
+.app-tooltip[data-position="left"] .app-tooltip-arrow {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 4px 0 4px 4px;
+  border-color: transparent transparent transparent #111e35;
+}
+
+.app-tooltip[data-position="right"] .app-tooltip-arrow {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 4px 4px 4px 0;
+  border-color: transparent #111e35 transparent transparent;
+}
