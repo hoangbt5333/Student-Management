@@ -77,7 +77,7 @@
               <th>Khoa / Ngành</th>
               <th>Niên khóa</th>
               @if (authFacade.can('manage-classes')) {
-                <th class="actions-header">Thao tác</th>
+                <th class="col-actions actions-header">Thao tác</th>
               }
             </tr>
           </thead>
@@ -96,22 +96,24 @@
                   <span class="badge badge-neutral">{{ item.academicYear }}</span>
                 </td>
                 @if (authFacade.can('manage-classes')) {
-                  <td class="actions">
-                    <button
-                      type="button"
-                      class="btn btn-secondary secondary-button"
-                      (click)="openEditForm(item)"
-                    >
-                      Sửa
-                    </button>
+                  <td class="col-actions">
+                    <div class="action-buttons actions">
+                      <button
+                        type="button"
+                        class="btn btn-secondary secondary-button"
+                        (click)="openEditForm(item)"
+                      >
+                        Sửa
+                      </button>
 
-                    <button
-                      type="button"
-                      class="btn btn-danger danger-button"
-                      (click)="onDelete(item)"
-                    >
-                      Xóa
-                    </button>
+                      <button
+                        type="button"
+                        class="btn btn-danger danger-button"
+                        (click)="onDelete(item)"
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </td>
                 }
               </tr>

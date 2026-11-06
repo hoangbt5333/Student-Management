@@ -27,6 +27,8 @@ type TeacherState = {
   errorMessage: string;
   successMessage: string;
   searchTerm: string;
+  page: number;
+  pageSize: number;
 };
 
 type SaveTeacherRequest = {
@@ -39,7 +41,9 @@ const initialState: TeacherState = {
   loading: false,
   errorMessage: '',
   successMessage: '',
-  searchTerm: ''
+  searchTerm: '',
+  page: 1,
+  pageSize: 5
 };
 
 export const TeacherStore = signalStore(
@@ -47,7 +51,7 @@ export const TeacherStore = signalStore(
 
   withState(initialState),
 
-  withComputed(({ teachers, searchTerm }) => {
+  withComputed(({ teachers, searchTerm, page, pageSize }) => {
     const filteredTeachers = computed(() => {
       const keyword = normalizeVietnamese(searchTerm());
       if (!keyword) {
@@ -61,10 +65,21 @@ export const TeacherStore = signalStore(
       );
     });
 
+    const totalPages = computed(() =>
+      Math.max(1, Math.ceil(filteredTeachers().length / pageSize()))
+    );
+    const currentPage = computed(() => Math.min(Math.max(1, page()), totalPages()));
+
     return {
       teacherCount: computed(() => teachers().length),
       filteredTeachers,
-      filteredTeacherCount: computed(() => filteredTeachers().length)
+      filteredTeacherCount: computed(() => filteredTeachers().length),
+      currentPage,
+      totalPages,
+      pageTeachers: computed(() => {
+        const start = (currentPage() - 1) * pageSize();
+        return filteredTeachers().slice(start, start + pageSize());
+      })
     };
   }),
 
@@ -98,7 +113,21 @@ export const TeacherStore = signalStore(
       },
 
       setSearchTerm(searchTerm: string): void {
-        patchState(store, { searchTerm });
+        patchState(store, { searchTerm, page: 1 });
+      },
+
+      setPage(page: number): void {
+        patchState(store, {
+          page: Math.min(Math.max(1, Math.floor(page)), store.totalPages())
+        });
+      },
+
+      setPageSize(pageSize: number): void {
+        if (!Number.isInteger(pageSize) || pageSize < 1) {
+          throw new RangeError('Page size must be a positive integer.');
+        }
+
+        patchState(store, { pageSize, page: 1 });
       },
 
       clearMessages(): void {

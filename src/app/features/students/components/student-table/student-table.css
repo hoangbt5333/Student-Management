@@ -25,8 +25,19 @@
   text-decoration: underline;
 }
 
+.col-actions {
+  white-space: nowrap;
+}
+
+.actions-header {
+  white-space: nowrap;
+  width: 140px;
+}
+
+.action-buttons,
 .actions {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  white-space: nowrap;
 }

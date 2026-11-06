@@ -12,6 +12,10 @@ export class TeacherFacade {
   readonly filteredTeachers = this.store.filteredTeachers;
   readonly teacherCount = this.store.teacherCount;
   readonly filteredTeacherCount = this.store.filteredTeacherCount;
+  readonly pageTeachers = this.store.pageTeachers;
+  readonly currentPage = this.store.currentPage;
+  readonly totalPages = this.store.totalPages;
+  readonly pageSize = this.store.pageSize;
   readonly loading = this.store.loading;
   readonly errorMessage = this.store.errorMessage;
   readonly successMessage = this.store.successMessage;
@@ -23,6 +27,14 @@ export class TeacherFacade {
 
   setSearchTerm(term: string): void {
     this.store.setSearchTerm(term);
+  }
+
+  setPage(page: number): void {
+    this.store.setPage(page);
+  }
+
+  setPageSize(pageSize: number): void {
+    this.store.setPageSize(pageSize);
   }
 
   saveTeacher(teacher: Teacher, mode: 'add' | 'update'): void {

@@ -12,6 +12,11 @@ export class SubjectFacade {
   readonly filteredSubjects = this.store.filteredSubjects;
   readonly subjectCount = this.store.subjectCount;
   readonly filteredSubjectCount = this.store.filteredSubjectCount;
+  readonly page = this.store.page;
+  readonly currentPage = this.store.currentPage;
+  readonly pageSize = this.store.pageSize;
+  readonly totalPages = this.store.totalPages;
+  readonly pageSubjects = this.store.pageSubjects;
   readonly loading = this.store.loading;
   readonly errorMessage = this.store.errorMessage;
   readonly successMessage = this.store.successMessage;
@@ -23,6 +28,14 @@ export class SubjectFacade {
 
   setSearchTerm(term: string): void {
     this.store.setSearchTerm(term);
+  }
+
+  setPage(page: number): void {
+    this.store.setPage(page);
+  }
+
+  setPageSize(pageSize: number): void {
+    this.store.setPageSize(pageSize);
   }
 
   saveSubject(subject: Subject, mode: 'add' | 'update'): void {

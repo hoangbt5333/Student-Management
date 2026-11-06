@@ -6,6 +6,7 @@ import { TeacherFacade } from '../../facades/teacher.facade';
 import type { Teacher } from '../../models/teacher.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 interface SubjectRef {
   id: string;
@@ -15,7 +16,7 @@ interface SubjectRef {
 @Component({
   selector: 'app-teacher-list',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ModalComponent],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent],
   templateUrl: './teacher-list.html',
   styleUrl: './teacher-list.css',
 })
@@ -26,7 +27,10 @@ export class TeacherListComponent implements OnInit {
   private readonly http = inject(HttpClient);
 
   readonly teachers = this.facade.teachers;
-  readonly filteredTeachers = this.facade.filteredTeachers;
+  readonly pageTeachers = this.facade.pageTeachers;
+  readonly currentPage = this.facade.currentPage;
+  readonly filteredTeacherCount = this.facade.filteredTeacherCount;
+  readonly pageSize = this.facade.pageSize;
   readonly loading = this.facade.loading;
   readonly errorMessage = this.facade.errorMessage;
   readonly successMessage = this.facade.successMessage;
@@ -112,5 +116,13 @@ export class TeacherListComponent implements OnInit {
 
   setSearch(value: string): void {
     this.facade.setSearchTerm(value);
+  }
+
+  onPageChange(page: number): void {
+    this.facade.setPage(page);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.facade.setPageSize(pageSize);
   }
 }

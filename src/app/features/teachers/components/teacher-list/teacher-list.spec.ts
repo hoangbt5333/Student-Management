@@ -27,6 +27,12 @@ describe('TeacherListComponent', () => {
   const mockLoadTeachers = vi.fn();
   const mockClearMessages = vi.fn();
   const mockSetSearchTerm = vi.fn();
+  const mockPageTeachersSignal = signal<Teacher[]>(mockTeachersSignal());
+  const mockFilteredTeacherCountSignal = signal(1);
+  const mockCurrentPageSignal = signal(1);
+  const mockPageSizeSignal = signal(5);
+  const mockSetPage = vi.fn();
+  const mockSetPageSize = vi.fn();
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -40,12 +46,18 @@ describe('TeacherListComponent', () => {
           useValue: {
             teachers: mockTeachersSignal,
             filteredTeachers: mockTeachersSignal,
+            pageTeachers: mockPageTeachersSignal,
+            filteredTeacherCount: mockFilteredTeacherCountSignal,
+            currentPage: mockCurrentPageSignal,
+            pageSize: mockPageSizeSignal,
             loading: signal(false),
             errorMessage: signal(null),
             successMessage: signal(null),
             loadTeachers: mockLoadTeachers,
             clearMessages: mockClearMessages,
             setSearchTerm: mockSetSearchTerm,
+            setPage: mockSetPage,
+            setPageSize: mockSetPageSize,
           },
         },
         {
@@ -75,6 +87,17 @@ describe('TeacherListComponent', () => {
     const rows = fixture.debugElement.queryAll(By.css('.data-table tbody tr'));
     expect(rows.length).toBe(1);
     expect(rows[0].nativeElement.textContent).toContain('Nguyen Van B');
+  });
+
+  it('should render shared pagination and forward page changes', () => {
+    const pagination = fixture.debugElement.query(By.css('app-pagination'));
+    expect(pagination).toBeTruthy();
+    expect(pagination.nativeElement.textContent).toContain('giảng viên');
+
+    component.onPageChange(2);
+    component.onPageSizeChange(20);
+    expect(mockSetPage).toHaveBeenCalledWith(2);
+    expect(mockSetPageSize).toHaveBeenCalledWith(20);
   });
 
   it('should toggle form visibility on add button click', () => {

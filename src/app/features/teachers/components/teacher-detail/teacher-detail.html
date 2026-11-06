@@ -78,7 +78,7 @@
                 <th>Mã môn</th>
                 <th>Tên môn học</th>
                 <th>Số tín chỉ</th>
-                <th>Thao tác</th>
+                <th class="col-actions actions-header">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -91,10 +91,12 @@
                     </a>
                   </td>
                   <td><span class="score">{{ subject.credits }}</span> tín chỉ</td>
-                  <td class="actions">
-                    <a [routerLink]="['/subjects', subject.id]" class="btn btn-secondary">
-                      Chi tiết
-                    </a>
+                  <td class="col-actions">
+                    <div class="action-buttons actions">
+                      <a [routerLink]="['/subjects', subject.id]" class="btn btn-secondary">
+                        Chi tiết
+                      </a>
+                    </div>
                   </td>
                 </tr>
               }

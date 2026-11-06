@@ -146,4 +146,19 @@ describe('GradeListComponent', () => {
     expect(scorePill).toBeTruthy();
     expect(scorePill.nativeElement.textContent.trim()).toBe('9.0');
   });
+
+  it('should render shared pagination and handle page changes', () => {
+    const pagination = fixture.debugElement.query(By.css('app-pagination'));
+    expect(pagination).toBeTruthy();
+    expect(pagination.nativeElement.textContent).toContain('điểm số');
+
+    const setPageSpy = vi.spyOn(component.gradeFacade, 'setPage');
+    const setPageSizeSpy = vi.spyOn(component.gradeFacade, 'setPageSize');
+
+    component.onPageChange(2);
+    expect(setPageSpy).toHaveBeenCalledWith(2);
+
+    component.onPageSizeChange(10);
+    expect(setPageSizeSpy).toHaveBeenCalledWith(10);
+  });
 });

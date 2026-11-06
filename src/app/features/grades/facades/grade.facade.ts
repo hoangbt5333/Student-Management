@@ -12,6 +12,10 @@ export class GradeFacade {
   readonly filteredGrades = this.store.filteredGrades;
   readonly gradeCount = this.store.gradeCount;
   readonly filteredGradeCount = this.store.filteredGradeCount;
+  readonly pageGrades = this.store.pageGrades;
+  readonly currentPage = this.store.currentPage;
+  readonly totalPages = this.store.totalPages;
+  readonly pageSize = this.store.pageSize;
   readonly averageScore = this.store.averageScore;
   readonly loading = this.store.loading;
   readonly errorMessage = this.store.errorMessage;
@@ -29,6 +33,14 @@ export class GradeFacade {
 
   setSubjectFilter(subjectFilter: string): void {
     this.store.setSubjectFilter(subjectFilter);
+  }
+
+  setPage(page: number): void {
+    this.store.setPage(page);
+  }
+
+  setPageSize(pageSize: number): void {
+    this.store.setPageSize(pageSize);
   }
 
   saveGrade(grade: Omit<Grade, 'id'> & { id?: string }, mode: 'add' | 'update'): void {

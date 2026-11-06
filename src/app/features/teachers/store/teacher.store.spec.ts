@@ -60,6 +60,49 @@ describe('TeacherStore', () => {
     expect(store.errorMessage()).toBe('');
   });
 
+  it('should paginate teachers and reset to the first page when the search changes', () => {
+    const teachers = Array.from({ length: 12 }, (_, index) => ({
+      id: `GV${String(index + 1).padStart(3, '0')}`,
+      code: `GV${String(index + 1).padStart(3, '0')}`,
+      name: `Giảng viên ${index + 1}`,
+      email: `teacher${index + 1}@university.edu.vn`,
+      department: index < 2 ? 'Công nghệ thông tin' : 'Toán'
+    }));
+
+    store.loadTeachers();
+    httpMock.expectOne('http://localhost:3001/teachers').flush(teachers);
+
+    expect(store.pageTeachers()).toHaveLength(5);
+    expect(store.totalPages()).toBe(3);
+
+    store.setPage(2);
+    expect(store.currentPage()).toBe(2);
+    expect(store.pageTeachers()).toHaveLength(5);
+
+    store.setPage(3);
+    expect(store.currentPage()).toBe(3);
+    expect(store.pageTeachers()).toHaveLength(2);
+
+    store.setSearchTerm('cong nghe thong tin');
+    expect(store.currentPage()).toBe(1);
+    expect(store.pageTeachers()).toHaveLength(2);
+    expect(store.filteredTeacherCount()).toBe(2);
+  });
+
+  it('should update page size and clamp invalid page requests', () => {
+    store.loadTeachers();
+    httpMock.expectOne('http://localhost:3001/teachers').flush(mockTeachers);
+
+    store.setPage(20);
+    expect(store.currentPage()).toBe(1);
+
+    store.setPageSize(1);
+    expect(store.pageSize()).toBe(1);
+    expect(store.pageTeachers()).toHaveLength(1);
+
+    expect(() => store.setPageSize(0)).toThrow(RangeError);
+  });
+
   it('should filter teachers with Vietnamese diacritic insensitivity', () => {
     store.loadTeachers();
     const req = httpMock.expectOne('http://localhost:3001/teachers');

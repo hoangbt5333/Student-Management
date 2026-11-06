@@ -79,7 +79,7 @@
                 <th>Họ và tên</th>
                 <th>Email</th>
                 <th>Số điện thoại</th>
-                <th>Thao tác</th>
+                <th class="col-actions actions-header">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -95,10 +95,12 @@
                     <a [href]="'mailto:' + student.email" class="email-link">{{ student.email }}</a>
                   </td>
                   <td><code>{{ student.phone }}</code></td>
-                  <td class="actions">
-                    <a [routerLink]="['/students', student.id]" class="btn btn-secondary">
-                      Xem chi tiết
-                    </a>
+                  <td class="col-actions">
+                    <div class="action-buttons actions">
+                      <a [routerLink]="['/students', student.id]" class="btn btn-secondary">
+                        Xem chi tiết
+                      </a>
+                    </div>
                   </td>
                 </tr>
               }

@@ -27,6 +27,8 @@ type GradeState = {
   successMessage: string;
   studentFilter: string;
   subjectFilter: string;
+  page: number;
+  pageSize: number;
 };
 
 export type SaveGradeRequest = {
@@ -40,7 +42,9 @@ const initialState: GradeState = {
   errorMessage: '',
   successMessage: '',
   studentFilter: '',
-  subjectFilter: ''
+  subjectFilter: '',
+  page: 1,
+  pageSize: 5
 };
 
 export const GradeStore = signalStore(
@@ -48,7 +52,7 @@ export const GradeStore = signalStore(
 
   withState(initialState),
 
-  withComputed(({ grades, studentFilter, subjectFilter }) => {
+  withComputed(({ grades, studentFilter, subjectFilter, page, pageSize }) => {
     const filteredGrades = computed(() => {
       const currentStudent = studentFilter();
       const currentSubject = subjectFilter();
@@ -69,10 +73,21 @@ export const GradeStore = signalStore(
         : '—';
     });
 
+    const totalPages = computed(() =>
+      Math.max(1, Math.ceil(filteredGrades().length / pageSize()))
+    );
+    const currentPage = computed(() => Math.min(Math.max(1, page()), totalPages()));
+
     return {
       gradeCount: computed(() => grades().length),
       filteredGrades,
       filteredGradeCount: computed(() => filteredGrades().length),
+      currentPage,
+      totalPages,
+      pageGrades: computed(() => {
+        const start = (currentPage() - 1) * pageSize();
+        return filteredGrades().slice(start, start + pageSize());
+      }),
       averageScore
     };
   }),
@@ -107,11 +122,25 @@ export const GradeStore = signalStore(
       },
 
       setStudentFilter(studentFilter: string): void {
-        patchState(store, { studentFilter });
+        patchState(store, { studentFilter, page: 1 });
       },
 
       setSubjectFilter(subjectFilter: string): void {
-        patchState(store, { subjectFilter });
+        patchState(store, { subjectFilter, page: 1 });
+      },
+
+      setPage(page: number): void {
+        patchState(store, {
+          page: Math.min(Math.max(1, Math.floor(page)), store.totalPages())
+        });
+      },
+
+      setPageSize(pageSize: number): void {
+        if (!Number.isInteger(pageSize) || pageSize < 1) {
+          throw new RangeError('Page size must be a positive integer.');
+        }
+
+        patchState(store, { pageSize, page: 1 });
       },
 
       clearMessages(): void {

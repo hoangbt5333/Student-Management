@@ -7,6 +7,7 @@ import { GradeFacade } from '../../facades/grade.facade';
 import { StudentFacade } from '../../../students/facades/student.facade';
 import { SubjectFacade } from '../../../subjects/facades/subject.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import type { Grade } from '../../models/grade.model';
 import type { Student } from '../../../students/models/student.model';
 import type { Subject } from '../../../subjects/models/subject.model';
@@ -14,7 +15,7 @@ import type { Subject } from '../../../subjects/models/subject.model';
 @Component({
   selector: 'app-grade-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PaginationComponent],
   templateUrl: './grade-list.html',
   styleUrl: './grade-list.css',
 })
@@ -28,6 +29,12 @@ export class GradeListComponent implements OnInit {
 
   readonly grades = this.gradeFacade.grades;
   readonly filteredGrades = this.gradeFacade.filteredGrades;
+  readonly gradeCount = this.gradeFacade.gradeCount;
+  readonly filteredGradeCount = this.gradeFacade.filteredGradeCount;
+  readonly pageGrades = this.gradeFacade.pageGrades;
+  readonly currentPage = this.gradeFacade.currentPage;
+  readonly totalPages = this.gradeFacade.totalPages;
+  readonly pageSize = this.gradeFacade.pageSize;
   readonly averageScore = this.gradeFacade.averageScore;
   readonly loading = this.gradeFacade.loading;
   readonly errorMessage = this.gradeFacade.errorMessage;
@@ -145,6 +152,14 @@ export class GradeListComponent implements OnInit {
 
   setSubjectFilter(value: string): void {
     this.gradeFacade.setSubjectFilter(value);
+  }
+
+  onPageChange(page: number): void {
+    this.gradeFacade.setPage(page);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.gradeFacade.setPageSize(pageSize);
   }
 
   closeForm(): void {

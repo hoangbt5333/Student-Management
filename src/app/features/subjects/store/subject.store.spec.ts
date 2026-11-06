@@ -105,4 +105,130 @@ describe('SubjectStore', () => {
     store.setSearchTerm('Vật lý');
     expect(store.filteredSubjects()).toHaveLength(0);
   });
+
+  it('should initialize with default pagination state', () => {
+    expect(store.page()).toBe(1);
+    expect(store.currentPage()).toBe(1);
+    expect(store.pageSize()).toBe(5);
+    expect(store.totalPages()).toBe(1);
+    expect(store.pageSubjects()).toEqual([]);
+  });
+
+  it('should paginate subjects with default page size (5)', () => {
+    const sevenSubjects: Subject[] = Array.from({ length: 7 }, (_, i) => ({
+      id: `MH00${i + 1}`,
+      code: `MH00${i + 1}`,
+      name: `Môn học ${i + 1}`,
+      credits: 3
+    }));
+
+    store.loadSubjects();
+    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+
+    expect(store.subjectCount()).toBe(7);
+    expect(store.filteredSubjectCount()).toBe(7);
+    expect(store.totalPages()).toBe(2);
+    expect(store.currentPage()).toBe(1);
+    expect(store.pageSubjects()).toHaveLength(5);
+    expect(store.pageSubjects()[0].id).toBe('MH001');
+    expect(store.pageSubjects()[4].id).toBe('MH005');
+  });
+
+  it('should navigate pages and clamp page numbers', () => {
+    const sevenSubjects: Subject[] = Array.from({ length: 7 }, (_, i) => ({
+      id: `MH00${i + 1}`,
+      code: `MH00${i + 1}`,
+      name: `Môn học ${i + 1}`,
+      credits: 3
+    }));
+
+    store.loadSubjects();
+    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+
+    store.setPage(2);
+    expect(store.currentPage()).toBe(2);
+    expect(store.pageSubjects()).toHaveLength(2);
+    expect(store.pageSubjects()[0].id).toBe('MH006');
+    expect(store.pageSubjects()[1].id).toBe('MH007');
+
+    // Clamp above
+    store.setPage(99);
+    expect(store.currentPage()).toBe(2);
+
+    // Clamp below
+    store.setPage(0);
+    expect(store.currentPage()).toBe(1);
+  });
+
+  it('should reset page to 1 on search change', () => {
+    const sevenSubjects: Subject[] = Array.from({ length: 7 }, (_, i) => ({
+      id: `MH00${i + 1}`,
+      code: `MH00${i + 1}`,
+      name: `Môn học ${i + 1}`,
+      credits: 3
+    }));
+
+    store.loadSubjects();
+    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+
+    store.setPage(2);
+    expect(store.currentPage()).toBe(2);
+
+    store.setSearchTerm('Môn học 1');
+    expect(store.currentPage()).toBe(1);
+    expect(store.filteredSubjectCount()).toBe(1);
+  });
+
+  it('should update page size and recalculate pages', () => {
+    const sevenSubjects: Subject[] = Array.from({ length: 7 }, (_, i) => ({
+      id: `MH00${i + 1}`,
+      code: `MH00${i + 1}`,
+      name: `Môn học ${i + 1}`,
+      credits: 3
+    }));
+
+    store.loadSubjects();
+    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+
+    store.setPage(2);
+    expect(store.currentPage()).toBe(2);
+
+    store.setPageSize(10);
+    expect(store.pageSize()).toBe(10);
+    expect(store.currentPage()).toBe(1);
+    expect(store.totalPages()).toBe(1);
+    expect(store.pageSubjects()).toHaveLength(7);
+
+    store.setPageSize(2);
+    expect(store.pageSize()).toBe(2);
+    expect(store.totalPages()).toBe(4);
+    expect(store.pageSubjects()).toHaveLength(2);
+  });
+
+  it('should throw RangeError for non-positive page size', () => {
+    expect(() => store.setPageSize(0)).toThrow(RangeError);
+    expect(() => store.setPageSize(-3)).toThrow(RangeError);
+  });
+
+  it('should clamp currentPage when subjects list shrinks', () => {
+    const sevenSubjects: Subject[] = Array.from({ length: 7 }, (_, i) => ({
+      id: `MH00${i + 1}`,
+      code: `MH00${i + 1}`,
+      name: `Môn học ${i + 1}`,
+      credits: 3
+    }));
+
+    store.loadSubjects();
+    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+
+    store.setPage(2);
+    expect(store.currentPage()).toBe(2);
+
+    store.loadSubjects();
+    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects.slice(0, 3));
+
+    expect(store.totalPages()).toBe(1);
+    expect(store.currentPage()).toBe(1);
+    expect(store.pageSubjects()).toHaveLength(3);
+  });
 });

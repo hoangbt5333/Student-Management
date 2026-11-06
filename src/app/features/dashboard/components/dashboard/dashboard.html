@@ -116,10 +116,12 @@
                   <span class="badge badge-warning">Chưa có sinh viên</span>
                 }
               </td>
-              <td class="actions">
-                <a [routerLink]="['/classes', item.id]" class="btn btn-secondary">
-                  Chi tiết
-                </a>
+              <td class="col-actions">
+                <div class="action-buttons actions">
+                  <a [routerLink]="['/classes', item.id]" class="btn btn-secondary">
+                    Chi tiết
+                  </a>
+                </div>
               </td>
             </tr>
           }

@@ -27,6 +27,8 @@ type SubjectState = {
   errorMessage: string;
   successMessage: string;
   searchTerm: string;
+  page: number;
+  pageSize: number;
 };
 
 type SaveSubjectRequest = {
@@ -39,7 +41,9 @@ const initialState: SubjectState = {
   loading: false,
   errorMessage: '',
   successMessage: '',
-  searchTerm: ''
+  searchTerm: '',
+  page: 1,
+  pageSize: 5
 };
 
 export const SubjectStore = signalStore(
@@ -47,7 +51,7 @@ export const SubjectStore = signalStore(
 
   withState(initialState),
 
-  withComputed(({ subjects, searchTerm }) => {
+  withComputed(({ subjects, searchTerm, page, pageSize }) => {
     const filteredSubjects = computed(() => {
       const keyword = normalizeVietnamese(searchTerm());
       if (!keyword) {
@@ -61,10 +65,27 @@ export const SubjectStore = signalStore(
       );
     });
 
+    const totalPages = computed(() => {
+      const size = pageSize();
+      return Math.max(1, Math.ceil(filteredSubjects().length / (size > 0 ? size : 1)));
+    });
+
+    const currentPage = computed(() => {
+      return Math.min(Math.max(1, page()), totalPages());
+    });
+
+    const pageSubjects = computed(() => {
+      const start = (currentPage() - 1) * pageSize();
+      return filteredSubjects().slice(start, start + pageSize());
+    });
+
     return {
       subjectCount: computed(() => subjects().length),
       filteredSubjects,
-      filteredSubjectCount: computed(() => filteredSubjects().length)
+      filteredSubjectCount: computed(() => filteredSubjects().length),
+      totalPages,
+      currentPage,
+      pageSubjects
     };
   }),
 
@@ -98,7 +119,20 @@ export const SubjectStore = signalStore(
       },
 
       setSearchTerm(searchTerm: string): void {
-        patchState(store, { searchTerm });
+        patchState(store, { searchTerm, page: 1 });
+      },
+
+      setPage(page: number): void {
+        patchState(store, {
+          page: Math.min(Math.max(1, Math.floor(page)), store.totalPages())
+        });
+      },
+
+      setPageSize(pageSize: number): void {
+        if (!Number.isInteger(pageSize) || pageSize < 1) {
+          throw new RangeError('Page size must be a positive integer.');
+        }
+        patchState(store, { pageSize, page: 1 });
       },
 
       clearMessages(): void {

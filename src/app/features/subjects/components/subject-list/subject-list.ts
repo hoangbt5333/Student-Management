@@ -6,6 +6,7 @@ import { SubjectFacade } from '../../facades/subject.facade';
 import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
 import type { Subject } from '../../models/subject.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 interface GradeRef {
@@ -16,7 +17,7 @@ interface GradeRef {
 @Component({
   selector: 'app-subject-list',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ModalComponent],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent],
   templateUrl: './subject-list.html',
   styleUrl: './subject-list.css',
 })
@@ -29,6 +30,7 @@ export class SubjectListComponent implements OnInit {
 
   readonly subjects = this.facade.subjects;
   readonly filteredSubjects = this.facade.filteredSubjects;
+  readonly pageSubjects = this.facade.pageSubjects;
   readonly loading = this.facade.loading;
   readonly errorMessage = this.facade.errorMessage;
   readonly successMessage = this.facade.successMessage;
@@ -125,5 +127,13 @@ export class SubjectListComponent implements OnInit {
   closeForm(): void {
     this.showForm.set(false);
     this.form.controls.id.enable();
+  }
+
+  onPageChange(page: number): void {
+    this.facade.setPage(page);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.facade.setPageSize(pageSize);
   }
 }

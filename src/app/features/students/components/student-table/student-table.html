@@ -9,7 +9,7 @@
         <th>Lớp</th>
         <th>Khoa / Ngành</th>
         @if (authFacade.can('manage-students')) {
-          <th class="actions-header">Thao tác</th>
+          <th class="col-actions actions-header">Thao tác</th>
         }
       </tr>
     </thead>
@@ -36,13 +36,15 @@
           </td>
           <td>{{ student.faculty || '—' }}</td>
           @if (authFacade.can('manage-students')) {
-            <td class="actions">
-              <button type="button" class="btn btn-secondary edit-button" (click)="edit.emit(student)">
-                Sửa
-              </button>
-              <button type="button" class="btn btn-danger delete-button" (click)="delete.emit(student.id)">
-                Xoá
-              </button>
+            <td class="col-actions">
+              <div class="action-buttons actions">
+                <button type="button" class="btn btn-secondary edit-button" (click)="edit.emit(student)">
+                  Sửa
+                </button>
+                <button type="button" class="btn btn-danger delete-button" (click)="delete.emit(student.id)">
+                  Xoá
+                </button>
+              </div>
             </td>
           }
         </tr>

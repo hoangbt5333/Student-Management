@@ -158,7 +158,7 @@
 
     <div class="toolbar-stats">
       <span class="badge badge-info count-badge">
-        <strong>{{ filteredGrades().length }}</strong> kết quả
+        <strong>{{ filteredGradeCount() }}</strong> / {{ gradeCount() }} kết quả
       </span>
       <span class="badge badge-neutral average-badge">
         Điểm TB: <strong>{{ averageScore() }}</strong>
@@ -171,78 +171,92 @@
       <p>Đang tải bảng điểm...</p>
     </div>
   } @else {
-    <div class="table-card">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Mã SV</th>
-            <th>Sinh viên</th>
-            <th>Mã môn</th>
-            <th>Môn học</th>
-            <th class="text-center">Điểm số</th>
-            <th>Đánh giá</th>
-            @if (canManage()) {
-              <th class="text-right">Thao tác</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (grade of filteredGrades(); track grade.id) {
+    <div class="table-card table-wrapper">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td><code>{{ studentCode(grade.studentId) }}</code></td>
-              <td>
-                <a [routerLink]="['/students', grade.studentId]" class="entity-link">
-                  <strong>{{ studentName(grade.studentId) }}</strong>
-                </a>
-              </td>
-              <td><code>{{ subjectCode(grade.subjectId) }}</code></td>
-              <td>
-                <a [routerLink]="['/subjects', grade.subjectId]" class="entity-link">
-                  {{ subjectName(grade.subjectId) }}
-                </a>
-              </td>
-              <td class="text-center">
-                <span
-                  class="score score-pill"
-                  [class.score-high]="grade.score >= 8.5"
-                  [class.score-medium]="grade.score >= 5.0 && grade.score < 8.5"
-                  [class.score-low]="grade.score < 5.0"
-                >
-                  {{ grade.score | number:'1.1-2' }}
-                </span>
-              </td>
-              <td>
-                @if (grade.score >= 8.5) {
-                  <span class="badge badge-success">Giỏi / Xuất sắc</span>
-                } @else if (grade.score >= 7.0) {
-                  <span class="badge badge-info">Khá</span>
-                } @else if (grade.score >= 5.0) {
-                  <span class="badge badge-neutral">Đạt</span>
-                } @else {
-                  <span class="badge badge-danger">Chưa đạt</span>
-                }
-              </td>
+              <th>Mã SV</th>
+              <th>Sinh viên</th>
+              <th>Mã môn</th>
+              <th>Môn học</th>
+              <th class="text-center">Điểm số</th>
+              <th>Đánh giá</th>
               @if (canManage()) {
-                <td class="text-right">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-secondary"
-                    (click)="edit(grade)"
-                  >
-                    Sửa điểm
-                  </button>
-                </td>
+                <th class="col-actions actions-header text-right">Thao tác</th>
               }
             </tr>
-          } @empty {
-            <tr>
-              <td [attr.colspan]="canManage() ? 7 : 6" class="empty">
-                Không có điểm phù hợp với bộ lọc.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (grade of pageGrades(); track grade.id) {
+              <tr>
+                <td><code>{{ studentCode(grade.studentId) }}</code></td>
+                <td>
+                  <a [routerLink]="['/students', grade.studentId]" class="entity-link">
+                    <strong>{{ studentName(grade.studentId) }}</strong>
+                  </a>
+                </td>
+                <td><code>{{ subjectCode(grade.subjectId) }}</code></td>
+                <td>
+                  <a [routerLink]="['/subjects', grade.subjectId]" class="entity-link">
+                    {{ subjectName(grade.subjectId) }}
+                  </a>
+                </td>
+                <td class="text-center">
+                  <span
+                    class="score score-pill"
+                    [class.score-high]="grade.score >= 8.5"
+                    [class.score-medium]="grade.score >= 5.0 && grade.score < 8.5"
+                    [class.score-low]="grade.score < 5.0"
+                  >
+                    {{ grade.score | number:'1.1-2' }}
+                  </span>
+                </td>
+                <td>
+                  @if (grade.score >= 8.5) {
+                    <span class="badge badge-success">Giỏi / Xuất sắc</span>
+                  } @else if (grade.score >= 7.0) {
+                    <span class="badge badge-info">Khá</span>
+                  } @else if (grade.score >= 5.0) {
+                    <span class="badge badge-neutral">Đạt</span>
+                  } @else {
+                    <span class="badge badge-danger">Chưa đạt</span>
+                  }
+                </td>
+                @if (canManage()) {
+                  <td class="col-actions text-right">
+                    <div class="action-buttons actions table-actions-end">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-secondary"
+                        (click)="edit(grade)"
+                      >
+                        Sửa điểm
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="canManage() ? 7 : 6" class="empty">
+                  Không có điểm phù hợp với bộ lọc.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [currentPage]="currentPage()"
+        [totalItems]="filteredGradeCount()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[5, 10, 20]"
+        itemLabel="điểm số"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      />
     </div>
   }
 </div>

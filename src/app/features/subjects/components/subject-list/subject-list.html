@@ -107,7 +107,7 @@
 
     <div class="count-badge">
       <span class="count-text">
-        Tổng số: <strong>{{ filteredSubjects().length }}</strong> / {{ subjects().length }} môn học
+        Tổng số: <strong>{{ facade.filteredSubjectCount() }}</strong> / {{ subjects().length }} môn học
       </span>
     </div>
   </section>
@@ -118,61 +118,75 @@
     </div>
   } @else {
     <div class="table-card table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Mã môn</th>
-            <th>Tên môn học</th>
-            <th>Số tín chỉ</th>
-            <th>Giảng viên phụ trách</th>
-            <th>Thông tin</th>
-            @if (authFacade.can('manage-subjects')) {
-              <th class="actions-header">Thao tác</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (subject of filteredSubjects(); track subject.id) {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td><code>{{ subject.code || subject.id }}</code></td>
-              <td>
-                <a [routerLink]="['/subjects', subject.id]" class="subject-name-link">
-                  <strong>{{ subject.name }}</strong>
-                </a>
-              </td>
-              <td><span class="score">{{ subject.credits }}</span> tín chỉ</td>
-              <td>
-                @if (subject.teacherId) {
-                  <span class="badge badge-info">{{ teacherName(subject.teacherId) }}</span>
-                } @else {
-                  <span class="badge badge-neutral">Chưa phân công</span>
-                }
-              </td>
-              <td>
-                <a [routerLink]="['/subjects', subject.id]" class="btn btn-secondary info-link">
-                  Chi tiết
-                </a>
-              </td>
+              <th>Mã môn</th>
+              <th>Tên môn học</th>
+              <th>Số tín chỉ</th>
+              <th>Giảng viên phụ trách</th>
+              <th>Thông tin</th>
               @if (authFacade.can('manage-subjects')) {
-                <td class="actions">
-                  <button type="button" class="btn btn-secondary edit-button" (click)="edit(subject)">
-                    Sửa
-                  </button>
-                  <button type="button" class="btn btn-danger danger danger-button" (click)="delete(subject)">
-                    Xóa
-                  </button>
-                </td>
+                <th class="col-actions actions-header">Thao tác</th>
               }
             </tr>
-          } @empty {
-            <tr>
-              <td [attr.colspan]="authFacade.can('manage-subjects') ? 6 : 5" class="empty empty-state">
-                Không tìm thấy môn học phù hợp.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (subject of pageSubjects(); track subject.id) {
+              <tr>
+                <td><code>{{ subject.code || subject.id }}</code></td>
+                <td>
+                  <a [routerLink]="['/subjects', subject.id]" class="subject-name-link">
+                    <strong>{{ subject.name }}</strong>
+                  </a>
+                </td>
+                <td><span class="score">{{ subject.credits }}</span> tín chỉ</td>
+                <td>
+                  @if (subject.teacherId) {
+                    <span class="badge badge-info">{{ teacherName(subject.teacherId) }}</span>
+                  } @else {
+                    <span class="badge badge-neutral">Chưa phân công</span>
+                  }
+                </td>
+                <td>
+                  <a [routerLink]="['/subjects', subject.id]" class="btn btn-secondary info-link">
+                    Chi tiết
+                  </a>
+                </td>
+                @if (authFacade.can('manage-subjects')) {
+                  <td class="col-actions">
+                    <div class="action-buttons actions">
+                      <button type="button" class="btn btn-secondary edit-button" (click)="edit(subject)">
+                        Sửa
+                      </button>
+                      <button type="button" class="btn btn-danger danger danger-button" (click)="delete(subject)">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="authFacade.can('manage-subjects') ? 6 : 5" class="empty empty-state">
+                  Không tìm thấy môn học phù hợp.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [currentPage]="facade.currentPage()"
+        [totalItems]="facade.filteredSubjectCount()"
+        [pageSize]="facade.pageSize()"
+        [pageSizeOptions]="[5, 10, 20]"
+        itemLabel="môn học"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      />
     </div>
   }
 </div>

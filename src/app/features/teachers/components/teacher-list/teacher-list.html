@@ -110,7 +110,7 @@
 
     <div class="count-badge">
       <span class="count-text">
-        Tổng số: <strong>{{ filteredTeachers().length }}</strong> / {{ teachers().length }} giảng viên
+        Tổng số: <strong>{{ filteredTeacherCount() }}</strong> / {{ teachers().length }} giảng viên
       </span>
     </div>
   </section>
@@ -121,57 +121,71 @@
     </div>
   } @else {
     <div class="table-card table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Mã GV</th>
-            <th>Họ và tên</th>
-            <th>Email</th>
-            <th>Khoa / Bộ môn</th>
-            <th>Thông tin</th>
-            @if (authFacade.can('manage-teachers')) {
-              <th class="actions-header">Thao tác</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (teacher of filteredTeachers(); track teacher.id) {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td><code>{{ teacher.code || teacher.id }}</code></td>
-              <td>
-                <a [routerLink]="['/teachers', teacher.id]" class="teacher-name-link">
-                  <strong>{{ teacher.name }}</strong>
-                </a>
-              </td>
-              <td>
-                <a [href]="'mailto:' + teacher.email" class="email-link">{{ teacher.email }}</a>
-              </td>
-              <td>{{ teacher.department }}</td>
-              <td>
-                <a [routerLink]="['/teachers', teacher.id]" class="btn btn-secondary info-link">
-                  Chi tiết
-                </a>
-              </td>
+              <th>Mã GV</th>
+              <th>Họ và tên</th>
+              <th>Email</th>
+              <th>Khoa / Bộ môn</th>
+              <th>Thông tin</th>
               @if (authFacade.can('manage-teachers')) {
-                <td class="actions">
-                  <button type="button" class="btn btn-secondary edit-button" (click)="edit(teacher)">
-                    Sửa
-                  </button>
-                  <button type="button" class="btn btn-danger danger danger-button" (click)="delete(teacher)">
-                    Xóa
-                  </button>
-                </td>
+                <th class="col-actions actions-header">Thao tác</th>
               }
             </tr>
-          } @empty {
-            <tr>
-              <td [attr.colspan]="authFacade.can('manage-teachers') ? 6 : 5" class="empty empty-state">
-                Không tìm thấy giảng viên phù hợp.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (teacher of pageTeachers(); track teacher.id) {
+              <tr>
+                <td><code>{{ teacher.code || teacher.id }}</code></td>
+                <td>
+                  <a [routerLink]="['/teachers', teacher.id]" class="teacher-name-link">
+                    <strong>{{ teacher.name }}</strong>
+                  </a>
+                </td>
+                <td>
+                  <a [href]="'mailto:' + teacher.email" class="email-link">{{ teacher.email }}</a>
+                </td>
+                <td>{{ teacher.department }}</td>
+                <td>
+                  <a [routerLink]="['/teachers', teacher.id]" class="btn btn-secondary info-link">
+                    Chi tiết
+                  </a>
+                </td>
+                @if (authFacade.can('manage-teachers')) {
+                  <td class="col-actions">
+                    <div class="action-buttons actions">
+                      <button type="button" class="btn btn-secondary edit-button" (click)="edit(teacher)">
+                        Sửa
+                      </button>
+                      <button type="button" class="btn btn-danger danger danger-button" (click)="delete(teacher)">
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="authFacade.can('manage-teachers') ? 6 : 5" class="empty empty-state">
+                  Không tìm thấy giảng viên phù hợp.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [currentPage]="currentPage()"
+        [totalItems]="filteredTeacherCount()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[5, 10, 20]"
+        itemLabel="giảng viên"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      />
     </div>
   }
 </div>

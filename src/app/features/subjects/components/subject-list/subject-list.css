@@ -82,12 +82,33 @@
 .info-link {
   font-size: var(--font-size-xs);
   padding: 4px 10px;
+  min-height: 28px;
 }
 
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrapper {
+  overflow: hidden;
+}
+
+.col-actions {
+  white-space: nowrap;
+}
+
+.actions-header {
+  white-space: nowrap;
+  width: 140px;
+}
+
+.action-buttons,
 .actions {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {

@@ -9,6 +9,7 @@ import { SubjectFacade } from '../../facades/subject.facade';
 import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import type { Subject } from '../../models/subject.model';
 import type { Teacher } from '../../../teachers/models/teacher.model';
 
@@ -40,6 +41,8 @@ describe('SubjectListComponent', () => {
   const mockLoadTeachers = vi.fn();
   const mockClearMessages = vi.fn();
   const mockSetSearchTerm = vi.fn();
+  const mockSetPage = vi.fn();
+  const mockSetPageSize = vi.fn();
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -53,12 +56,21 @@ describe('SubjectListComponent', () => {
           useValue: {
             subjects: mockSubjectsSignal,
             filteredSubjects: mockSubjectsSignal,
+            pageSubjects: mockSubjectsSignal,
+            filteredSubjectCount: signal(1),
+            subjectCount: signal(1),
+            page: signal(1),
+            currentPage: signal(1),
+            pageSize: signal(5),
+            totalPages: signal(1),
             loading: signal(false),
             errorMessage: signal(null),
             successMessage: signal(null),
             loadSubjects: mockLoadSubjects,
             clearMessages: mockClearMessages,
             setSearchTerm: mockSetSearchTerm,
+            setPage: mockSetPage,
+            setPageSize: mockSetPageSize,
           },
         },
         {
@@ -96,6 +108,17 @@ describe('SubjectListComponent', () => {
     const rows = fixture.debugElement.queryAll(By.css('.data-table tbody tr'));
     expect(rows.length).toBe(1);
     expect(rows[0].nativeElement.textContent).toContain('Lap trinh Web');
+  });
+
+  it('should render pagination component and delegate page and pageSize changes', () => {
+    const paginationDe = fixture.debugElement.query(By.directive(PaginationComponent));
+    expect(paginationDe).toBeTruthy();
+
+    component.onPageChange(2);
+    expect(mockSetPage).toHaveBeenCalledWith(2);
+
+    component.onPageSizeChange(10);
+    expect(mockSetPageSize).toHaveBeenCalledWith(10);
   });
 
   it('should toggle form visibility on add button click', () => {
