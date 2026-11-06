@@ -6,12 +6,13 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { UserDetailComponent } from '../user-detail/user-detail.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import type { User, UserRole, UserStatus } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [UserFormComponent, UserDetailComponent, ModalComponent, DatePipe],
+  imports: [UserFormComponent, UserDetailComponent, ModalComponent, PaginationComponent, DatePipe],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
 })
@@ -113,7 +114,7 @@ export class UserListComponent implements OnInit {
     this.userFacade.setPage(page);
   }
 
-  onPageSizeChange(size: string): void {
+  onPageSizeChange(size: string | number): void {
     this.userFacade.setPageSize(Number(size));
   }
 }

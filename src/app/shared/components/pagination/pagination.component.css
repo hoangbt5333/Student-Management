@@ -1,0 +1,130 @@
+:host {
+  display: block;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-slate-200, #e3e8ef);
+  background: #ffffff;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-summary {
+  font-size: 12px;
+  color: var(--color-slate-500, #66748a);
+}
+
+.pagination-summary strong {
+  color: var(--color-slate-700, #334155);
+  font-weight: 600;
+}
+
+.pagination-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-size-select {
+  height: 32px;
+  font-size: 12px;
+  padding: 0 8px;
+  border: 1px solid var(--color-slate-300, #cbd5e1);
+  border-radius: var(--radius-md, 6px);
+  color: var(--color-slate-700, #334155);
+  background: #ffffff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.page-size-select:focus {
+  border-color: var(--color-primary, #2563eb);
+}
+
+.page-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md, 6px);
+  border: 1px solid var(--color-slate-200, #e3e8ef);
+  background: #ffffff;
+  color: var(--color-slate-600, #475569);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.page-nav-btn:hover:not(:disabled) {
+  background: var(--color-slate-100, #f1f5f9);
+  border-color: var(--color-slate-300, #cbd5e1);
+  color: var(--color-slate-900, #0f172a);
+}
+
+.page-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.page-num-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md, 6px);
+  border: 1px solid transparent;
+  background: #ffffff;
+  color: var(--color-slate-600, #66748a);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.page-num-btn:hover:not(.active) {
+  background: var(--color-slate-100, #f1f5f9);
+  color: var(--color-slate-900, #0f172a);
+}
+
+.page-num-btn.active {
+  background: var(--color-primary, #2563eb);
+  color: #ffffff;
+  border-color: var(--color-primary, #2563eb);
+  font-weight: 600;
+}
+
+.page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-slate-400, #94a3b8);
+  font-size: 12px;
+  user-select: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

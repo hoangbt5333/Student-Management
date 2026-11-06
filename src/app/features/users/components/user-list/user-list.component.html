@@ -265,43 +265,15 @@
       </table>
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination">
-      <div class="pagination-info">
-        Hiển thị {{ userFacade.pageUsers().length }} / {{ userFacade.totalFilteredCount() }} tài khoản
-        (Trang {{ userFacade.page() }} / {{ userFacade.totalPages() }})
-      </div>
-
-      <div class="pagination-controls">
-        <label for="page-size-select" class="visually-hidden">Số bản ghi mỗi trang</label>
-        <select
-          id="page-size-select"
-          [value]="userFacade.pageSize()"
-          (change)="onPageSizeChange($any($event.target).value)"
-        >
-          <option [value]="5">5 / trang</option>
-          <option [value]="10">10 / trang</option>
-          <option [value]="20">20 / trang</option>
-        </select>
-
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          [disabled]="userFacade.page() <= 1"
-          (click)="onPageChange(userFacade.page() - 1)"
-        >
-          Trang trước
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          [disabled]="userFacade.page() >= userFacade.totalPages()"
-          (click)="onPageChange(userFacade.page() + 1)"
-        >
-          Trang sau
-        </button>
-      </div>
-    </div>
+    <!-- Shared Pagination Component (Figma Style) -->
+    <app-pagination
+      [currentPage]="userFacade.page()"
+      [totalItems]="userFacade.totalFilteredCount()"
+      [pageSize]="userFacade.pageSize()"
+      [pageSizeOptions]="[5, 10, 20]"
+      itemLabel="tài khoản"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
   </div>
 </div>

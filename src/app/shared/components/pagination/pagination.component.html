@@ -1,0 +1,71 @@
+<nav class="pagination-container" aria-label="Phân trang">
+  <!-- Results Summary -->
+  <div class="pagination-summary">
+    Hiển thị <strong>{{ startItem() }}–{{ endItem() }}</strong> / <strong>{{ totalItems() }}</strong> {{ itemLabel() }}
+  </div>
+
+  <!-- Page Controls Group -->
+  <div class="pagination-controls-group">
+    @if (showPageSize()) {
+      <div class="page-size-wrapper">
+        <label for="shared-page-size-select" class="visually-hidden">Số bản ghi mỗi trang</label>
+        <select
+          id="shared-page-size-select"
+          class="page-size-select"
+          [value]="pageSize()"
+          (change)="onPageSizeChange($event)"
+        >
+          @for (option of pageSizeOptions(); track option) {
+            <option [value]="option">{{ option }} / trang</option>
+          }
+        </select>
+      </div>
+    }
+
+    <!-- Page Number Navigation Buttons -->
+    <div class="page-buttons-group">
+      <!-- Previous Button -->
+      <button
+        type="button"
+        class="page-nav-btn btn-prev"
+        [disabled]="currentPage() <= 1"
+        (click)="prev()"
+        aria-label="Trang trước"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <!-- Numbered Pages -->
+      @for (p of pages(); track $index) {
+        @if (p === '…') {
+          <span class="page-ellipsis">…</span>
+        } @else {
+          <button
+            type="button"
+            class="page-num-btn"
+            [class.active]="p === currentPage()"
+            [attr.aria-current]="p === currentPage() ? 'page' : null"
+            (click)="goToPage(p)"
+          >
+            {{ p }}
+          </button>
+        }
+      }
+
+      <!-- Next Button -->
+      <button
+        type="button"
+        class="page-nav-btn btn-next"
+        [disabled]="currentPage() >= totalPages()"
+        (click)="next()"
+        aria-label="Trang sau"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
