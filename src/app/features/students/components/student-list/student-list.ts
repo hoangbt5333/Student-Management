@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, effect, ViewChild } from '@angular/core';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 import type { Student } from '../../models/student.model';
 import { StudentTable } from '../student-table/student-table';
@@ -10,7 +11,7 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [StudentForm, StudentTable, ModalComponent],
+  imports: [StudentForm, StudentTable, ModalComponent, PaginationComponent],
   templateUrl: './student-list.html',
   styleUrl: './student-list.css'
 })
@@ -42,7 +43,6 @@ export class StudentListComponent implements OnInit {
   classOptions = this.facade.classOptions;
   facultyOptions = this.facade.facultyOptions;
   currentPage = this.facade.currentPage;
-  totalPages = this.facade.totalPages;
   pageSize = this.facade.pageSize;
 
   readonly sortFields: { value: keyof Student; label: string }[] = [
@@ -88,8 +88,8 @@ export class StudentListComponent implements OnInit {
     this.facade.setSortDirection(value);
   }
 
-  setPageSize(value: string): void {
-    this.facade.setPageSize(Number(value));
+  setPageSize(size: number): void {
+    this.facade.setPageSize(size);
   }
 
   setPage(page: number): void {

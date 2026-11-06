@@ -103,12 +103,6 @@
   outline: none;
 }
 
-.pagination-info {
-  font-size: var(--font-size-sm);
-  color: var(--color-slate-600);
-  font-weight: var(--font-weight-medium);
-}
-
 @media (max-width: 768px) {
   .search-toolbar {
     flex-direction: column;

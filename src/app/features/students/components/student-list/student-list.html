@@ -107,17 +107,6 @@
       </select>
     </label>
 
-    <label class="filter-item">
-      <span>Hiển thị</span>
-      <select
-        [value]="pageSize()"
-        (change)="setPageSize($any($event.target).value)"
-      >
-        <option value="5">5 / trang</option>
-        <option value="10">10 / trang</option>
-        <option value="20">20 / trang</option>
-      </select>
-    </label>
   </section>
 
   @if (facade.loading()) {
@@ -131,24 +120,14 @@
       (delete)="deleteStudent($event)"
     />
 
-    <nav class="pagination" aria-label="Phân trang danh sách sinh viên">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        [disabled]="currentPage() <= 1"
-        (click)="setPage(currentPage() - 1)"
-      >
-        ← Trước
-      </button>
-      <span class="pagination-info">Trang {{ currentPage() }} / {{ totalPages() }}</span>
-      <button
-        type="button"
-        class="btn btn-secondary"
-        [disabled]="currentPage() >= totalPages()"
-        (click)="setPage(currentPage() + 1)"
-      >
-        Sau →
-      </button>
-    </nav>
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalItems]="filteredStudentCount()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 20]"
+      itemLabel="sinh viên"
+      (pageChange)="setPage($event)"
+      (pageSizeChange)="setPageSize($event)"
+    />
   }
 </div>
