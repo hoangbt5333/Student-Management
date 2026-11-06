@@ -62,10 +62,15 @@ export class ClassForm {
       code: values.id
     };
 
+    this.form.markAsPristine();
     this.saved.emit({
       classItem,
       mode: this.classItem() ? 'update' : 'add'
     });
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.form.dirty;
   }
 
   cancel(): void {

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, effect, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, signal, effect, ViewChild, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -10,6 +10,7 @@ import { StudentForm } from '../student-form/student-form';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { StudentFacade } from '../../facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 
 @Component({
   selector: 'app-student-list',
@@ -19,7 +20,7 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
   styleUrl: './student-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StudentListComponent implements OnInit {
+export class StudentListComponent implements OnInit, HasPendingChanges {
   @ViewChild(StudentForm) private studentForm?: StudentForm;
   readonly facade = inject(StudentFacade);
   readonly authFacade = inject(AuthFacade);
@@ -32,12 +33,24 @@ export class StudentListComponent implements OnInit {
     if (message) {
       this.selectedStudent.set(null);
       this.studentForm?.resetForNewStudent();
-      this.showForm.set(false);
+      this.cancelEdit(true);
     }
   });
 
   selectedStudent = signal<Student | null>(null);
   showForm = signal(false);
+
+  hasUnsavedChanges(): boolean {
+    return this.showForm() && (this.studentForm?.hasUnsavedChanges() ?? false);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      event.preventDefault();
+    }
+  }
+
 
   students = this.facade.students;
   loading = this.facade.loading;
@@ -137,7 +150,12 @@ export class StudentListComponent implements OnInit {
     this.showForm.set(true);
   }
 
-  cancelEdit(): void {
+  cancelEdit(force = false): void {
+    if (!force && this.hasUnsavedChanges()) {
+      if (!confirmDiscardChanges()) {
+        return;
+      }
+    }
     this.selectedStudent.set(null);
     this.showForm.set(false);
   }

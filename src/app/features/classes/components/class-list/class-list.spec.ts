@@ -122,4 +122,40 @@ describe('ClassList', () => {
     }
   });
 
+
+  it('warns and blocks closing form when form has unsaved changes and user cancels confirm', () => {
+    component.openAddForm();
+    fixture.detectChanges();
+
+    const formComp = fixture.debugElement.query(By.directive(ClassForm)).componentInstance as ClassForm;
+    formComp.form.controls.name.setValue('New Class Name');
+    formComp.form.markAsDirty();
+    fixture.detectChanges();
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.closeForm();
+    fixture.detectChanges();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(component.showForm()).toBe(true);
+  });
+
+  it('allows closing form when form has unsaved changes and user confirms', () => {
+    component.openAddForm();
+    fixture.detectChanges();
+
+    const formComp = fixture.debugElement.query(By.directive(ClassForm)).componentInstance as ClassForm;
+    formComp.form.controls.name.setValue('New Class Name');
+    formComp.form.markAsDirty();
+    fixture.detectChanges();
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    component.closeForm();
+    fixture.detectChanges();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(component.showForm()).toBe(false);
+  });
 });

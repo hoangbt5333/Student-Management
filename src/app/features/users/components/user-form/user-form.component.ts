@@ -158,6 +158,7 @@ export class UserFormComponent {
       });
 
       if (success) {
+        this.form.markAsPristine();
         this.save.emit();
       }
     } else {
@@ -173,9 +174,14 @@ export class UserFormComponent {
       });
 
       if (success) {
+        this.form.markAsPristine();
         this.save.emit();
       }
     }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.form.dirty;
   }
 
   onCancel(): void {

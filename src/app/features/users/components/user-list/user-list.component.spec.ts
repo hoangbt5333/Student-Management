@@ -192,4 +192,40 @@ describe('UserListComponent', () => {
     expect(component.showDetail()).toBe(false);
     expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
   });
+
+  it('warns and blocks closing form when form has unsaved changes and user cancels confirm', () => {
+    component.openCreate();
+    fixture.detectChanges();
+
+    const formComp = fixture.debugElement.query(By.directive(UserFormComponent)).componentInstance as UserFormComponent;
+    formComp.form.controls.displayName.setValue('New Name');
+    formComp.form.markAsDirty();
+    fixture.detectChanges();
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.closeForm();
+    fixture.detectChanges();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(component.showForm()).toBe(true);
+  });
+
+  it('allows closing form when form has unsaved changes and user confirms', () => {
+    component.openCreate();
+    fixture.detectChanges();
+
+    const formComp = fixture.debugElement.query(By.directive(UserFormComponent)).componentInstance as UserFormComponent;
+    formComp.form.controls.displayName.setValue('New Name');
+    formComp.form.markAsDirty();
+    fixture.detectChanges();
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    component.closeForm();
+    fixture.detectChanges();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(component.showForm()).toBe(false);
+  });
 });

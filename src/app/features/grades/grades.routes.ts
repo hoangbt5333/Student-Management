@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/auth/guards/role.guard';
+import { pendingChangesGuard } from '../../core/guards/pending-changes.guard';
 
 export const GRADE_ROUTES: Routes = [
   {
@@ -8,5 +9,6 @@ export const GRADE_ROUTES: Routes = [
     data: { roles: ['admin', 'teacher'] },
     loadComponent: () =>
       import('./components/grade-list/grade-list').then((m) => m.GradeListComponent),
+    canDeactivate: [pendingChangesGuard],
   },
 ];

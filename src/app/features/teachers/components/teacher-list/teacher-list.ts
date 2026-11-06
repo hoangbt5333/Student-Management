@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -8,6 +8,7 @@ import { TeacherFacade } from '../../facades/teacher.facade';
 import type { Teacher } from '../../models/teacher.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 interface SubjectRef {
@@ -23,7 +24,7 @@ interface SubjectRef {
   styleUrl: './teacher-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TeacherListComponent implements OnInit {
+export class TeacherListComponent implements OnInit, HasPendingChanges {
   readonly facade = inject(TeacherFacade);
   readonly authFacade = inject(AuthFacade);
   private readonly fb = inject(FormBuilder);
@@ -43,13 +44,25 @@ export class TeacherListComponent implements OnInit {
   readonly editingId = signal('');
   readonly showForm = signal(false);
 
+  hasUnsavedChanges(): boolean {
+    return this.showForm() && this.form.dirty;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      event.preventDefault();
+    }
+  }
+
+
   private waitingForSave = false;
   private readonly saveEffect = effect(() => {
     const success = this.facade.successMessage();
     if (!this.waitingForSave) return;
     if (success) {
       this.waitingForSave = false;
-      this.closeForm();
+      this.closeForm(true);
     }
   });
 
@@ -138,8 +151,14 @@ export class TeacherListComponent implements OnInit {
     });
   }
 
-  closeForm(): void {
+  closeForm(force = false): void {
+    if (!force && this.hasUnsavedChanges()) {
+      if (!confirmDiscardChanges()) {
+        return;
+      }
+    }
     this.showForm.set(false);
+    this.form.reset();
     this.form.controls.id.enable();
   }
 

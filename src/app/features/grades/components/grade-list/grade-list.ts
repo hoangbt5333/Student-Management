@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -8,6 +8,7 @@ import { StudentFacade } from '../../../students/facades/student.facade';
 import { SubjectFacade } from '../../../subjects/facades/subject.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 import type { Grade } from '../../models/grade.model';
 import type { Student } from '../../../students/models/student.model';
 import type { Subject } from '../../../subjects/models/subject.model';
@@ -20,7 +21,7 @@ import type { Subject } from '../../../subjects/models/subject.model';
   styleUrl: './grade-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GradeListComponent implements OnInit {
+export class GradeListComponent implements OnInit, HasPendingChanges {
   readonly gradeFacade = inject(GradeFacade);
   readonly studentFacade = inject(StudentFacade);
   readonly subjectFacade = inject(SubjectFacade);
@@ -49,6 +50,18 @@ export class GradeListComponent implements OnInit {
   readonly editingId = signal('');
   readonly showForm = signal(false);
 
+  hasUnsavedChanges(): boolean {
+    return this.showForm() && this.form.dirty;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      event.preventDefault();
+    }
+  }
+
+
   private waitingForSave = false;
 
   readonly form = this.fb.nonNullable.group({
@@ -71,7 +84,7 @@ export class GradeListComponent implements OnInit {
       if (!this.waitingForSave) return;
       if (success) {
         this.waitingForSave = false;
-        this.closeForm();
+        this.closeForm(true);
       }
     });
   }
@@ -163,7 +176,12 @@ export class GradeListComponent implements OnInit {
     this.gradeFacade.setPageSize(pageSize);
   }
 
-  closeForm(): void {
+  closeForm(force = false): void {
+    if (!force && this.hasUnsavedChanges()) {
+      if (!confirmDiscardChanges()) {
+        return;
+      }
+    }
     this.showForm.set(false);
     this.editingId.set('');
     this.form.reset({

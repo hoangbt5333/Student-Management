@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, ViewChild, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -12,6 +12,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 import type { User, UserRole, UserStatus } from '../../models/user.model';
+import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 
 @Component({
   selector: 'app-user-list',
@@ -21,7 +22,9 @@ import type { User, UserRole, UserStatus } from '../../models/user.model';
   styleUrl: './user-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, HasPendingChanges {
+  @ViewChild(UserFormComponent) private userForm?: UserFormComponent;
+
   readonly userFacade = inject(UserFacade);
   readonly authFacade = inject(AuthFacade);
 
@@ -59,6 +62,17 @@ export class UserListComponent implements OnInit {
       });
   }
 
+  hasUnsavedChanges(): boolean {
+    return this.showForm() && (this.userForm?.hasUnsavedChanges() ?? false);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      event.preventDefault();
+    }
+  }
+
   ngOnInit(): void {
     this.userFacade.loadAll();
   }
@@ -83,10 +97,19 @@ export class UserListComponent implements OnInit {
     this.showDetail.set(true);
   }
 
-  closeForm(): void {
+  closeForm(force = false): void {
+    if (!force && this.hasUnsavedChanges()) {
+      if (!confirmDiscardChanges()) {
+        return;
+      }
+    }
     this.showForm.set(false);
     this.editingUser.set(null);
     this.userFacade.selectUser(null);
+  }
+
+  onUserSaved(): void {
+    this.closeForm(true);
   }
 
   closeDetail(): void {

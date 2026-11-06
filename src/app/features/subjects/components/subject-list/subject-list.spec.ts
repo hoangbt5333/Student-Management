@@ -175,4 +175,30 @@ describe('SubjectListComponent', () => {
     }
   });
 
+
+  it('warns and blocks closing form when form has unsaved changes and user cancels confirm', () => {
+    component.openAdd();
+    component.form.controls.name.setValue('New Subject');
+    component.form.markAsDirty();
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.closeForm();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(component.showForm()).toBe(true);
+  });
+
+  it('allows closing form when form has unsaved changes and user confirms', () => {
+    component.openAdd();
+    component.form.controls.name.setValue('New Subject');
+    component.form.markAsDirty();
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    component.closeForm();
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(component.showForm()).toBe(false);
+  });
 });

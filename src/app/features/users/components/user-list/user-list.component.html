@@ -22,7 +22,7 @@
     >
       <app-user-form
         [user]="editingUser()"
-        (save)="closeForm()"
+        (save)="onUserSaved()"
         (cancel)="closeForm()"
       />
     </app-modal>

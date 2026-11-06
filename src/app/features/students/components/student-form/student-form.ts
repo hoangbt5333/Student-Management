@@ -68,6 +68,10 @@ export class StudentForm {
     this.form.controls.id.enable();
   }
 
+  hasUnsavedChanges(): boolean {
+    return this.form.dirty;
+  }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -80,6 +84,7 @@ export class StudentForm {
       classItem => classItem.id === student.classId
     );
 
+    this.form.markAsPristine();
     this.save.emit({
       id: this.student()?.id ?? student.id,
       code: student.id,
@@ -92,7 +97,7 @@ export class StudentForm {
     });
   }
 
-  onCancel(): void{
+  onCancel(): void {
     this.cancel.emit();
   }
 }

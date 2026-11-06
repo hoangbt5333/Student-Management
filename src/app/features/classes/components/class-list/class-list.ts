@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, effect, signal, ViewChild, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -10,6 +10,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { StudentFacade } from '../../../students/facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 
 @Component({
   imports: [ClassForm, RouterLink, ModalComponent, PaginationComponent, ReactiveFormsModule],
@@ -18,7 +19,9 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
   templateUrl: './class-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ClassList implements OnInit {
+export class ClassList implements OnInit, HasPendingChanges {
+  @ViewChild(ClassForm) private classForm?: ClassForm;
+
   readonly facade = inject(ClassFacade);
   readonly studentFacade = inject(StudentFacade);
   readonly authFacade = inject(AuthFacade);
@@ -38,7 +41,7 @@ export class ClassList implements OnInit {
 
     if (success) {
       this.waitingForSave = false;
-      this.closeForm();
+      this.closeForm(true);
       return;
     }
 
@@ -69,6 +72,17 @@ export class ClassList implements OnInit {
       });
   }
 
+  hasUnsavedChanges(): boolean {
+    return this.showForm() && (this.classForm?.hasUnsavedChanges() ?? false);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      event.preventDefault();
+    }
+  }
+
   ngOnInit(): void {
     this.facade.loadClasses();
     this.studentFacade.loadStudents();
@@ -86,7 +100,12 @@ export class ClassList implements OnInit {
     this.facade.clearMessages();
   }
 
-  closeForm(): void {
+  closeForm(force = false): void {
+    if (!force && this.hasUnsavedChanges()) {
+      if (!confirmDiscardChanges()) {
+        return;
+      }
+    }
     this.showForm.set(false);
     this.editingClass.set(null);
   }
