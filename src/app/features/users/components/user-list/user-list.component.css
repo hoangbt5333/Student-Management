@@ -21,9 +21,6 @@
 }
 
 .user-directory-card {
-  background: #ffffff;
-  border: 1px solid var(--color-slate-200);
-  border-radius: 10px;
   overflow: hidden;
   padding: 0;
 }
@@ -65,9 +62,7 @@
 .user-directory-card .toolbar {
   border-radius: 0;
   box-shadow: none;
-  border-bottom: 1px solid var(--color-slate-200);
-  border-left: none;
-  border-right: none;
+  border-width: 0 0 1px;
 }
 
 .search-box {
@@ -202,8 +197,64 @@
   gap: 6px;
 }
 
-.action-buttons .btn {
-  padding: 4px 9px;
-  font-size: 12px;
+.action-buttons .btn-icon-action {
+  width: 30px;
+  height: 30px;
   min-height: 30px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid var(--color-slate-200);
+  color: var(--color-slate-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.action-buttons .btn-icon-action:hover:not(:disabled) {
+  background: var(--color-slate-50);
+  border-color: var(--color-slate-300);
+  color: var(--color-slate-700);
+}
+
+.action-buttons .btn-view-detail:hover:not(:disabled),
+.action-buttons .btn-edit-user:hover:not(:disabled) {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+  color: var(--color-primary);
+}
+
+.action-buttons .btn-lock-user:hover:not(:disabled) {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #b45309;
+}
+
+.action-buttons .btn-deactivate-user:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.action-buttons .btn-deactivate-user.btn-activate:hover:not(:disabled) {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #16a34a;
+}
+
+.action-buttons .btn-icon-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #ffffff;
+  border-color: var(--color-slate-200);
+  color: var(--color-slate-400);
+}
+
+.action-icon {
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
 }
