@@ -1,6 +1,6 @@
 # Component Patterns Reference - Student Management System
 
-This document provides standardized HTML markup structures and CSS classes from `src/app/shared/styles/design-system.css` to be used across all screens.
+This document provides standardized HTML markup structures and CSS classes from `src/app/shared/styles/design-system.css` and shared primitives from `src/app/shared/` to be used across all screens.
 
 ---
 
@@ -84,10 +84,10 @@ This document provides standardized HTML markup structures and CSS classes from 
             </span>
           </td>
           <td class="actions">
-            <a [routerLink]="['/students', item.id]" class="btn btn-secondary">Chi tiết</a>
+            <a [routerLink]="['/students', item.id]" class="btn btn-secondary" appTooltip="Xem chi tiết">Chi tiết</a>
             @if (authFacade.can('manage-students')) {
-              <button type="button" class="btn btn-secondary" (click)="edit(item)">Sửa</button>
-              <button type="button" class="btn btn-danger" (click)="remove(item.id)">Xóa</button>
+              <button type="button" class="btn btn-secondary" (click)="edit(item)" appTooltip="Chỉnh sửa thông tin">Sửa</button>
+              <button type="button" class="btn btn-danger" (click)="remove(item.id)" appTooltip="Xóa bản ghi">Xóa</button>
             }
           </td>
         </tr>
@@ -146,6 +146,108 @@ This document provides standardized HTML markup structures and CSS classes from 
     <span class="metric-label">Tổng số sinh viên</span>
     <span class="metric-value">{{ studentCount() }}</span>
     <span class="metric-hint text-success">+5% so với học kỳ trước</span>
+  </div>
+</div>
+```
+
+---
+
+## Pattern 6: Shared Pagination Component (`<app-pagination>`)
+
+Use the shared, signal-based pagination component (`PaginationComponent` from `src/app/shared/components/pagination/`) across all data list tables.
+
+### TypeScript Component Import:
+```ts
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+
+@Component({
+  standalone: true,
+  imports: [PaginationComponent, ...],
+  ...
+})
+```
+
+### Template Usage:
+```html
+<app-pagination
+  [currentPage]="userFacade.page()"
+  [totalItems]="userFacade.totalFilteredCount()"
+  [pageSize]="userFacade.pageSize()"
+  [pageSizeOptions]="[5, 10, 20, 50]"
+  itemLabel="tài khoản"
+  (pageChange)="userFacade.setPage($event)"
+  (pageSizeChange)="userFacade.setPageSize($event)"
+/>
+```
+
+---
+
+## Pattern 7: Shared Tooltip Directive (`[appTooltip]`)
+
+Use `TooltipDirective` (`src/app/shared/directives/tooltip/tooltip.directive.ts`) to provide instant hover feedback on action buttons, disabled buttons, and icon buttons.
+
+### TypeScript Component Import:
+```ts
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
+
+@Component({
+  standalone: true,
+  imports: [TooltipDirective, ...],
+  ...
+})
+```
+
+### Template Usage:
+```html
+<!-- Action buttons with clear text & tooltip -->
+<button
+  type="button"
+  class="btn btn-secondary btn-sm"
+  (click)="openDetail(item)"
+  appTooltip="Xem thông tin chi tiết"
+>
+  Chi tiết
+</button>
+
+<!-- Disabled button explaining why the action is blocked -->
+<button
+  type="button"
+  class="btn btn-sm btn-lock"
+  [disabled]="isSelf(user)"
+  [appTooltip]="isSelf(user) ? 'Không thể tự khóa tài khoản của chính bạn' : 'Khóa tài khoản'"
+  (click)="toggleLock(user)"
+>
+  Khóa
+</button>
+
+<!-- Icon-only button with positioning -->
+<div
+  class="header-notifications"
+  appTooltip="Thông báo hệ thống"
+  tooltipPosition="bottom"
+>
+  <svg ...></svg>
+</div>
+```
+
+---
+
+## Pattern 8: App Shell Layout (2-Column Architecture)
+
+The application shell uses a full-viewport, 2-column layout:
+- **Left Column**: `<app-sidebar>` (`width: 240px`, background `#111e35`, full height).
+- **Right Column**: `<div class="workspace-area">` containing `<app-header>` (`height: 70px`, background `#ffffff`) and `<main class="app-workspace">` (`<router-outlet>`).
+
+```html
+<div class="app-layout">
+  @if (isLoggedIn()) {
+    <app-sidebar class="app-sidebar-pane" />
+  }
+  <div class="workspace-area">
+    <app-header />
+    <main class="app-workspace">
+      <router-outlet />
+    </main>
   </div>
 </div>
 ```

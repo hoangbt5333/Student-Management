@@ -18,6 +18,7 @@ The Student Management application is an Angular 22 application with Server-Side
 - `teachers`: Teacher profiles and faculty association.
 - `subjects`: Academic subjects, credit requirements, teacher assignment.
 - `grades`: Student grade records, grade points (0–10 scale), subject/student relations.
+- `users`: User accounts management, RBAC (`admin`, `teacher`, `student`), linked profiles, and lock/deactivate states.
 - `dashboard`: High-level summary metrics.
 - `auth`: Role-based access control (`admin`, `teacher`, `student`).
 
@@ -49,6 +50,7 @@ Component ──> Facade ──> Store ──> Service ──> REST API
 
 ## 3. Directory Layout Standard
 
+### Feature Modules
 ```text
 src/app/features/<feature>/
 ├── components/          <-- Feature UI components
@@ -57,6 +59,22 @@ src/app/features/<feature>/
 ├── services/            <-- <feature>.service.ts
 ├── store/               <-- <feature>.store.ts (& .spec.ts)
 └── <feature>.routes.ts  <-- Feature route definition
+```
+
+### Shared Primitives (`src/app/shared/`)
+Shared reusable UI elements and utilities reside in `src/app/shared/`:
+```text
+src/app/shared/
+├── components/
+│   ├── layout/          <-- App Shell: sidebar/ and header/
+│   ├── modal/           <-- Standalone Modal host
+│   └── pagination/      <-- Signals-based PaginationComponent
+├── directives/
+│   └── tooltip/         <-- [appTooltip] Directive
+├── styles/
+│   └── design-system.css <-- Global UI design system & CSS variables
+└── utils/
+    └── vietnamese.util.ts <-- Diacritic stripping & text utilities
 ```
 
 ## 4. Automated Architecture Verification

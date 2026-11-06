@@ -16,7 +16,7 @@ This skill provides an automated and systematic 4-tier validation framework to r
 | Tier | Focus | Method / Tool | Pass Criteria |
 | :--- | :--- | :--- | :--- |
 | **Tier 1** | **Architecture Boundaries** | `npm run check:arch` | 0 Component -> Service/Store imports; 0 Facade -> HttpClient imports; strict explicit layering directories. |
-| **Tier 2** | **TypeScript & Angular** | `npm run build` | 0 TypeScript errors, 0 `any`, pure Signals, strictly typed reactive forms, SSR safety. |
+| **Tier 2** | **TypeScript & Angular** | `npm run build` | 0 TypeScript errors, 0 `any`, pure Signals, strictly typed reactive forms, SSR safety, 0 CSS budget warnings (< 4.0 kB). |
 | **Tier 3** | **Domain Business Logic** | Code Review & Specs | Valid regex codes (CLS/GV/MH), grades 0–10, foreign key deletion safety, RBAC permissions. |
 | **Tier 4** | **Automated Pipeline** | `npm run verify` | All gates pass sequentially (`check:arch` ➔ `build` ➔ `test:ci`) with 100% pass rate. |
 
@@ -45,7 +45,7 @@ If any sub-step fails, diagnose and fix according to the **Failure Remediation G
 - [ ] Check reactivity: Signals (`signal()`, `computed()`) used for view state; no unmanaged subscriptions.
 - [ ] Form submission safety: Uses `form.getRawValue()` when fields are disabled during editing.
 - [ ] SSR safety: Browser objects (`sessionStorage`, `window`) checked with `typeof ... !== 'undefined'`.
-- [ ] Styling: Component imports `shared/styles/catalog.css`.
+- [ ] Styling: Component-scoped CSS is kept below 4.0 kB and reuses classes from `src/app/shared/styles/design-system.css`.
 
 ### Phase 4: Domain & Business Rules Check (`Tier 3`)
 - [ ] Regex patterns match standard prefixes (`CLS`, `GV`, `MH`, academic year `YYYY-YYYY`).
@@ -72,10 +72,14 @@ If any sub-step fails, diagnose and fix according to the **Failure Remediation G
 - **Element not found (`expected null not to be null`)**:
   - **Fix**: Check if the element is protected by `@if (authFacade.can(...))`. Provide `{ provide: AuthFacade, useValue: { can: () => true, currentUser: signal(...) } }` in the spec.
 
+### 4. `npm run build` Warning: `Component style budget exceeded`:
+- **Cause**: Scoped component `.css` exceeded the 4.00 kB budget.
+- **Fix**: Prune duplicate CSS rules that are already provided by `design-system.css` (e.g. table styles, button colors, resets, badge definitions).
+
 ---
 
 ## 4. References
 
 - Detailed rules & examples: [validation-rules.md](references/validation-rules.md)
-- Architecture standard: `.github/skills/project-architecture/references/architecture.md`
-- Coding conventions: `.github/skills/project-architecture/references/coding-conventions.md`
+- Architecture standard: `.agents/skills/project-architecture/SKILL.md`
+- Coding conventions: `.agents/skills/project-architecture/references/coding-conventions.md`
