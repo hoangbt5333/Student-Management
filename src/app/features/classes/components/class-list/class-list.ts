@@ -4,11 +4,12 @@ import { ClassFacade } from '../../facades/class.facade';
 import type { ClassModel } from '../../models/class.model';
 import { ClassForm } from '../class-form/class-form';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { StudentFacade } from '../../../students/facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
-  imports: [ClassForm, RouterLink, ModalComponent],
+  imports: [ClassForm, RouterLink, ModalComponent, PaginationComponent],
   selector: 'app-class-list',
   styleUrl: './class-list.css',
   templateUrl: './class-list.html',
@@ -105,5 +106,13 @@ export class ClassList implements OnInit {
       this.facade.setSortBy('name');
       this.facade.setSortDirection('asc');
     }
+  }
+
+  onPageChange(page: number): void {
+    this.facade.setPage(page);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.facade.setPageSize(pageSize);
   }
 }

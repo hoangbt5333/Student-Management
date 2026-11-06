@@ -31,6 +31,8 @@ type ClassState = {
   searchTerm: string;
   sortBy: ClassSortField;
   sortDirection: 'asc' | 'desc';
+  page: number;
+  pageSize: number;
 };
 
 type SaveClassRequest = {
@@ -45,7 +47,9 @@ const initialState: ClassState = {
   successMessage: '',
   searchTerm: '',
   sortBy: 'name',
-  sortDirection: 'asc'
+  sortDirection: 'asc',
+  page: 1,
+  pageSize: 5
 };
 
 export const ClassStore = signalStore(
@@ -57,7 +61,9 @@ export const ClassStore = signalStore(
     classes,
     searchTerm,
     sortBy,
-    sortDirection
+    sortDirection,
+    page,
+    pageSize
   }) => {
     const filteredClasses = computed(() => {
       const keyword = normalizeVietnamese(searchTerm());
@@ -91,10 +97,27 @@ export const ClassStore = signalStore(
         });
     });
 
+    const totalPages = computed(() => {
+      const size = pageSize();
+      return Math.max(1, Math.ceil(filteredClasses().length / (size > 0 ? size : 1)));
+    });
+
+    const currentPage = computed(() => {
+      return Math.min(Math.max(1, page()), totalPages());
+    });
+
+    const pageClasses = computed(() => {
+      const start = (currentPage() - 1) * pageSize();
+      return filteredClasses().slice(start, start + pageSize());
+    });
+
     return {
       classCount: computed(() => classes().length),
       filteredClasses,
-      filteredClassCount: computed(() => filteredClasses().length)
+      filteredClassCount: computed(() => filteredClasses().length),
+      totalPages,
+      currentPage,
+      pageClasses
     };
   }),
 
@@ -128,15 +151,28 @@ export const ClassStore = signalStore(
       },
 
       setSearchTerm(searchTerm: string): void {
-        patchState(store, { searchTerm });
+        patchState(store, { searchTerm, page: 1 });
       },
 
       setSortBy(sortBy: ClassSortField): void {
-        patchState(store, { sortBy });
+        patchState(store, { sortBy, page: 1 });
       },
 
       setSortDirection(sortDirection: 'asc' | 'desc'): void {
-        patchState(store, { sortDirection });
+        patchState(store, { sortDirection, page: 1 });
+      },
+
+      setPage(page: number): void {
+        patchState(store, {
+          page: Math.min(Math.max(1, Math.floor(page)), store.totalPages())
+        });
+      },
+
+      setPageSize(pageSize: number): void {
+        if (!Number.isInteger(pageSize) || pageSize < 1) {
+          throw new RangeError('Page size must be a positive integer.');
+        }
+        patchState(store, { pageSize, page: 1 });
       },
 
       clearMessages(): void {

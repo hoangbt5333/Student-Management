@@ -61,68 +61,80 @@
     </div>
   } @else {
     <div class="table-card table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Mã lớp</th>
-            <th>
-              <button type="button" class="sort-button" (click)="toggleNameSort()">
-                Tên lớp
-                {{ facade.sortBy() === 'name'
-                    ? (facade.sortDirection() === 'asc' ? '↑' : '↓')
-                    : '' }}
-              </button>
-            </th>
-            <th>Khoa / Ngành</th>
-            <th>Niên khóa</th>
-            @if (authFacade.can('manage-classes')) {
-              <th class="actions-header">Thao tác</th>
-            }
-          </tr>
-        </thead>
-
-        <tbody>
-          @for (item of facade.filteredClasses(); track item.id) {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td><code>{{ item.code || item.id }}</code></td>
-              <td>
-                <a [routerLink]="['/classes', item.id]" class="class-name-link">
-                  <strong>{{ item.name }}</strong>
-                </a>
-              </td>
-              <td>{{ item.department || 'Chưa phân khoa' }}</td>
-              <td>
-                <span class="badge badge-neutral">{{ item.academicYear }}</span>
-              </td>
+              <th>Mã lớp</th>
+              <th>
+                <button type="button" class="sort-button" (click)="toggleNameSort()">
+                  Tên lớp
+                  {{ facade.sortBy() === 'name'
+                      ? (facade.sortDirection() === 'asc' ? '↑' : '↓')
+                      : '' }}
+                </button>
+              </th>
+              <th>Khoa / Ngành</th>
+              <th>Niên khóa</th>
               @if (authFacade.can('manage-classes')) {
-                <td class="actions">
-                  <button
-                    type="button"
-                    class="btn btn-secondary secondary-button"
-                    (click)="openEditForm(item)"
-                  >
-                    Sửa
-                  </button>
-
-                  <button
-                    type="button"
-                    class="btn btn-danger danger-button"
-                    (click)="onDelete(item)"
-                  >
-                    Xóa
-                  </button>
-                </td>
+                <th class="actions-header">Thao tác</th>
               }
             </tr>
-          } @empty {
-            <tr>
-              <td [attr.colspan]="authFacade.can('manage-classes') ? 5 : 4" class="empty empty-state">
-                Không tìm thấy lớp học phù hợp.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            @for (item of facade.pageClasses(); track item.id) {
+              <tr>
+                <td><code>{{ item.code || item.id }}</code></td>
+                <td>
+                  <a [routerLink]="['/classes', item.id]" class="class-name-link">
+                    <strong>{{ item.name }}</strong>
+                  </a>
+                </td>
+                <td>{{ item.department || 'Chưa phân khoa' }}</td>
+                <td>
+                  <span class="badge badge-neutral">{{ item.academicYear }}</span>
+                </td>
+                @if (authFacade.can('manage-classes')) {
+                  <td class="actions">
+                    <button
+                      type="button"
+                      class="btn btn-secondary secondary-button"
+                      (click)="openEditForm(item)"
+                    >
+                      Sửa
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn btn-danger danger-button"
+                      (click)="onDelete(item)"
+                    >
+                      Xóa
+                    </button>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="authFacade.can('manage-classes') ? 5 : 4" class="empty empty-state">
+                  Không tìm thấy lớp học phù hợp.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [currentPage]="facade.currentPage()"
+        [totalItems]="facade.filteredClassCount()"
+        [pageSize]="facade.pageSize()"
+        [pageSizeOptions]="[5, 10, 20]"
+        itemLabel="lớp học"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      />
     </div>
   }
 </div>

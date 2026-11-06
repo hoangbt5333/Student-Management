@@ -13,6 +13,11 @@ export class ClassFacade {
   filteredClasses = this.store.filteredClasses;
   classCount = this.store.classCount;
   filteredClassCount = this.store.filteredClassCount;
+  page = this.store.page;
+  currentPage = this.store.currentPage;
+  pageSize = this.store.pageSize;
+  totalPages = this.store.totalPages;
+  pageClasses = this.store.pageClasses;
 
   loading = this.store.loading;
   errorMessage = this.store.errorMessage;
@@ -36,6 +41,14 @@ export class ClassFacade {
 
   setSortDirection(direction: 'asc' | 'desc'): void {
     this.store.setSortDirection(direction);
+  }
+
+  setPage(page: number): void {
+    this.store.setPage(page);
+  }
+
+  setPageSize(pageSize: number): void {
+    this.store.setPageSize(pageSize);
   }
 
   saveClass(classItem: ClassModel, mode: 'add' | 'update'): void {

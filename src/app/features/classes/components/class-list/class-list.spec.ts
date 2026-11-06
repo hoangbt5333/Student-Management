@@ -6,6 +6,7 @@ import { ClassList } from './class-list';
 import { ClassService } from '../../services/class.service';
 import { StudentService } from '../../../students/services/student.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { ClassForm } from '../class-form/class-form';
 import type { ClassModel } from '../../models/class.model';
 
@@ -45,6 +46,23 @@ describe('ClassList', () => {
   it('should not display modal initially', () => {
     fixture.detectChanges();
     expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
+  });
+
+  it('should render pagination component', () => {
+    fixture.detectChanges();
+    const paginationDe = fixture.debugElement.query(By.directive(PaginationComponent));
+    expect(paginationDe).not.toBeNull();
+  });
+
+  it('should delegate page and pageSize changes to facade', () => {
+    const setPageSpy = vi.spyOn(component.facade, 'setPage');
+    const setPageSizeSpy = vi.spyOn(component.facade, 'setPageSize');
+
+    component.onPageChange(2);
+    expect(setPageSpy).toHaveBeenCalledWith(2);
+
+    component.onPageSizeChange(10);
+    expect(setPageSizeSpy).toHaveBeenCalledWith(10);
   });
 
   it('should show modal with add class title when openAddForm is called', () => {

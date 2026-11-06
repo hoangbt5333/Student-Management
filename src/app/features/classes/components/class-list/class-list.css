@@ -86,6 +86,15 @@
   color: var(--color-primary);
 }
 
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrapper {
+  overflow: hidden;
+}
+
 .actions {
   display: flex;
   align-items: center;
