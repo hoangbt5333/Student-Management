@@ -1,0 +1,121 @@
+<aside class="sidebar" aria-label="Thanh điều hướng chính">
+  <!-- University Identity -->
+  <div class="sidebar-brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.42 10.922a1 1 0 0 0-.019-.838L12.83 2.18a2 2 0 0 0-1.66 0L2.6 10.08a1 1 0 0 0 0 1.832l8.57 7.908a2 2 0 0 0 1.66 0l8.57-7.908a1 1 0 0 0 .02-.99z"></path>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+      </svg>
+    </div>
+    <div class="brand-name">
+      <span class="brand-title">UniManage</span>
+      <span class="brand-subtitle">STUDENT MANAGEMENT</span>
+    </div>
+  </div>
+
+  <!-- Main Navigation -->
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">WORKSPACE</div>
+    <div class="nav-items">
+      <!-- Dashboard -->
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+          <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+          <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+          <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+        </svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      <!-- Sinh viên -->
+      @if (authFacade.can('view-students')) {
+        <a routerLink="/students" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.42 10.922a1 1 0 0 0-.019-.838L12.83 2.18a2 2 0 0 0-1.66 0L2.6 10.08a1 1 0 0 0 0 1.832l8.57 7.908a2 2 0 0 0 1.66 0l8.57-7.908a1 1 0 0 0 .02-.99z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+          <span class="nav-label">Sinh viên</span>
+        </a>
+      }
+
+      <!-- Lớp học -->
+      @if (authFacade.can('view-classes')) {
+        <a routerLink="/classes" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+            <path d="M3 9h18"></path>
+            <path d="M9 21V9"></path>
+          </svg>
+          <span class="nav-label">Lớp học</span>
+        </a>
+      }
+
+      <!-- Giảng viên -->
+      @if (authFacade.can('view-teachers')) {
+        <a routerLink="/teachers" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h20"></path>
+            <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"></path>
+            <path d="m7 21 5-5 5 5"></path>
+          </svg>
+          <span class="nav-label">Giảng viên</span>
+        </a>
+      }
+
+      <!-- Môn học -->
+      @if (authFacade.can('view-subjects')) {
+        <a routerLink="/subjects" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+            <path d="M6 6h10"></path>
+            <path d="M6 10h10"></path>
+          </svg>
+          <span class="nav-label">Môn học</span>
+        </a>
+      }
+
+      <!-- Điểm số -->
+      @if (authFacade.can('view-grades')) {
+        <a routerLink="/grades" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <path d="m9 14 2 2 4-4"></path>
+          </svg>
+          <span class="nav-label">Điểm số</span>
+        </a>
+      }
+
+      <!-- Người dùng -->
+      @if (authFacade.can('manage-users')) {
+        <a routerLink="/users" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span class="nav-label">Người dùng</span>
+        </a>
+      }
+    </div>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <div class="help-item">
+      <svg class="footer-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <path d="M12 17h.01"></path>
+      </svg>
+      <span>Trợ giúp & Hỗ trợ</span>
+    </div>
+
+    <div class="environment-box">
+      <div class="env-org">Quản lý trường học</div>
+      <div class="env-year">Năm học 2026–2027</div>
+    </div>
+  </div>
+</aside>

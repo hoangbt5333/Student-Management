@@ -1,24 +1,30 @@
-<app-header />
+<div class="app-layout">
+  <app-sidebar class="app-sidebar-container" />
 
-<main class="app-content">
-  @if (loading()) {
-    <div class="global-loading" role="status">
-        <span class="spinner"></span>
-        <span>Đang xử lý...</span>
-    </div>
-  }
+  <div class="app-workspace">
+    <app-header />
 
-  @if (notification.errorMessage(); as message) {
-    <div class="error-banner" role="alert">
-      <span>{{ message }}</span>
-      <button
-        type="button"
-        (click)="notification.clearError()"
-        aria-label="Đóng thông báo">
-        Đóng
-      </button>
-    </div>
-  }  
-               
-  <router-outlet />
-</main>
+    <main class="app-content">
+      @if (loading()) {
+        <div class="global-loading" role="status">
+          <span class="spinner"></span>
+          <span>Đang xử lý...</span>
+        </div>
+      }
+
+      @if (notification.errorMessage(); as message) {
+        <div class="error-banner" role="alert">
+          <span>{{ message }}</span>
+          <button
+            type="button"
+            (click)="notification.clearError()"
+            aria-label="Đóng thông báo">
+            Đóng
+          </button>
+        </div>
+      }
+
+      <router-outlet />
+    </main>
+  </div>
+</div>

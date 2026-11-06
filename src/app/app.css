@@ -1,5 +1,43 @@
+:host {
+  display: block;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-slate-50, #f6f8fb);
+}
+
+.app-sidebar-container {
+  width: 240px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+}
+
+.app-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+}
+
 .app-content {
-  padding: 24px;
+  flex: 1;
+  padding: 24px 32px;
+}
+
+@media (max-width: 991px) {
+  .app-sidebar-container {
+    display: none;
+  }
+
+  .app-content {
+    padding: 16px;
+  }
 }
 
 .global-loading {
@@ -10,6 +48,8 @@
   padding: 12px;
   background: #eff6ff;
   color: #1d4ed8;
+  border-radius: var(--radius-md, 6px);
+  margin-bottom: 16px;
 }
 
 .spinner {
@@ -33,9 +73,18 @@
   justify-content: space-between;
   gap: 12px;
   padding: 12px 16px;
-  margin: 12px;
+  margin-bottom: 16px;
   border: 1px solid #dc2626;
   border-radius: 8px;
   background: #fef2f2;
   color: #991b1b;
+}
+
+.error-banner button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
 }
