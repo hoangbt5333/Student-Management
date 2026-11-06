@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output } from '@angular/core';
+import { Component, effect, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { ClassModel } from '../../models/class.model';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
@@ -8,6 +8,7 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
   selector: 'app-class-form',
   styleUrl: './class-form.css',
   templateUrl: './class-form.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClassForm {
   private readonly fb = inject(FormBuilder);

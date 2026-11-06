@@ -1,10 +1,11 @@
-import { Component, input, output, HostListener } from '@angular/core';
+import { Component, input, output, HostListener, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
   templateUrl: './modal.component.html',
-  styleUrl: './modal.component.css'
+  styleUrl: './modal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModalComponent {
   readonly title = input<string>('');

@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Student } from '../../models/student.model';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
@@ -9,6 +9,7 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
   selector: 'app-student-table',
   styleUrl: './student-table.css',
   templateUrl: './student-table.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentTable {
   readonly authFacade = inject(AuthFacade);

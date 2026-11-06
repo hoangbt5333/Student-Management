@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { TooltipDirective } from '../../../directives/tooltip/tooltip.directive';
@@ -8,7 +8,8 @@ import { TooltipDirective } from '../../../directives/tooltip/tooltip.directive'
   standalone: true,
   imports: [RouterLink, RouterLinkActive, TooltipDirective],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+  styleUrl: './header.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {
   readonly authFacade = inject(AuthFacade);

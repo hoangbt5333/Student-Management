@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -18,6 +18,7 @@ import type { Subject } from '../../../subjects/models/subject.model';
   imports: [CommonModule, ReactiveFormsModule, RouterLink, PaginationComponent],
   templateUrl: './grade-list.html',
   styleUrl: './grade-list.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GradeListComponent implements OnInit {
   readonly gradeFacade = inject(GradeFacade);

@@ -1,4 +1,4 @@
-import { Component, input, output, inject, effect } from '@angular/core';
+import { Component, input, output, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { Student } from '../../models/student.model';
 import { ClassFacade } from '../../../classes/facades/class.facade';
@@ -8,6 +8,7 @@ import { ClassFacade } from '../../../classes/facades/class.facade';
   selector: 'app-student-form',
   styleUrl: './student-form.css',
   templateUrl: './student-form.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentForm {
   private fb = inject(FormBuilder);

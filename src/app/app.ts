@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { LoadingService } from './core/services/loading.service';
 import { NotificationService } from './core/services/notification.service';
@@ -10,6 +10,7 @@ import { SidebarComponent } from './shared/components/layout/sidebar/sidebar.com
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
   private readonly loadingService = inject(LoadingService);

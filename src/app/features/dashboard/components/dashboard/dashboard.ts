@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ClassFacade } from '../../../classes/facades/class.facade';
 import { StudentFacade } from '../../../students/facades/student.facade';
@@ -10,6 +10,7 @@ import { StudentFacade } from '../../../students/facades/student.facade';
   imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
   readonly studentFacade = inject(StudentFacade);

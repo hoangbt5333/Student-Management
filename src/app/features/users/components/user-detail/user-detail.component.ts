@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
 
 import { UserFacade } from '../../facades/user.facade';
 import type { User } from '../../models/user.model';
@@ -9,7 +9,8 @@ import type { User } from '../../models/user.model';
   standalone: true,
   imports: [DatePipe],
   templateUrl: './user-detail.component.html',
-  styleUrl: './user-detail.component.css'
+  styleUrl: './user-detail.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserDetailComponent {
   readonly userFacade = inject(UserFacade);
