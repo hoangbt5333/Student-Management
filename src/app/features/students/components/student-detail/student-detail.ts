@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { StudentFacade } from '../../facades/student.facade';
 import { ClassFacade } from '../../../classes/facades/class.facade';
@@ -12,15 +12,17 @@ import { SubjectFacade } from '../../../subjects/facades/subject.facade';
   imports: [CommonModule, RouterLink],
   templateUrl: './student-detail.html',
   styleUrl: './student-detail.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentDetailComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+  private readonly route = inject(ActivatedRoute, { optional: true });
   readonly studentFacade = inject(StudentFacade);
   readonly classFacade = inject(ClassFacade);
   readonly gradeFacade = inject(GradeFacade);
   readonly subjectFacade = inject(SubjectFacade);
 
-  readonly studentId = signal('');
+  readonly id = input<string>('');
+  readonly studentId = computed(() => this.id() || this.route?.snapshot.paramMap.get('id') || '');
 
   readonly student = computed(() => {
     const id = this.studentId();
@@ -63,8 +65,6 @@ export class StudentDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id') ?? '';
-    this.studentId.set(id);
     this.studentFacade.loadStudents();
     this.classFacade.loadClasses();
     this.gradeFacade.loadGrades();

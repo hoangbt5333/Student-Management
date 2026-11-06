@@ -101,4 +101,11 @@ describe('ClassDetailComponent', () => {
     const rows = fixture.debugElement.queryAll(By.css('.data-table tbody tr'));
     expect(rows.length).toBe(1);
   });
+
+  it('should support signal input binding for id', () => {
+    fixture.componentRef.setInput('id', 'CLS001');
+    fixture.detectChanges();
+    expect(component.id()).toBe('CLS001');
+    expect(component.classItem()?.name).toBe('CNTT-K68-01');
+  });
 });

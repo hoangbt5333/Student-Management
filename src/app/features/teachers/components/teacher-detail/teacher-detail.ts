@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TeacherFacade } from '../../facades/teacher.facade';
 import { SubjectFacade } from '../../../subjects/facades/subject.facade';
@@ -9,13 +9,15 @@ import { SubjectFacade } from '../../../subjects/facades/subject.facade';
   imports: [RouterLink],
   templateUrl: './teacher-detail.html',
   styleUrl: './teacher-detail.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TeacherDetailComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+  private readonly route = inject(ActivatedRoute, { optional: true });
   readonly teacherFacade = inject(TeacherFacade);
   readonly subjectFacade = inject(SubjectFacade);
 
-  readonly teacherId = signal('');
+  readonly id = input<string>('');
+  readonly teacherId = computed(() => this.id() || this.route?.snapshot.paramMap.get('id') || '');
 
   readonly teacher = computed(() => {
     const id = this.teacherId();
@@ -37,8 +39,6 @@ export class TeacherDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id') ?? '';
-    this.teacherId.set(id);
     this.teacherFacade.loadTeachers();
     this.subjectFacade.loadSubjects();
   }

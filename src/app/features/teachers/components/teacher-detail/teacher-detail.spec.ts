@@ -99,4 +99,11 @@ describe('TeacherDetailComponent', () => {
     const subjectRows = fixture.debugElement.queryAll(By.css('.data-table tbody tr'));
     expect(subjectRows.length).toBe(1);
   });
+
+  it('should support signal input binding for id', () => {
+    fixture.componentRef.setInput('id', 'GV001');
+    fixture.detectChanges();
+    expect(component.id()).toBe('GV001');
+    expect(component.teacher()?.name).toBe('Nguyen Van B');
+  });
 });

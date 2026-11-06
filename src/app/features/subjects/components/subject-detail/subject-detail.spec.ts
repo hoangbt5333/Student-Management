@@ -130,4 +130,11 @@ describe('SubjectDetailComponent', () => {
     const scoreValue = fixture.debugElement.query(By.css('.metric-card .score'));
     expect(scoreValue.nativeElement.textContent.trim()).toBe('2');
   });
+
+  it('should support signal input binding for id', () => {
+    fixture.componentRef.setInput('id', 'MH001');
+    fixture.detectChanges();
+    expect(component.id()).toBe('MH001');
+    expect(component.subject()?.name).toBe('Lap trinh Web');
+  });
 });
