@@ -3,13 +3,13 @@
   @if (userFacade.errorMessage(); as error) {
     <div class="alert alert-danger" role="alert">
       <span>{{ error }}</span>
-      <button type="button" class="close-btn" (click)="userFacade.clearMessages()">×</button>
+      <button type="button" class="close-btn" (click)="userFacade.clearMessages()" aria-label="Đóng thông báo">×</button>
     </div>
   }
   @if (userFacade.successMessage(); as success) {
     <div class="alert alert-success" role="alert">
       <span>{{ success }}</span>
-      <button type="button" class="close-btn" (click)="userFacade.clearMessages()">×</button>
+      <button type="button" class="close-btn" (click)="userFacade.clearMessages()" aria-label="Đóng thông báo">×</button>
     </div>
   }
 
@@ -44,195 +44,226 @@
 
   <!-- Header -->
   <header class="page-header">
-    <div>
+    <div class="page-intro">
       <h1>Quản lý người dùng</h1>
       <p>Quản lý tài khoản đăng nhập, ủy quyền vai trò và hồ sơ nghiệp vụ liên kết.</p>
     </div>
     <button type="button" class="btn btn-primary primary-button" (click)="openCreate()">
-      + Thêm tài khoản
+      <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Thêm tài khoản
     </button>
   </header>
 
-  <!-- Toolbar: Search, Filters, Sort -->
-  <section class="toolbar">
-    <div class="search-box">
-      <input
-        type="search"
-        [value]="userFacade.searchTerm()"
-        (input)="onSearch($any($event.target).value)"
-        placeholder="Tìm kiếm tài khoản, họ tên, email..."
-        aria-label="Tìm kiếm người dùng"
-      />
+  <!-- User Directory Card -->
+  <div class="table-card user-directory-card">
+    <!-- Card Heading -->
+    <div class="directory-heading">
+      <div class="directory-title-group">
+        <h2 class="directory-title">Tất cả tài khoản</h2>
+        <span class="user-count-badge">{{ userFacade.totalFilteredCount() }}</span>
+      </div>
     </div>
 
-    <div class="filters">
-      <!-- Role Filter -->
-      <label for="filter-role" class="visually-hidden">Lọc vai trò</label>
-      <select
-        id="filter-role"
-        [value]="userFacade.roleFilter()"
-        (change)="onRoleFilter($any($event.target).value)"
-      >
-        <option value="all">Tất cả vai trò</option>
-        <option value="admin">Quản trị viên</option>
-        <option value="teacher">Giảng viên</option>
-        <option value="student">Sinh viên</option>
-      </select>
+    <!-- Toolbar: Search & Filters -->
+    <section class="toolbar">
+      <div class="search-box">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="search"
+          [value]="userFacade.searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+          placeholder="Tìm kiếm tài khoản, họ tên, email..."
+          aria-label="Tìm kiếm người dùng"
+        />
+      </div>
 
-      <!-- Status Filter -->
-      <label for="filter-status" class="visually-hidden">Lọc trạng thái</label>
-      <select
-        id="filter-status"
-        [value]="userFacade.statusFilter()"
-        (change)="onStatusFilter($any($event.target).value)"
-      >
-        <option value="all">Tất cả trạng thái</option>
-        <option value="active">Đang hoạt động</option>
-        <option value="locked">Bị khóa</option>
-        <option value="inactive">Vô hiệu hóa</option>
-      </select>
+      <div class="filters">
+        <!-- Role Filter -->
+        <div class="filter-item">
+          <label for="filter-role" class="filter-label">Vai trò</label>
+          <select
+            id="filter-role"
+            [value]="userFacade.roleFilter()"
+            (change)="onRoleFilter($any($event.target).value)"
+          >
+            <option value="all">Tất cả vai trò</option>
+            <option value="admin">Quản trị viên</option>
+            <option value="teacher">Giảng viên</option>
+            <option value="student">Sinh viên</option>
+          </select>
+        </div>
 
-      <!-- Sort By -->
-      <label for="sort-by" class="visually-hidden">Sắp xếp theo</label>
-      <select
-        id="sort-by"
-        [value]="userFacade.sortBy()"
-        (change)="onSort($any($event.target).value)"
-      >
-        <option value="createdAt">Ngày tạo</option>
-        <option value="username">Tên đăng nhập</option>
-        <option value="displayName">Họ và tên</option>
-        <option value="role">Vai trò</option>
-      </select>
-    </div>
-  </section>
+        <!-- Status Filter -->
+        <div class="filter-item">
+          <label for="filter-status" class="filter-label">Trạng thái</label>
+          <select
+            id="filter-status"
+            [value]="userFacade.statusFilter()"
+            (change)="onStatusFilter($any($event.target).value)"
+          >
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="locked">Bị khóa</option>
+            <option value="inactive">Vô hiệu hóa</option>
+          </select>
+        </div>
 
-  <!-- Users Table Card -->
-  <div class="table-card">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Tên đăng nhập</th>
-          <th>Tên hiển thị & Email</th>
-          <th>Vai trò</th>
-          <th>Hồ sơ liên kết</th>
-          <th>Trạng thái</th>
-          <th>Thao tác</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (userFacade.loading()) {
+        <!-- Sort By -->
+        <div class="filter-item">
+          <label for="sort-by" class="filter-label">Sắp xếp</label>
+          <select
+            id="sort-by"
+            [value]="userFacade.sortBy()"
+            (change)="onSort($any($event.target).value)"
+          >
+            <option value="createdAt">Ngày tạo</option>
+            <option value="username">Tên đăng nhập</option>
+            <option value="displayName">Họ và tên</option>
+            <option value="role">Vai trò</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Users Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
           <tr>
-            <td colspan="6" class="loading-state">
-              <span class="spinner"></span> Đang tải dữ liệu...
-            </td>
+            <th class="col-username">Tên đăng nhập</th>
+            <th class="col-fullname">Họ và tên</th>
+            <th class="col-role">Vai trò</th>
+            <th class="col-linked">Hồ sơ liên kết</th>
+            <th class="col-status">Trạng thái</th>
+            <th class="col-created">Ngày tạo</th>
+            <th class="col-actions">Thao tác</th>
           </tr>
-        } @else if (userFacade.pageUsers().length === 0) {
-          <tr>
-            <td colspan="6" class="empty-state">
-              Không tìm thấy tài khoản nào phù hợp với điều kiện tìm kiếm.
-            </td>
-          </tr>
-        } @else {
-          @for (user of userFacade.pageUsers(); track user.id) {
-            <tr [class.self-row]="isSelf(user)">
-              <!-- Username -->
-              <td>
-                <span class="username-cell">
-                  <strong>{{ user.username }}</strong>
-                  @if (isSelf(user)) {
-                    <span class="badge badge-self">Bạn</span>
-                  }
-                </span>
-              </td>
-
-              <!-- Display Name & Email -->
-              <td>
-                <div class="user-identity">
-                  <span class="display-name">{{ user.displayName }}</span>
-                  <span class="email-sub">{{ user.email }}</span>
-                </div>
-              </td>
-
-              <!-- Role Badge -->
-              <td>
-                <span class="badge" [class]="'badge-role-' + user.role">
-                  {{ user.role === 'admin' ? 'Quản trị viên' : (user.role === 'teacher' ? 'Giảng viên' : 'Sinh viên') }}
-                </span>
-              </td>
-
-              <!-- Linked Profile -->
-              <td>
-                @if (user.role === 'student' && user.studentId) {
-                  <span class="linked-tag linked-student">SV: {{ user.studentId }}</span>
-                } @else if (user.role === 'teacher' && user.teacherId) {
-                  <span class="linked-tag linked-teacher">GV: {{ user.teacherId }}</span>
-                } @else {
-                  <span class="text-muted">Hệ thống</span>
-                }
-              </td>
-
-              <!-- Status Badge -->
-              <td>
-                <span
-                  class="badge"
-                  [class]="user.status === 'active' ? 'badge-success' : (user.status === 'locked' ? 'badge-danger' : 'badge-warning')"
-                >
-                  {{ user.status === 'active' ? 'Hoạt động' : (user.status === 'locked' ? 'Đã khóa' : 'Vô hiệu hóa') }}
-                </span>
-              </td>
-
-              <!-- Actions -->
-              <td>
-                <div class="action-buttons">
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm btn-view-detail"
-                    (click)="openDetail(user)"
-                    title="Xem chi tiết tài khoản"
-                  >
-                    Chi tiết
-                  </button>
-
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm btn-edit-user"
-                    (click)="openEdit(user)"
-                    title="Chỉnh sửa thông tin"
-                  >
-                    Sửa
-                  </button>
-
-                  <!-- Lock / Unlock button -->
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-lock-user"
-                    [class]="user.status === 'locked' ? 'btn-secondary' : 'btn-warning'"
-                    [disabled]="isSelf(user) || isLastActiveAdmin(user)"
-                    [title]="isSelf(user) ? 'Không thể tự khóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể khóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'))"
-                    (click)="toggleLock(user)"
-                  >
-                    {{ user.status === 'locked' ? 'Mở khóa' : 'Khóa' }}
-                  </button>
-
-                  <!-- Activate / Deactivate button -->
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-deactivate-user"
-                    [class]="user.status === 'inactive' ? 'btn-secondary' : 'btn-danger'"
-                    [disabled]="isSelf(user) || isLastActiveAdmin(user)"
-                    [title]="isSelf(user) ? 'Không thể tự vô hiệu hóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể vô hiệu hóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'inactive' ? 'Kích hoạt lại' : 'Vô hiệu hóa'))"
-                    (click)="toggleDeactivate(user)"
-                  >
-                    {{ user.status === 'inactive' ? 'Kích hoạt' : 'Vô hiệu' }}
-                  </button>
-                </div>
+        </thead>
+        <tbody>
+          @if (userFacade.loading()) {
+            <tr>
+              <td colspan="7" class="loading-state">
+                <span class="spinner"></span> Đang tải dữ liệu...
               </td>
             </tr>
+          } @else if (userFacade.pageUsers().length === 0) {
+            <tr>
+              <td colspan="7" class="empty-state">
+                Không tìm thấy tài khoản nào phù hợp với điều kiện tìm kiếm.
+              </td>
+            </tr>
+          } @else {
+            @for (user of userFacade.pageUsers(); track user.id) {
+              <tr [class.self-row]="isSelf(user)">
+                <!-- Username -->
+                <td class="col-username">
+                  <span class="username-cell">
+                    <strong>{{ user.username }}</strong>
+                    @if (isSelf(user)) {
+                      <span class="badge badge-self">Bạn</span>
+                    }
+                  </span>
+                </td>
+
+                <!-- Full Name -->
+                <td class="col-fullname">
+                  <span class="display-name">{{ user.displayName }}</span>
+                </td>
+
+                <!-- Role Badge -->
+                <td class="col-role">
+                  <span class="badge" [class]="'badge-role-' + user.role">
+                    {{ user.role === 'admin' ? 'Quản trị viên' : (user.role === 'teacher' ? 'Giảng viên' : 'Sinh viên') }}
+                  </span>
+                </td>
+
+                <!-- Linked Profile -->
+                <td class="col-linked">
+                  @if (user.role === 'student' && user.studentId) {
+                    <span class="linked-tag linked-student">SV: {{ user.studentId }}</span>
+                  } @else if (user.role === 'teacher' && user.teacherId) {
+                    <span class="linked-tag linked-teacher">GV: {{ user.teacherId }}</span>
+                  } @else {
+                    <span class="text-muted">Hệ thống</span>
+                  }
+                </td>
+
+                <!-- Status Badge -->
+                <td class="col-status">
+                  <span
+                    class="badge badge-status"
+                    [class]="user.status === 'active' ? 'badge-success' : (user.status === 'locked' ? 'badge-warning' : 'badge-inactive')"
+                  >
+                    <span class="status-dot"></span>
+                    {{ user.status === 'active' ? 'Hoạt động' : (user.status === 'locked' ? 'Đã khóa' : 'Vô hiệu hóa') }}
+                  </span>
+                </td>
+
+                <!-- Created At -->
+                <td class="col-created">
+                  <span class="created-at-text">
+                    {{ user.createdAt ? (user.createdAt | date:'dd/MM/yyyy') : '—' }}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td class="col-actions">
+                  <div class="action-buttons">
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm btn-view-detail"
+                      (click)="openDetail(user)"
+                      title="Xem chi tiết tài khoản"
+                    >
+                      Chi tiết
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm btn-edit-user"
+                      (click)="openEdit(user)"
+                      title="Chỉnh sửa thông tin"
+                    >
+                      Sửa
+                    </button>
+
+                    <!-- Lock / Unlock button -->
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-lock-user"
+                      [class]="user.status === 'locked' ? 'btn-secondary' : 'btn-warning'"
+                      [disabled]="isSelf(user) || isLastActiveAdmin(user)"
+                      [title]="isSelf(user) ? 'Không thể tự khóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể khóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'))"
+                      (click)="toggleLock(user)"
+                    >
+                      {{ user.status === 'locked' ? 'Mở khóa' : 'Khóa' }}
+                    </button>
+
+                    <!-- Activate / Deactivate button -->
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-deactivate-user"
+                      [class]="user.status === 'inactive' ? 'btn-secondary' : 'btn-danger'"
+                      [disabled]="isSelf(user) || isLastActiveAdmin(user)"
+                      [title]="isSelf(user) ? 'Không thể tự vô hiệu hóa tài khoản của chính bạn' : (isLastActiveAdmin(user) ? 'Không thể vô hiệu hóa Quản trị viên kích hoạt cuối cùng' : (user.status === 'inactive' ? 'Kích hoạt lại' : 'Vô hiệu hóa'))"
+                      (click)="toggleDeactivate(user)"
+                    >
+                      {{ user.status === 'inactive' ? 'Kích hoạt' : 'Vô hiệu' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
           }
-        }
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Pagination -->
     <div class="pagination">

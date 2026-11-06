@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 
 import { UserFacade } from '../../facades/user.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
@@ -10,7 +11,7 @@ import type { User, UserRole, UserStatus } from '../../models/user.model';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [UserFormComponent, UserDetailComponent, ModalComponent],
+  imports: [UserFormComponent, UserDetailComponent, ModalComponent, DatePipe],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
 })
