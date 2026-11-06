@@ -96,6 +96,22 @@ describe('UserListComponent', () => {
     fixture.detectChanges();
   });
 
+  it('debounces search input by 300ms before calling setSearchTerm', () => {
+    vi.useFakeTimers();
+    try {
+      component.searchControl.setValue('admin');
+      expect(mockUserFacade.setSearchTerm).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(299);
+      expect(mockUserFacade.setSearchTerm).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
+      expect(mockUserFacade.setSearchTerm).toHaveBeenCalledWith('admin');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('renders page header, search-box, and primary add button', () => {
     const el = fixture.nativeElement;
     expect(el.querySelector('h1').textContent).toContain('Quản lý người dùng');

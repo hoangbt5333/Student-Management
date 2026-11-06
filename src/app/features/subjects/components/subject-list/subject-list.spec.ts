@@ -159,4 +159,20 @@ describe('SubjectListComponent', () => {
     expect(component.showForm()).toBe(false);
     expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
   });
+  it('debounces search input by 300ms before calling facade.setSearchTerm', () => {
+    vi.useFakeTimers();
+    try {
+      component.searchControl.setValue('Web');
+      expect(mockSetSearchTerm).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(299);
+      expect(mockSetSearchTerm).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
+      expect(mockSetSearchTerm).toHaveBeenCalledWith('Web');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
 });

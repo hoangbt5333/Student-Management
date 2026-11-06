@@ -1,4 +1,5 @@
-import { Component, effect, inject, input, output } from '@angular/core';
+import { Component, effect, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { UserFacade } from '../../facades/user.facade';
@@ -9,7 +10,8 @@ import type { User, UserRole, UserStatus } from '../../models/user.model';
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './user-form.component.html',
-  styleUrl: './user-form.component.css'
+  styleUrl: './user-form.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserFormComponent {
   private readonly fb = inject(FormBuilder);
@@ -81,38 +83,44 @@ export class UserFormComponent {
     });
 
     // Theo dõi thay đổi Role (chỉ có tác dụng trong Create mode)
-    this.form.controls.role.valueChanges.subscribe((role) => {
-      if (!this.isEditMode) {
-        this.form.patchValue({ studentId: '', teacherId: '', displayName: '', email: '' });
-        this.applyProfileFieldEnforcement(role);
-      }
-    });
+    this.form.controls.role.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((role) => {
+        if (!this.isEditMode) {
+          this.form.patchValue({ studentId: '', teacherId: '', displayName: '', email: '' });
+          this.applyProfileFieldEnforcement(role);
+        }
+      });
 
     // Theo dõi thay đổi Student profile selection
-    this.form.controls.studentId.valueChanges.subscribe((studentId) => {
-      if (studentId) {
-        const student = this.userFacade.students().find(s => s.id === studentId);
-        if (student) {
-          this.form.patchValue({
-            displayName: student.name,
-            email: student.email
-          });
+    this.form.controls.studentId.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((studentId) => {
+        if (studentId) {
+          const student = this.userFacade.students().find(s => s.id === studentId);
+          if (student) {
+            this.form.patchValue({
+              displayName: student.name,
+              email: student.email
+            });
+          }
         }
-      }
-    });
+      });
 
     // Theo dõi thay đổi Teacher profile selection
-    this.form.controls.teacherId.valueChanges.subscribe((teacherId) => {
-      if (teacherId) {
-        const teacher = this.userFacade.teachers().find(t => t.id === teacherId);
-        if (teacher) {
-          this.form.patchValue({
-            displayName: teacher.name,
-            email: teacher.email
-          });
+    this.form.controls.teacherId.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((teacherId) => {
+        if (teacherId) {
+          const teacher = this.userFacade.teachers().find(t => t.id === teacherId);
+          if (teacher) {
+            this.form.patchValue({
+              displayName: teacher.name,
+              email: teacher.email
+            });
+          }
         }
-      }
-    });
+      });
   }
 
   private applyProfileFieldEnforcement(role: UserRole): void {

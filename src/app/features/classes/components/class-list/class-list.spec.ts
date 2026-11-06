@@ -105,4 +105,21 @@ describe('ClassList', () => {
     expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
     expect(component.editingClass()).toBeNull();
   });
+  it('debounces search input by 300ms before calling facade.setSearchTerm', () => {
+    vi.useFakeTimers();
+    try {
+      const setSearchTermSpy = vi.spyOn(component.facade, 'setSearchTerm');
+      component.searchControl.setValue('CNTT');
+      expect(setSearchTermSpy).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(299);
+      expect(setSearchTermSpy).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
+      expect(setSearchTermSpy).toHaveBeenCalledWith('CNTT');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
 });

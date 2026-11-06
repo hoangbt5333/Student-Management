@@ -1,5 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { UserFacade } from '../../facades/user.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
@@ -13,13 +16,16 @@ import type { User, UserRole, UserStatus } from '../../models/user.model';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [UserFormComponent, UserDetailComponent, ModalComponent, PaginationComponent, TooltipDirective, DatePipe],
+  imports: [UserFormComponent, UserDetailComponent, ModalComponent, PaginationComponent, TooltipDirective, DatePipe, ReactiveFormsModule],
   templateUrl: './user-list.component.html',
-  styleUrl: './user-list.component.css'
+  styleUrl: './user-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserListComponent implements OnInit {
   readonly userFacade = inject(UserFacade);
   readonly authFacade = inject(AuthFacade);
+
+  readonly searchControl = new FormControl('', { nonNullable: true });
 
   showForm = signal(false);
   editingUser = signal<User | null>(null);
@@ -29,6 +35,28 @@ export class UserListComponent implements OnInit {
 
   get currentAdminId(): string | undefined {
     return this.authFacade.currentUser()?.id;
+  }
+
+  constructor() {
+    this.searchControl.setValue(this.userFacade.searchTerm(), { emitEvent: false });
+
+    // Đồng bộ nếu searchTerm trong facade bị thay đổi/reset từ bên ngoài
+    effect(() => {
+      const current = this.userFacade.searchTerm();
+      if (this.searchControl.value !== current) {
+        this.searchControl.setValue(current, { emitEvent: false });
+      }
+    });
+
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed()
+      )
+      .subscribe((keyword) => {
+        this.userFacade.setSearchTerm(keyword);
+      });
   }
 
   ngOnInit(): void {
@@ -96,7 +124,7 @@ export class UserListComponent implements OnInit {
   }
 
   onSearch(keyword: string): void {
-    this.userFacade.setSearchTerm(keyword);
+    this.searchControl.setValue(keyword);
   }
 
   onRoleFilter(role: string): void {

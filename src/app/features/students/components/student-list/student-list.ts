@@ -1,4 +1,7 @@
-import { Component, inject, OnInit, signal, effect, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, effect, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 import type { Student } from '../../models/student.model';
@@ -11,14 +14,17 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [StudentForm, StudentTable, ModalComponent, PaginationComponent],
+  imports: [StudentForm, StudentTable, ModalComponent, PaginationComponent, ReactiveFormsModule],
   templateUrl: './student-list.html',
-  styleUrl: './student-list.css'
+  styleUrl: './student-list.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentListComponent implements OnInit {
   @ViewChild(StudentForm) private studentForm?: StudentForm;
   readonly facade = inject(StudentFacade);
   readonly authFacade = inject(AuthFacade);
+
+  readonly searchControl = new FormControl('', { nonNullable: true });
 
   private clearSelectionOnSaveSuccess = effect(() => {
     const message = this.facade.successMessage();
@@ -54,12 +60,36 @@ export class StudentListComponent implements OnInit {
     { value: 'faculty', label: 'Khoa' }
   ];
 
+  constructor() {
+    const initialTerm = this.facade.searchTerm ? this.facade.searchTerm() : '';
+    this.searchControl.setValue(initialTerm, { emitEvent: false });
+
+    if (this.facade.searchTerm) {
+      effect(() => {
+        const current = this.facade.searchTerm();
+        if (this.searchControl.value !== current) {
+          this.searchControl.setValue(current, { emitEvent: false });
+        }
+      });
+    }
+
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed()
+      )
+      .subscribe((keyword) => {
+        this.facade.setSearchTerm(keyword);
+      });
+  }
+
   ngOnInit(): void {
     this.facade.loadStudents();
   }
 
   search(keyword: string): void {
-    this.facade.setSearchTerm(keyword);
+    this.searchControl.setValue(keyword);
   }
 
   setClassFilter(value: string): void {

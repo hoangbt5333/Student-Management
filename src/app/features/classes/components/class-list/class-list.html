@@ -43,8 +43,7 @@
       <input
         type="search"
         placeholder="Tìm theo mã lớp, tên lớp, khoa, niên khóa..."
-        [value]="facade.searchTerm()"
-        (input)="onSearch($event)"
+        [formControl]="searchControl"
       />
     </div>
 

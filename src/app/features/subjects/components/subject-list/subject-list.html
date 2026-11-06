@@ -101,7 +101,7 @@
         type="search"
         aria-label="Tìm môn học"
         placeholder="Tìm theo mã hoặc tên môn học..."
-        (input)="setSearch($any($event.target).value)"
+        [formControl]="searchControl"
       />
     </div>
 

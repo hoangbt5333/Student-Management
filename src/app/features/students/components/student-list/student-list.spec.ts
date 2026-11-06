@@ -103,4 +103,21 @@ describe('StudentList', () => {
     });
     expect(component.showForm()).toBe(false);
   });
+  it('debounces search input by 300ms before calling facade.setSearchTerm', () => {
+    vi.useFakeTimers();
+    try {
+      const setSearchTermSpy = vi.spyOn(component.facade, 'setSearchTerm');
+      component.searchControl.setValue('Nguyen');
+      expect(setSearchTermSpy).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(299);
+      expect(setSearchTermSpy).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
+      expect(setSearchTermSpy).toHaveBeenCalledWith('Nguyen');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
 });

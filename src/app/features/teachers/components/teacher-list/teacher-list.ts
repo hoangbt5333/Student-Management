@@ -1,7 +1,9 @@
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { TeacherFacade } from '../../facades/teacher.facade';
 import type { Teacher } from '../../models/teacher.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -19,12 +21,15 @@ interface SubjectRef {
   imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent],
   templateUrl: './teacher-list.html',
   styleUrl: './teacher-list.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TeacherListComponent implements OnInit {
   readonly facade = inject(TeacherFacade);
   readonly authFacade = inject(AuthFacade);
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
+
+  readonly searchControl = new FormControl('', { nonNullable: true });
 
   readonly teachers = this.facade.teachers;
   readonly pageTeachers = this.facade.pageTeachers;
@@ -54,6 +59,30 @@ export class TeacherListComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     department: ['', [Validators.required, Validators.maxLength(100)]],
   });
+
+  constructor() {
+    const initialTerm = this.facade.searchTerm ? this.facade.searchTerm() : '';
+    this.searchControl.setValue(initialTerm, { emitEvent: false });
+
+    if (this.facade.searchTerm) {
+      effect(() => {
+        const current = this.facade.searchTerm();
+        if (this.searchControl.value !== current) {
+          this.searchControl.setValue(current, { emitEvent: false });
+        }
+      });
+    }
+
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed()
+      )
+      .subscribe((term) => {
+        this.facade.setSearchTerm(term);
+      });
+  }
 
   ngOnInit(): void {
     this.facade.loadTeachers();
@@ -115,7 +144,7 @@ export class TeacherListComponent implements OnInit {
   }
 
   setSearch(value: string): void {
-    this.facade.setSearchTerm(value);
+    this.searchControl.setValue(value);
   }
 
   onPageChange(page: number): void {

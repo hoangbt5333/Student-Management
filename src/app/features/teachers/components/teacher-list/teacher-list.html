@@ -104,7 +104,7 @@
         type="search"
         aria-label="Tìm giảng viên"
         placeholder="Tìm theo mã, họ tên hoặc email..."
-        (input)="setSearch($any($event.target).value)"
+        [formControl]="searchControl"
       />
     </div>
 

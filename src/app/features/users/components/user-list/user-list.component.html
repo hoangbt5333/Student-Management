@@ -76,8 +76,7 @@
         </svg>
         <input
           type="search"
-          [value]="userFacade.searchTerm()"
-          (input)="onSearch($any($event.target).value)"
+          [formControl]="searchControl"
           placeholder="Tìm kiếm tài khoản, họ tên, email..."
           aria-label="Tìm kiếm người dùng"
         />

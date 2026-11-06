@@ -1,7 +1,9 @@
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { SubjectFacade } from '../../facades/subject.facade';
 import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
 import type { Subject } from '../../models/subject.model';
@@ -20,6 +22,7 @@ interface GradeRef {
   imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent],
   templateUrl: './subject-list.html',
   styleUrl: './subject-list.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubjectListComponent implements OnInit {
   readonly facade = inject(SubjectFacade);
@@ -27,6 +30,8 @@ export class SubjectListComponent implements OnInit {
   readonly authFacade = inject(AuthFacade);
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
+
+  readonly searchControl = new FormControl('', { nonNullable: true });
 
   readonly subjects = this.facade.subjects;
   readonly filteredSubjects = this.facade.filteredSubjects;
@@ -56,6 +61,30 @@ export class SubjectListComponent implements OnInit {
     credits: [3, [Validators.required, Validators.min(1), Validators.max(10)]],
     teacherId: [''],
   });
+
+  constructor() {
+    const initialTerm = this.facade.searchTerm ? this.facade.searchTerm() : '';
+    this.searchControl.setValue(initialTerm, { emitEvent: false });
+
+    if (this.facade.searchTerm) {
+      effect(() => {
+        const current = this.facade.searchTerm();
+        if (this.searchControl.value !== current) {
+          this.searchControl.setValue(current, { emitEvent: false });
+        }
+      });
+    }
+
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed()
+      )
+      .subscribe((term) => {
+        this.facade.setSearchTerm(term);
+      });
+  }
 
   ngOnInit(): void {
     this.facade.loadSubjects();
@@ -121,7 +150,7 @@ export class SubjectListComponent implements OnInit {
   }
 
   setSearch(value: string): void {
-    this.facade.setSearchTerm(value);
+    this.searchControl.setValue(value);
   }
 
   closeForm(): void {

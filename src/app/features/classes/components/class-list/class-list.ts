@@ -1,5 +1,8 @@
-import { Component, inject, OnInit, effect, signal } from '@angular/core';
+import { Component, inject, OnInit, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { ClassFacade } from '../../facades/class.facade';
 import type { ClassModel } from '../../models/class.model';
 import { ClassForm } from '../class-form/class-form';
@@ -9,15 +12,18 @@ import { StudentFacade } from '../../../students/facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 @Component({
-  imports: [ClassForm, RouterLink, ModalComponent, PaginationComponent],
+  imports: [ClassForm, RouterLink, ModalComponent, PaginationComponent, ReactiveFormsModule],
   selector: 'app-class-list',
   styleUrl: './class-list.css',
   templateUrl: './class-list.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClassList implements OnInit {
   readonly facade = inject(ClassFacade);
   readonly studentFacade = inject(StudentFacade);
   readonly authFacade = inject(AuthFacade);
+
+  readonly searchControl = new FormControl('', { nonNullable: true });
 
   readonly showForm = signal(false);
   readonly editingClass = signal<ClassModel | null>(null);
@@ -38,6 +44,30 @@ export class ClassList implements OnInit {
 
     this.waitingForSave = false;
   });
+
+  constructor() {
+    const initialTerm = this.facade.searchTerm ? this.facade.searchTerm() : '';
+    this.searchControl.setValue(initialTerm, { emitEvent: false });
+
+    if (this.facade.searchTerm) {
+      effect(() => {
+        const current = this.facade.searchTerm();
+        if (this.searchControl.value !== current) {
+          this.searchControl.setValue(current, { emitEvent: false });
+        }
+      });
+    }
+
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed()
+      )
+      .subscribe((term) => {
+        this.facade.setSearchTerm(term);
+      });
+  }
 
   ngOnInit(): void {
     this.facade.loadClasses();
@@ -94,7 +124,7 @@ export class ClassList implements OnInit {
 
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.facade.setSearchTerm(input.value);
+    this.searchControl.setValue(input.value);
   }
 
   toggleNameSort(): void {
