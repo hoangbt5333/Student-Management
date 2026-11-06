@@ -1,13 +1,5 @@
 @if (user(); as u) {
   <div class="form-card detail-card">
-    <div class="form-header">
-      <div>
-        <h2>Chi tiết tài khoản #{{ u.username }}</h2>
-        <p>Thông tin định danh và hồ sơ nghiệp vụ liên kết của tài khoản.</p>
-      </div>
-      <button type="button" class="btn btn-secondary btn-sm" (click)="onClose()">Đóng</button>
-    </div>
-
     <div class="detail-grid">
       <!-- Section 1: Account Info -->
       <div class="detail-section">

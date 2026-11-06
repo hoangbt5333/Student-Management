@@ -4,12 +4,13 @@ import { UserFacade } from '../../facades/user.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { UserDetailComponent } from '../user-detail/user-detail.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import type { User, UserRole, UserStatus } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [UserFormComponent, UserDetailComponent],
+  imports: [UserFormComponent, UserDetailComponent, ModalComponent],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css'
 })

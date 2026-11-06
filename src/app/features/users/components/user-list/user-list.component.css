@@ -1,3 +1,17 @@
+:host {
+  display: block;
+}
+
+/* Modal Form Styles */
+.form-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  width: 100%;
+}
+
 .alert {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);

@@ -1,3 +1,63 @@
+:host {
+  display: block;
+}
+
+.form-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  width: 100%;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-group label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-slate-700);
+}
+
+.form-group input,
+.form-group select {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: var(--font-size-sm);
+  color: var(--color-slate-800);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-slate-300);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+  outline: none;
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  background: var(--color-slate-100);
+  color: var(--color-slate-500);
+  cursor: not-allowed;
+}
+
 .required {
   color: var(--color-danger);
   font-weight: bold;
@@ -12,4 +72,25 @@
   margin-top: var(--space-1);
   font-size: var(--font-size-xs);
   color: var(--color-slate-500);
+}
+
+.form-error {
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+  margin-top: 2px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }

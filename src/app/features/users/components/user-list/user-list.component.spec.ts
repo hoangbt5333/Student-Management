@@ -1,10 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { UserListComponent } from './user-list.component';
 import { UserFacade } from '../../facades/user.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { UserFormComponent } from '../user-form/user-form.component';
+import { UserDetailComponent } from '../user-detail/user-detail.component';
 import type { User } from '../../models/user.model';
 
 describe('UserListComponent', () => {
@@ -56,6 +60,8 @@ describe('UserListComponent', () => {
       teachers: signal([]),
       availableStudents: signal([]),
       availableTeachers: signal([]),
+      selectedStudentProfile: signal(null),
+      selectedTeacherProfile: signal(null),
       selectUser: vi.fn(),
       setSearchTerm: vi.fn(),
       setRoleFilter: vi.fn(),
@@ -106,12 +112,68 @@ describe('UserListComponent', () => {
     expect(lockButtons[1].disabled).toBe(false);
   });
 
-  it('opens create form when clicking primary-button', () => {
+  it('does not display modal initially', () => {
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
+  });
+
+  it('opens create modal with title "Tạo mới tài khoản" when clicking primary-button', () => {
     const addButton = fixture.nativeElement.querySelector('button.primary-button');
     addButton.click();
     fixture.detectChanges();
 
     expect(component.showForm()).toBe(true);
-    expect(fixture.nativeElement.querySelector('app-user-form')).toBeTruthy();
+    const modalDe = fixture.debugElement.query(By.directive(ModalComponent));
+    expect(modalDe).not.toBeNull();
+    const modalComp = modalDe.componentInstance as ModalComponent;
+    expect(modalComp.title()).toBe('Tạo mới tài khoản');
+    expect(fixture.debugElement.query(By.directive(UserFormComponent))).not.toBeNull();
+  });
+
+  it('opens edit modal with title "Chỉnh sửa tài khoản" when openEdit is called', () => {
+    component.openEdit(mockUsers[0]);
+    fixture.detectChanges();
+
+    expect(component.showForm()).toBe(true);
+    const modalDe = fixture.debugElement.query(By.directive(ModalComponent));
+    expect(modalDe).not.toBeNull();
+    const modalComp = modalDe.componentInstance as ModalComponent;
+    expect(modalComp.title()).toBe('Chỉnh sửa tài khoản');
+    expect(component.editingUser()).toEqual(mockUsers[0]);
+    expect(fixture.debugElement.query(By.directive(UserFormComponent))).not.toBeNull();
+  });
+
+  it('opens detail modal with title "Chi tiết tài khoản #..." when openDetail is called', () => {
+    component.openDetail(mockUsers[1]);
+    fixture.detectChanges();
+
+    expect(component.showDetail()).toBe(true);
+    const modalDe = fixture.debugElement.query(By.directive(ModalComponent));
+    expect(modalDe).not.toBeNull();
+    const modalComp = modalDe.componentInstance as ModalComponent;
+    expect(modalComp.title()).toBe('Chi tiết tài khoản #' + mockUsers[1].username);
+    expect(component.detailedUser()).toEqual(mockUsers[1]);
+    expect(fixture.debugElement.query(By.directive(UserDetailComponent))).not.toBeNull();
+  });
+
+  it('closes form modal when closeForm is called', () => {
+    component.openCreate();
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).not.toBeNull();
+
+    component.closeForm();
+    fixture.detectChanges();
+    expect(component.showForm()).toBe(false);
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
+  });
+
+  it('closes detail modal when closeDetail is called', () => {
+    component.openDetail(mockUsers[0]);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).not.toBeNull();
+
+    component.closeDetail();
+    fixture.detectChanges();
+    expect(component.showDetail()).toBe(false);
+    expect(fixture.debugElement.query(By.directive(ModalComponent))).toBeNull();
   });
 });

@@ -58,4 +58,16 @@ describe('UserDetailComponent', () => {
     expect(text).toContain('CNTT-K68-01');
     expect(text).toContain('0901234567');
   });
+
+  it('emits close event when close button is clicked', () => {
+    let closed = false;
+    component.close.subscribe(() => {
+      closed = true;
+    });
+
+    const closeBtn = fixture.nativeElement.querySelector('.form-actions button');
+    closeBtn.click();
+
+    expect(closed).toBe(true);
+  });
 });

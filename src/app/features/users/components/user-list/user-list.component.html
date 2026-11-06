@@ -15,19 +15,31 @@
 
   <!-- Form Dialog Area -->
   @if (showForm()) {
-    <app-user-form
-      [user]="editingUser()"
-      (save)="closeForm()"
-      (cancel)="closeForm()"
-    />
+    <app-modal
+      [title]="editingUser() ? 'Chỉnh sửa tài khoản' : 'Tạo mới tài khoản'"
+      size="lg"
+      (close)="closeForm()"
+    >
+      <app-user-form
+        [user]="editingUser()"
+        (save)="closeForm()"
+        (cancel)="closeForm()"
+      />
+    </app-modal>
   }
 
   <!-- Detail Dialog Area -->
   @if (showDetail()) {
-    <app-user-detail
-      [user]="detailedUser()"
+    <app-modal
+      [title]="detailedUser() ? 'Chi tiết tài khoản #' + detailedUser()!.username : 'Chi tiết tài khoản'"
+      size="lg"
       (close)="closeDetail()"
-    />
+    >
+      <app-user-detail
+        [user]="detailedUser()"
+        (close)="closeDetail()"
+      />
+    </app-modal>
   }
 
   <!-- Header -->

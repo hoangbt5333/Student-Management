@@ -1,13 +1,4 @@
 <div class="form-card">
-  <div class="form-header">
-    <h2>{{ isEditMode ? 'Chỉnh sửa tài khoản' : 'Tạo mới tài khoản' }}</h2>
-    <p>
-      {{ isEditMode
-        ? 'Cập nhật trạng thái và liên kết hồ sơ. Vai trò và tên đăng nhập là bất biến.'
-        : 'Nhập thông tin đăng nhập và liên kết hồ sơ Sinh viên hoặc Giảng viên.' }}
-    </p>
-  </div>
-
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="form-grid">
       <!-- Username -->
