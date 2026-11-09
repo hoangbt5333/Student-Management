@@ -1,12 +1,13 @@
 import { Component, computed, inject, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 import { ClassFacade } from '../../facades/class.facade';
 import { StudentFacade } from '../../../students/facades/student.facade';
 
 @Component({
   selector: 'app-class-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TooltipDirective],
   templateUrl: './class-detail.html',
   styleUrl: './class-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

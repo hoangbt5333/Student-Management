@@ -8,12 +8,13 @@ import type { ClassModel } from '../../models/class.model';
 import { ClassForm } from '../class-form/class-form';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 import { StudentFacade } from '../../../students/facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 
 @Component({
-  imports: [ClassForm, RouterLink, ModalComponent, PaginationComponent, ReactiveFormsModule],
+  imports: [ClassForm, RouterLink, ModalComponent, PaginationComponent, ReactiveFormsModule, TooltipDirective],
   selector: 'app-class-list',
   styleUrl: './class-list.css',
   templateUrl: './class-list.html',

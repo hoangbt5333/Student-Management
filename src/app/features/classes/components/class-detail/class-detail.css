@@ -118,6 +118,12 @@ dd {
   gap: var(--space-2);
 }
 
+.action-buttons .btn-view-detail:hover {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary);
+}
+
 @media (max-width: 560px) {
   .page-heading,
   .section-heading {

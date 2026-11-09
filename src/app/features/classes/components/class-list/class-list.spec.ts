@@ -9,10 +9,21 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { ClassForm } from '../class-form/class-form';
 import type { ClassModel } from '../../models/class.model';
+import { ClassFacade } from '../../facades/class.facade';
+import { StudentFacade } from '../../../students/facades/student.facade';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 describe('ClassList', () => {
   let component: ClassList;
   let fixture: ComponentFixture<ClassList>;
+
+  const mockClass: ClassModel = {
+    id: 'CLS001',
+    code: 'CLS001',
+    name: 'CNTT-K68-01',
+    department: 'Công nghệ thông tin',
+    academicYear: '2025-2026',
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -22,7 +33,7 @@ describe('ClassList', () => {
         {
           provide: ClassService,
           useValue: {
-            getAll: () => of([]),
+            getAll: () => of([mockClass]),
           },
         },
         {
@@ -31,11 +42,18 @@ describe('ClassList', () => {
             getStudents: () => of([]),
           },
         },
+        {
+          provide: AuthFacade,
+          useValue: {
+            can: () => true,
+          },
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ClassList);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
@@ -157,5 +175,75 @@ describe('ClassList', () => {
 
     expect(confirmSpy).toHaveBeenCalled();
     expect(component.showForm()).toBe(false);
+  });
+  it('should render icon action buttons for detail, edit, and delete with svg and aria-labels', () => {
+    const viewDetailBtn = fixture.debugElement.query(By.css('.btn-view-detail'));
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-class'));
+    const deleteBtn = fixture.debugElement.query(By.css('.btn-delete-class'));
+
+    expect(viewDetailBtn).toBeTruthy();
+    expect(editBtn).toBeTruthy();
+    expect(deleteBtn).toBeTruthy();
+
+    expect(viewDetailBtn.nativeElement.getAttribute('href')).toBe('/classes/CLS001');
+    expect(viewDetailBtn.nativeElement.getAttribute('aria-label')).toContain('CNTT-K68-01');
+    expect(editBtn.nativeElement.getAttribute('aria-label')).toContain('CNTT-K68-01');
+    expect(deleteBtn.nativeElement.getAttribute('aria-label')).toContain('CNTT-K68-01');
+
+    expect(viewDetailBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+    expect(editBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+    expect(deleteBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+  });
+
+  it('should trigger openEditForm when edit icon button is clicked', () => {
+    const openEditSpy = vi.spyOn(component, 'openEditForm');
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-class'));
+    editBtn.nativeElement.click();
+
+    expect(openEditSpy).toHaveBeenCalled();
+  });
+
+  it('should trigger onDelete when delete icon button is clicked', () => {
+    const deleteSpy = vi.spyOn(component, 'onDelete').mockImplementation(() => {});
+    const deleteBtn = fixture.debugElement.query(By.css('.btn-delete-class'));
+    deleteBtn.nativeElement.click();
+
+    expect(deleteSpy).toHaveBeenCalled();
+  });
+
+  it('should only render view-detail button and hide edit/delete buttons when manage-classes is denied', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [ClassList],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ClassService,
+          useValue: {
+            getAll: () => of([mockClass]),
+          },
+        },
+        {
+          provide: StudentService,
+          useValue: {
+            getStudents: () => of([]),
+          },
+        },
+        {
+          provide: AuthFacade,
+          useValue: {
+            can: (perm: string) => perm !== 'manage-classes',
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const unauthFixture = TestBed.createComponent(ClassList);
+    unauthFixture.detectChanges();
+    await unauthFixture.whenStable();
+
+    expect(unauthFixture.debugElement.query(By.css('.btn-view-detail'))).toBeTruthy();
+    expect(unauthFixture.debugElement.query(By.css('.btn-edit-class'))).toBeNull();
+    expect(unauthFixture.debugElement.query(By.css('.btn-delete-class'))).toBeNull();
   });
 });

@@ -75,9 +75,7 @@
               </th>
               <th>Khoa / Ngành</th>
               <th>Niên khóa</th>
-              @if (authFacade.can('manage-classes')) {
-                <th class="col-actions actions-header">Thao tác</th>
-              }
+              <th class="col-actions actions-header">Thao tác</th>
             </tr>
           </thead>
 
@@ -94,31 +92,62 @@
                 <td>
                   <span class="badge badge-neutral">{{ item.academicYear }}</span>
                 </td>
-                @if (authFacade.can('manage-classes')) {
-                  <td class="col-actions">
-                    <div class="action-buttons actions">
+                <td class="col-actions">
+                  <div class="action-buttons actions">
+                    <!-- Xem chi tiết -->
+                    <a
+                      [routerLink]="['/classes', item.id]"
+                      class="btn btn-secondary btn-sm btn-icon-action btn-view-detail"
+                      appTooltip="Xem chi tiết lớp học"
+                      title="Xem chi tiết lớp học"
+                      [attr.aria-label]="'Xem chi tiết lớp ' + item.name"
+                    >
+                      <svg class="action-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </a>
+
+                    @if (authFacade.can('manage-classes')) {
+                      <!-- Chỉnh sửa -->
                       <button
                         type="button"
-                        class="btn btn-secondary secondary-button"
+                        class="btn btn-secondary btn-sm btn-icon-action secondary-button edit-button btn-edit-class"
                         (click)="openEditForm(item)"
+                        appTooltip="Chỉnh sửa thông tin"
+                        title="Chỉnh sửa thông tin"
+                        [attr.aria-label]="'Chỉnh sửa lớp ' + item.name"
                       >
-                        Sửa
+                        <svg class="action-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M12 20h9" />
+                          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                        </svg>
                       </button>
 
+                      <!-- Xóa -->
                       <button
                         type="button"
-                        class="btn btn-danger danger-button"
+                        class="btn btn-danger btn-sm btn-icon-action danger-button delete-button btn-delete-class"
                         (click)="onDelete(item)"
+                        appTooltip="Xóa lớp học"
+                        title="Xóa lớp học"
+                        [attr.aria-label]="'Xóa lớp ' + item.name"
                       >
-                        Xóa
+                        <svg class="action-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M3 6h18" />
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                          <line x1="10" x2="10" y1="11" y2="17" />
+                          <line x1="14" x2="14" y1="11" y2="17" />
+                        </svg>
                       </button>
-                    </div>
-                  </td>
-                }
+                    }
+                  </div>
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td [attr.colspan]="authFacade.can('manage-classes') ? 5 : 4" class="empty empty-state">
+                <td colspan="5" class="empty empty-state">
                   Không tìm thấy lớp học phù hợp.
                 </td>
               </tr>
