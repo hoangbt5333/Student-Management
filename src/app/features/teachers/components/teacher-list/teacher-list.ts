@@ -10,6 +10,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 
 interface SubjectRef {
   id: string;
@@ -19,7 +20,7 @@ interface SubjectRef {
 @Component({
   selector: 'app-teacher-list',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent, TooltipDirective],
   templateUrl: './teacher-list.html',
   styleUrl: './teacher-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

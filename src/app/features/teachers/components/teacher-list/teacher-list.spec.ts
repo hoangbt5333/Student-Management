@@ -180,4 +180,84 @@ describe('TeacherListComponent', () => {
     expect(confirmSpy).toHaveBeenCalled();
     expect(component.showForm()).toBe(false);
   });
+  it('should render icon action buttons for detail, edit, and delete with svg and aria-labels', () => {
+    const viewDetailBtn = fixture.debugElement.query(By.css('.btn-view-detail'));
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-teacher'));
+    const deleteBtn = fixture.debugElement.query(By.css('.btn-delete-teacher'));
+
+    expect(viewDetailBtn).toBeTruthy();
+    expect(editBtn).toBeTruthy();
+    expect(deleteBtn).toBeTruthy();
+
+    expect(viewDetailBtn.nativeElement.getAttribute('href')).toBe('/teachers/GV001');
+    expect(viewDetailBtn.nativeElement.getAttribute('aria-label')).toContain('Nguyen Van B');
+    expect(editBtn.nativeElement.getAttribute('aria-label')).toContain('Nguyen Van B');
+    expect(deleteBtn.nativeElement.getAttribute('aria-label')).toContain('Nguyen Van B');
+
+    expect(viewDetailBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+    expect(editBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+    expect(deleteBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+  });
+
+  it('should open edit form when edit icon button is clicked', () => {
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-teacher'));
+    editBtn.nativeElement.click();
+    fixture.detectChanges();
+
+    expect(component.showForm()).toBe(true);
+    expect(component.editingId()).toBe('GV001');
+  });
+
+  it('should call delete method when delete icon button is clicked', () => {
+    const deleteSpy = vi.spyOn(component, 'delete').mockImplementation(() => {});
+    const deleteBtn = fixture.debugElement.query(By.css('.btn-delete-teacher'));
+    deleteBtn.nativeElement.click();
+
+    expect(deleteSpy).toHaveBeenCalledWith(mockTeachersSignal()[0]);
+  });
+
+  it('should only render view-detail button and hide edit/delete buttons when manage-teachers is denied', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [TeacherListComponent],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: TeacherFacade,
+          useValue: {
+            teachers: mockTeachersSignal,
+            filteredTeachers: mockTeachersSignal,
+            pageTeachers: mockPageTeachersSignal,
+            filteredTeacherCount: mockFilteredTeacherCountSignal,
+            currentPage: mockCurrentPageSignal,
+            pageSize: mockPageSizeSignal,
+            loading: signal(false),
+            errorMessage: signal(null),
+            successMessage: signal(null),
+            loadTeachers: mockLoadTeachers,
+            clearMessages: mockClearMessages,
+            setSearchTerm: mockSetSearchTerm,
+            setPage: mockSetPage,
+            setPageSize: mockSetPageSize,
+          },
+        },
+        {
+          provide: AuthFacade,
+          useValue: {
+            can: (perm: string) => perm !== 'manage-teachers',
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const unauthFixture = TestBed.createComponent(TeacherListComponent);
+    unauthFixture.detectChanges();
+    await unauthFixture.whenStable();
+
+    expect(unauthFixture.debugElement.query(By.css('.btn-view-detail'))).toBeTruthy();
+    expect(unauthFixture.debugElement.query(By.css('.btn-edit-teacher'))).toBeNull();
+    expect(unauthFixture.debugElement.query(By.css('.btn-delete-teacher'))).toBeNull();
+  });
 });

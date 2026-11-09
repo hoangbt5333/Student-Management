@@ -90,12 +90,6 @@
   text-decoration: underline;
 }
 
-.info-link {
-  font-size: var(--font-size-xs);
-  padding: 4px 10px;
-  min-height: 28px;
-}
-
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -107,11 +101,13 @@
 
 .col-actions {
   white-space: nowrap;
+  width: 120px;
 }
 
 .actions-header {
   white-space: nowrap;
-  width: 140px;
+  width: 120px;
+  text-align: left;
 }
 
 .action-buttons,
@@ -120,6 +116,24 @@
   align-items: center;
   gap: var(--space-2);
   white-space: nowrap;
+}
+
+.action-buttons .btn-view-detail:hover {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary);
+}
+
+.action-buttons .btn-edit-teacher:hover {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary);
+}
+
+.action-buttons .btn-delete-teacher:hover {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
 }
 
 @media (max-width: 768px) {
