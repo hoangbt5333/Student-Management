@@ -2,10 +2,10 @@ import { Component, inject, input, output, ChangeDetectionStrategy } from '@angu
 import { RouterLink } from '@angular/router';
 import type { Student } from '../../models/student.model';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
-
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, TooltipDirective],
   selector: 'app-student-table',
   styleUrl: './student-table.css',
   templateUrl: './student-table.html',
