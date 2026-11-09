@@ -9,6 +9,7 @@ import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
 import type { Subject } from '../../models/subject.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 
@@ -20,7 +21,7 @@ interface GradeRef {
 @Component({
   selector: 'app-subject-list',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent, TooltipDirective],
   templateUrl: './subject-list.html',
   styleUrl: './subject-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

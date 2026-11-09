@@ -201,4 +201,94 @@ describe('SubjectListComponent', () => {
     expect(confirmSpy).toHaveBeenCalled();
     expect(component.showForm()).toBe(false);
   });
+  it('should render icon action buttons for detail, edit, and delete with svg and aria-labels', () => {
+    const viewDetailBtn = fixture.debugElement.query(By.css('.btn-view-detail'));
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-subject'));
+    const deleteBtn = fixture.debugElement.query(By.css('.btn-delete-subject'));
+
+    expect(viewDetailBtn).toBeTruthy();
+    expect(editBtn).toBeTruthy();
+    expect(deleteBtn).toBeTruthy();
+
+    expect(viewDetailBtn.nativeElement.getAttribute('href')).toBe('/subjects/MH001');
+    expect(viewDetailBtn.nativeElement.getAttribute('aria-label')).toContain('Lap trinh Web');
+    expect(editBtn.nativeElement.getAttribute('aria-label')).toContain('Lap trinh Web');
+    expect(deleteBtn.nativeElement.getAttribute('aria-label')).toContain('Lap trinh Web');
+
+    expect(viewDetailBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+    expect(editBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+    expect(deleteBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+  });
+
+  it('should open edit form when edit icon button is clicked', () => {
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-subject'));
+    editBtn.nativeElement.click();
+    fixture.detectChanges();
+
+    expect(component.showForm()).toBe(true);
+    expect(component.editingId()).toBe('MH001');
+  });
+
+  it('should call delete method when delete icon button is clicked', () => {
+    const deleteSpy = vi.spyOn(component, 'delete').mockImplementation(() => {});
+    const deleteBtn = fixture.debugElement.query(By.css('.btn-delete-subject'));
+    deleteBtn.nativeElement.click();
+
+    expect(deleteSpy).toHaveBeenCalledWith(mockSubjectsSignal()[0]);
+  });
+
+  it('should only render view-detail button and hide edit/delete buttons when manage-subjects is denied', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [SubjectListComponent],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: SubjectFacade,
+          useValue: {
+            subjects: mockSubjectsSignal,
+            filteredSubjects: mockSubjectsSignal,
+            pageSubjects: mockSubjectsSignal,
+            filteredSubjectCount: signal(1),
+            subjectCount: signal(1),
+            page: signal(1),
+            currentPage: signal(1),
+            pageSize: signal(5),
+            totalPages: signal(1),
+            loading: signal(false),
+            errorMessage: signal(null),
+            successMessage: signal(null),
+            loadSubjects: mockLoadSubjects,
+            clearMessages: mockClearMessages,
+            setSearchTerm: mockSetSearchTerm,
+            setPage: mockSetPage,
+            setPageSize: mockSetPageSize,
+          },
+        },
+        {
+          provide: TeacherFacade,
+          useValue: {
+            teachers: mockTeachersSignal,
+            loadTeachers: mockLoadTeachers,
+          },
+        },
+        {
+          provide: AuthFacade,
+          useValue: {
+            can: (perm: string) => perm !== 'manage-subjects',
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const unauthFixture = TestBed.createComponent(SubjectListComponent);
+    unauthFixture.detectChanges();
+    await unauthFixture.whenStable();
+
+    expect(unauthFixture.debugElement.query(By.css('.btn-view-detail'))).toBeTruthy();
+    expect(unauthFixture.debugElement.query(By.css('.btn-edit-subject'))).toBeNull();
+    expect(unauthFixture.debugElement.query(By.css('.btn-delete-subject'))).toBeNull();
+  });
 });
