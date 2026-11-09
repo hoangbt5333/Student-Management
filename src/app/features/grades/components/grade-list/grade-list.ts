@@ -8,6 +8,7 @@ import { StudentFacade } from '../../../students/facades/student.facade';
 import { SubjectFacade } from '../../../subjects/facades/subject.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 import type { Grade } from '../../models/grade.model';
 import type { Student } from '../../../students/models/student.model';
@@ -16,7 +17,7 @@ import type { Subject } from '../../../subjects/models/subject.model';
 @Component({
   selector: 'app-grade-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, PaginationComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PaginationComponent, TooltipDirective],
   templateUrl: './grade-list.html',
   styleUrl: './grade-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

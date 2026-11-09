@@ -161,4 +161,17 @@ describe('GradeListComponent', () => {
     component.onPageSizeChange(10);
     expect(setPageSizeSpy).toHaveBeenCalledWith(10);
   });
+  it('should render edit icon action button with svg and aria-label', () => {
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-grade'));
+    expect(editBtn).toBeTruthy();
+    expect(editBtn.nativeElement.getAttribute('aria-label')).toContain('Chỉnh sửa điểm');
+    expect(editBtn.query(By.css('svg.action-icon'))).toBeTruthy();
+  });
+
+  it('should open edit form when edit icon button is clicked', () => {
+    const editSpy = vi.spyOn(component, 'edit');
+    const editBtn = fixture.debugElement.query(By.css('.btn-edit-grade'));
+    editBtn.nativeElement.click();
+    expect(editSpy).toHaveBeenCalled();
+  });
 });
