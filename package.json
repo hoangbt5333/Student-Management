@@ -24,6 +24,7 @@
     "@angular/router": "^22.2.0",
     "@angular/ssr": "^22.2.1",
     "@ngrx/signals": "^22.0.1",
+    "dotenv": "^18.0.10",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
