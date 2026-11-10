@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { UserStore } from './user.store';
@@ -96,6 +96,61 @@ describe('UserStore', () => {
     expect(store.allPageUsersSelected()).toBe(true);
     store.togglePageSelection();
     expect(store.selectedUserIds()).toEqual([]);
+  });
+
+  it('excludes self and invalid-status accounts from bulk locking', () => {
+    mockUserService.getUsers = vi.fn().mockReturnValue(of([
+      mockUsers[0],
+      mockUsers[1],
+      { ...mockUsers[2], status: 'locked' }
+    ]));
+    store.loadAll();
+
+    store.toggleUserSelection('USR001');
+    store.toggleUserSelection('USR002');
+    store.toggleUserSelection('USR003');
+    store.bulkChangeUserStatus('locked', 'USR001');
+    expect(mockUserService.patchUser).toHaveBeenCalledTimes(1);
+    expect(mockUserService.patchUser).toHaveBeenCalledWith('USR002', expect.objectContaining({ status: 'locked' }));
+  });
+
+  it('successfully bulk unlocks locked accounts', () => {
+    mockUserService.getUsers = vi.fn().mockReturnValue(of([
+      { ...mockUsers[1], status: 'locked' }
+    ]));
+    store.loadAll();
+
+    store.toggleUserSelection('USR002');
+    store.bulkChangeUserStatus('active');
+    expect(mockUserService.patchUser).toHaveBeenCalledTimes(1);
+    expect(mockUserService.patchUser).toHaveBeenCalledWith('USR002', expect.objectContaining({ status: 'active' }));
+    expect(store.selectedUserIds()).toEqual([]);
+  });
+
+  it('preserves an active admin when the selected request would lock the last one', () => {
+    store.toggleUserSelection('USR001');
+    store.bulkChangeUserStatus('locked', 'OTHER');
+    expect(mockUserService.patchUser).not.toHaveBeenCalled();
+    expect(store.errorMessage()).toContain('Không có tài khoản phù hợp');
+  });
+
+  it('updates successful bulk requests, retains failed selections, and reports partial failure', () => {
+    mockUserService.patchUser = vi.fn().mockImplementation((id: string) => id === 'USR002'
+      ? of({ ...mockUsers[1], status: 'locked' })
+      : throwError(() => new Error('request failed')));
+    store.toggleUserSelection('USR002');
+    store.toggleUserSelection('USR003');
+    store.bulkChangeUserStatus('locked');
+    expect(store.users().find(user => user.id === 'USR002')?.status).toBe('locked');
+    expect(store.selectedUserIds()).toEqual(['USR003']);
+    expect(store.successMessage()).toContain('1 tài khoản');
+    expect(store.errorMessage()).toContain('Một số tài khoản');
+  });
+
+  it('ignores bulk statuses other than the supported active and locked transitions', () => {
+    store.bulkChangeUserStatus('locked');
+    expect(store.errorMessage()).toContain('Không có tài khoản phù hợp');
+    expect(mockUserService.patchUser).not.toHaveBeenCalled();
   });
 
   it('loads all users, students, and teachers initially', () => {

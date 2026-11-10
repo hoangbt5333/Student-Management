@@ -35,6 +35,9 @@ export class UserFacade {
   readonly selectedUserIds = this.store.selectedUserIds;
   readonly selectedUserCount = this.store.selectedUserCount;
   readonly allPageUsersSelected = this.store.allPageUsersSelected;
+  readonly selectedPageUserCount = this.store.selectedPageUserCount;
+  readonly canBulkLock = this.store.canBulkLock;
+  readonly canBulkActivate = this.store.canBulkActivate;
   readonly filteredUsers = this.store.filteredUsers;
   readonly totalFilteredCount = this.store.totalFilteredCount;
   readonly totalPages = this.store.totalPages;

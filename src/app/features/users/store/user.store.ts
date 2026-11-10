@@ -4,7 +4,8 @@ import {
   signalStore,
   withComputed,
   withMethods,
-  withState
+  withState,
+  withHooks
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import {
@@ -182,10 +183,16 @@ export const UserStore = signalStore(
     });
 
     const selectedUserCount = computed(() => selectedUserIds().length);
+    const selectedPageUserCount = computed(() => pageUsers().filter(user => selectedUserIds().includes(user.id)).length);
     const allPageUsersSelected = computed(() => {
       const page = pageUsers();
-      return page.length > 0 && page.every(user => selectedUserIds().includes(user.id));
+      return page.length > 0 && selectedPageUserCount() === page.length;
     });
+    const canBulkLock = computed(() => selectedUserIds().some(id => {
+      const user = users().find(candidate => candidate.id === id);
+      return user?.status === 'active' && user.id !== undefined;
+    }));
+    const canBulkActivate = computed(() => selectedUserIds().some(id => users().some(user => user.id === id && user.status === 'locked')));
 
     const selectedStudentProfile = computed(() => {
       const user = selectedUser();
@@ -203,6 +210,9 @@ export const UserStore = signalStore(
       selectedUser,
       selectedUserCount,
       allPageUsersSelected,
+      selectedPageUserCount,
+      canBulkLock,
+      canBulkActivate,
       activeAdminCount,
       linkedStudentIds,
       linkedTeacherIds,
@@ -573,10 +583,16 @@ export const UserStore = signalStore(
         .filter(user => user.status !== status &&
           (status !== 'locked' || user.status === 'active') &&
           (status !== 'active' || user.status === 'locked'));
-      const protectedAdmins = candidates.filter(user => user.role === 'admin' && user.status === 'active').length;
-      const allowed = candidates.filter(user => !(status === 'locked' && user.id === currentAdminId) &&
-        !(status === 'locked' && user.role === 'admin' && user.status === 'active' &&
-          store.activeAdminCount() - protectedAdmins < 1));
+      let remainingActiveAdmins = store.activeAdminCount();
+      const allowed = candidates.filter(user => {
+        if (status !== 'locked') return true;
+        if (user.id === currentAdminId) return false;
+        if (user.role === 'admin' && user.status === 'active') {
+          if (remainingActiveAdmins <= 1) return false;
+          remainingActiveAdmins--;
+        }
+        return true;
+      });
       const timestamp = new Date().toISOString();
       if (!allowed.length) {
         patchState(store, { errorMessage: 'Không có tài khoản phù hợp để cập nhật.' });
@@ -584,12 +600,12 @@ export const UserStore = signalStore(
       }
       patchState(store, { loading: true });
       forkJoin(allowed.map(user => userService.patchUser(user.id, { status, updatedAt: timestamp }).pipe(
-        catchError(() => of(null))
-      ))).pipe(finalize(() => patchState(store, { loading: false }))).subscribe(results => {
+        catchError(() => of(null as User | null))
+      ))).pipe(finalize(() => patchState(store, { loading: false }))).subscribe((results: (User | null)[]) => {
         const succeeded = results.filter((result): result is User => result !== null);
         patchState(store, {
-          users: store.users().map(user => succeeded.find(saved => saved.id === user.id) ?? user),
-          selectedUserIds: store.selectedUserIds().filter(id => !succeeded.some(saved => saved.id === id)),
+          users: store.users().map(user => succeeded.find((saved: User) => saved.id === user.id) ?? user),
+          selectedUserIds: store.selectedUserIds().filter(id => !succeeded.some((saved: User) => saved.id === id)),
           successMessage: succeeded.length ? `Đã cập nhật ${succeeded.length} tài khoản.` : '',
           errorMessage: succeeded.length < allowed.length ? 'Một số tài khoản không thể cập nhật.' : ''
         });
