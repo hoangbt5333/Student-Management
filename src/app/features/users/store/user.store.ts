@@ -4,7 +4,8 @@ import {
   signalStore,
   withComputed,
   withMethods,
-  withState
+  withState,
+  withHooks
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import {
@@ -37,6 +38,7 @@ type UserState = {
   students: Student[];
   teachers: Teacher[];
   selectedUserId: string | null;
+  selectedUserIds: string[];
   loading: boolean;
   errorMessage: string;
   successMessage: string;
@@ -54,6 +56,7 @@ const initialState: UserState = {
   students: [],
   teachers: [],
   selectedUserId: null,
+  selectedUserIds: [],
   loading: false,
   errorMessage: '',
   successMessage: '',
@@ -76,6 +79,7 @@ export const UserStore = signalStore(
     students,
     teachers,
     selectedUserId,
+    selectedUserIds,
     searchTerm,
     roleFilter,
     statusFilter,
@@ -178,6 +182,18 @@ export const UserStore = signalStore(
       return list.slice(start, start + size);
     });
 
+    const selectedUserCount = computed(() => selectedUserIds().length);
+    const selectedPageUserCount = computed(() => pageUsers().filter(user => selectedUserIds().includes(user.id)).length);
+    const allPageUsersSelected = computed(() => {
+      const page = pageUsers();
+      return page.length > 0 && selectedPageUserCount() === page.length;
+    });
+    const canBulkLock = computed(() => selectedUserIds().some(id => {
+      const user = users().find(candidate => candidate.id === id);
+      return user?.status === 'active' && user.id !== undefined;
+    }));
+    const canBulkActivate = computed(() => selectedUserIds().some(id => users().some(user => user.id === id && user.status === 'locked')));
+
     const selectedStudentProfile = computed(() => {
       const user = selectedUser();
       if (!user?.studentId) return null;
@@ -192,6 +208,11 @@ export const UserStore = signalStore(
 
     return {
       selectedUser,
+      selectedUserCount,
+      allPageUsersSelected,
+      selectedPageUserCount,
+      canBulkLock,
+      canBulkActivate,
       hasActiveFilters: computed(() => Boolean(searchTerm().trim()) || roleFilter() !== 'all' || statusFilter() !== 'all'),
       activeAdminCount,
       linkedStudentIds,
@@ -540,6 +561,60 @@ export const UserStore = signalStore(
 
     selectUser(selectedUserId: string | null): void {
       patchState(store, { selectedUserId });
+    },
+
+    toggleUserSelection(id: string): void {
+      const ids = store.selectedUserIds();
+      patchState(store, { selectedUserIds: ids.includes(id) ? ids.filter(value => value !== id) : [...ids, id] });
+    },
+
+    togglePageSelection(): void {
+      const pageIds = store.pageUsers().map(user => user.id);
+      const selected = new Set(store.selectedUserIds());
+      const allSelected = pageIds.length > 0 && pageIds.every(id => selected.has(id));
+      patchState(store, { selectedUserIds: allSelected
+        ? [...selected].filter(id => !pageIds.includes(id))
+        : [...selected, ...pageIds.filter(id => !selected.has(id))] });
+    },
+
+    clearSelection(): void {
+      patchState(store, { selectedUserIds: [] });
+    },
+
+    bulkChangeUserStatus(status: 'locked' | 'active', currentAdminId?: string): void {
+      patchState(store, { errorMessage: '', successMessage: '' });
+      const candidates = store.selectedUserIds().map(id => store.users().find(user => user.id === id))
+        .filter((user): user is User => user !== undefined)
+        .filter(user => user.status !== status &&
+          (status !== 'locked' || user.status === 'active') &&
+          (status !== 'active' || user.status === 'locked'));
+      let remainingActiveAdmins = store.activeAdminCount();
+      const allowed = candidates.filter(user => {
+        if (status !== 'locked') return true;
+        if (user.id === currentAdminId) return false;
+        if (user.role === 'admin' && user.status === 'active') {
+          if (remainingActiveAdmins <= 1) return false;
+          remainingActiveAdmins--;
+        }
+        return true;
+      });
+      const timestamp = new Date().toISOString();
+      if (!allowed.length) {
+        patchState(store, { errorMessage: 'Không có tài khoản phù hợp để cập nhật.' });
+        return;
+      }
+      patchState(store, { loading: true });
+      forkJoin(allowed.map(user => userService.patchUser(user.id, { status, updatedAt: timestamp }).pipe(
+        catchError(() => of(null as User | null))
+      ))).pipe(finalize(() => patchState(store, { loading: false }))).subscribe((results: (User | null)[]) => {
+        const succeeded = results.filter((result): result is User => result !== null);
+        patchState(store, {
+          users: store.users().map(user => succeeded.find((saved: User) => saved.id === user.id) ?? user),
+          selectedUserIds: store.selectedUserIds().filter(id => !succeeded.some((saved: User) => saved.id === id)),
+          successMessage: succeeded.length ? `Đã cập nhật ${succeeded.length} tài khoản.` : '',
+          errorMessage: succeeded.length < allowed.length ? 'Một số tài khoản không thể cập nhật.' : ''
+        });
+      });
     },
 
     clearMessages(): void {

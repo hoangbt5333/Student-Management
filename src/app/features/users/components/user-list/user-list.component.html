@@ -133,11 +133,21 @@
       }
     </section>
 
+    @if (userFacade.selectedUserCount() > 0) {
+      <div class="bulk-action-bar" role="region" aria-label="Thao tác hàng loạt">
+        <span>{{ userFacade.selectedUserCount() }} tài khoản đã chọn</span>
+        <button type="button" [disabled]="!userFacade.canBulkLock()" [attr.title]="userFacade.canBulkLock() ? null : 'Không có tài khoản đang hoạt động phù hợp để khóa.'" (click)="userFacade.bulkChangeUserStatus('locked', currentAdminId)">Khóa hàng loạt</button>
+        <button type="button" [disabled]="!userFacade.canBulkActivate()" [attr.title]="userFacade.canBulkActivate() ? null : 'Không có tài khoản bị khóa phù hợp để mở khóa.'" (click)="userFacade.bulkChangeUserStatus('active', currentAdminId)">Mở khóa hàng loạt</button>
+        <button type="button" (click)="userFacade.clearSelection()">Bỏ chọn</button>
+      </div>
+    }
+
     <!-- Users Table -->
     <div class="table-responsive">
       <table class="data-table">
         <thead>
           <tr>
+            <th><input type="checkbox" aria-label="Chọn tất cả người dùng trang hiện tại" [checked]="userFacade.allPageUsersSelected()" [indeterminate]="userFacade.selectedPageUserCount() > 0 && !userFacade.allPageUsersSelected()" (change)="userFacade.togglePageSelection()"></th>
             <th class="col-username">Tên đăng nhập</th>
             <th class="col-fullname">Họ và tên</th>
             <th class="col-role">Vai trò</th>
@@ -150,7 +160,7 @@
         <tbody>
           @if (userFacade.loading()) {
             <tr>
-              <td colspan="7" class="loading-state">
+              <td colspan="8" class="loading-state">
                 <span class="spinner"></span> Đang tải dữ liệu...
               </td>
             </tr>
@@ -167,6 +177,7 @@
           } @else {
             @for (user of userFacade.pageUsers(); track user.id) {
               <tr [class.self-row]="isSelf(user)">
+                <td><input type="checkbox" [attr.aria-label]="'Chọn tài khoản ' + user.username" [checked]="userFacade.selectedUserIds().includes(user.id)" (change)="userFacade.toggleUserSelection(user.id)"></td>
                 <!-- Username -->
                 <td class="col-username">
                   <span class="username-cell">

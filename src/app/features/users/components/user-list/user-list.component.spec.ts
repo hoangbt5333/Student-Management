@@ -44,6 +44,16 @@ describe('UserListComponent', () => {
       loadAll: vi.fn(),
       users: signal(mockUsers),
       pageUsers: signal(mockUsers),
+      selectedUserIds: signal([]),
+      selectedUserCount: signal(0),
+      allPageUsersSelected: signal(false),
+      selectedPageUserCount: signal(0),
+      canBulkLock: signal(false),
+      canBulkActivate: signal(false),
+      toggleUserSelection: vi.fn(),
+      togglePageSelection: vi.fn(),
+      clearSelection: vi.fn(),
+      bulkChangeUserStatus: vi.fn(),
       filteredUsers: signal(mockUsers),
       totalFilteredCount: signal(2),
       totalPages: signal(1),
@@ -202,6 +212,42 @@ describe('UserListComponent', () => {
 
     // Second row is USR002 (teacher) -> enabled
     expect(lockButtons[1].disabled).toBe(false);
+  });
+
+  it('renders row selection and reflects partial page selection in the header', () => {
+    (mockUserFacade.selectedPageUserCount as ReturnType<typeof signal<number>>).set(1);
+    fixture.detectChanges();
+    const header = fixture.nativeElement.querySelector('thead input[type=checkbox]') as HTMLInputElement;
+    const rows = fixture.nativeElement.querySelectorAll('tbody input[type=checkbox]');
+    expect(rows).toHaveLength(2);
+    expect(header.indeterminate).toBe(true);
+    rows[0].click();
+    expect(mockUserFacade.toggleUserSelection).toHaveBeenCalledWith('USR001');
+  });
+
+  it('shows bulk selection count and invokes available status actions', () => {
+    (mockUserFacade.selectedUserCount as ReturnType<typeof signal<number>>).set(2);
+    (mockUserFacade.canBulkLock as ReturnType<typeof signal<boolean>>).set(true);
+    (mockUserFacade.canBulkActivate as ReturnType<typeof signal<boolean>>).set(true);
+    fixture.detectChanges();
+    const bar = fixture.nativeElement.querySelector('.bulk-action-bar');
+    expect(bar.textContent).toContain('2 tài khoản đã chọn');
+    const buttons = bar.querySelectorAll('button');
+    buttons[0].click();
+    buttons[1].click();
+    buttons[2].click();
+    expect(mockUserFacade.bulkChangeUserStatus).toHaveBeenNthCalledWith(1, 'locked', 'USR001');
+    expect(mockUserFacade.bulkChangeUserStatus).toHaveBeenNthCalledWith(2, 'active', 'USR001');
+    expect(mockUserFacade.clearSelection).toHaveBeenCalled();
+  });
+
+  it('disables bulk actions when there are no applicable selected accounts', () => {
+    (mockUserFacade.selectedUserCount as ReturnType<typeof signal<number>>).set(1);
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('.bulk-action-bar button');
+    expect(buttons[0].disabled).toBe(true);
+    expect(buttons[1].disabled).toBe(true);
+    expect(buttons[0].getAttribute('title')).toContain('Không có tài khoản');
   });
 
   it('does not display modal initially', () => {
