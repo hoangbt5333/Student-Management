@@ -113,7 +113,7 @@ describe('UserStore', () => {
     store.setSearchTerm('MINHAN@EXAMPLE.COM');
     expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
 
-    store.setSearchTerm('gv001');
+    store.setSearchTerm('faculty-account');
     expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
 
     store.setSearchTerm('admin');
