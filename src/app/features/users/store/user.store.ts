@@ -152,10 +152,7 @@ export const UserStore = signalStore(
           const usernameMatch = normalizeVietnamese(user.username).includes(keyword);
           const nameMatch = normalizeVietnamese(user.displayName).includes(keyword);
           const emailMatch = normalizeVietnamese(user.email).includes(keyword);
-          const studentIdMatch = normalizeVietnamese(user.studentId).includes(keyword);
-          const teacherIdMatch = normalizeVietnamese(user.teacherId).includes(keyword);
-
-          return usernameMatch || nameMatch || emailMatch || studentIdMatch || teacherIdMatch;
+          return usernameMatch || nameMatch || emailMatch;
         })
         .sort((a, b) => {
           const valA = a[field] ?? '';

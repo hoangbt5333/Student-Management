@@ -28,7 +28,7 @@ describe('UserStore', () => {
     },
     {
       id: 'USR002',
-      username: 'gv001',
+      username: 'faculty-account',
       displayName: 'Nguyễn Minh An',
       email: 'minhan@example.com',
       role: 'teacher',
@@ -106,13 +106,49 @@ describe('UserStore', () => {
     expect(availableTeachers[0].id).toBe('GV002');
   });
 
-  it('filters users by search term with diacritic-insensitive matching', () => {
+  it('searches by display name, email, and username only', () => {
     store.setSearchTerm('nguyen');
-    expect(store.filteredUsers().length).toBe(2); // USR002 (Nguyễn Minh An) & USR003 (Nguyen Van A)
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003', 'USR002']);
 
-    store.setSearchTerm('admin');
-    expect(store.filteredUsers().length).toBe(1);
-    expect(store.filteredUsers()[0].username).toBe('admin');
+    store.setSearchTerm('minhan@example.com');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
+
+    store.setSearchTerm('sv001');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003']);
+
+    store.setSearchTerm('gv001');
+    expect(store.filteredUsers()).toEqual([]);
+
+    store.setSearchTerm('PROFILE-GV-001');
+    expect(store.filteredUsers()).toEqual([]);
+  });
+
+  it('does not use role or status as search fields and keeps their filters independent', () => {
+    store.setSearchTerm('teacher');
+    expect(store.filteredUsers()).toHaveLength(0);
+    store.setSearchTerm('active');
+    expect(store.filteredUsers()).toHaveLength(0);
+
+    store.setSearchTerm('');
+    expect(store.filteredUsers()).toHaveLength(3);
+
+    store.setRoleFilter('teacher');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
+
+    store.setRoleFilter('all');
+    store.setStatusFilter('inactive');
+    expect(store.filteredUsers()).toEqual([]);
+    store.setStatusFilter('active');
+    expect(store.filteredUsers()).toHaveLength(3);
+  });
+
+  it('filters role and status independently when search matches supported fields', () => {
+    store.setSearchTerm('example.com');
+    store.setRoleFilter('student');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003']);
+
+    store.setStatusFilter('locked');
+    expect(store.filteredUsers()).toEqual([]);
   });
 
   it('BR-05: prevents creating user with duplicate username', () => {
