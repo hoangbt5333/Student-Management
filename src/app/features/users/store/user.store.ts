@@ -135,7 +135,7 @@ export const UserStore = signalStore(
     });
 
     const filteredUsers = computed(() => {
-      const keyword = normalizeVietnamese(searchTerm());
+      const keyword = normalizeVietnamese(searchTerm().trim());
       const role = roleFilter();
       const status = statusFilter();
       const field = sortBy();
@@ -213,6 +213,7 @@ export const UserStore = signalStore(
       selectedPageUserCount,
       canBulkLock,
       canBulkActivate,
+      hasActiveFilters: computed(() => Boolean(searchTerm().trim()) || roleFilter() !== 'all' || statusFilter() !== 'all'),
       activeAdminCount,
       linkedStudentIds,
       linkedTeacherIds,
@@ -524,6 +525,10 @@ export const UserStore = signalStore(
       });
 
       return true;
+    },
+
+    resetFilters(): void {
+      patchState(store, { searchTerm: '', roleFilter: 'all', statusFilter: 'all', page: 1 });
     },
 
     setSearchTerm(searchTerm: string): void {

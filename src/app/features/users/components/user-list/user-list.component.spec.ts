@@ -42,6 +42,7 @@ describe('UserListComponent', () => {
   beforeEach(async () => {
     mockUserFacade = {
       loadAll: vi.fn(),
+      users: signal(mockUsers),
       pageUsers: signal(mockUsers),
       selectedUserIds: signal([]),
       selectedUserCount: signal(0),
@@ -59,6 +60,7 @@ describe('UserListComponent', () => {
       page: signal(1),
       pageSize: signal(5),
       searchTerm: signal(''),
+      hasActiveFilters: signal(false),
       roleFilter: signal('all'),
       statusFilter: signal('all'),
       sortBy: signal('createdAt'),
@@ -73,6 +75,7 @@ describe('UserListComponent', () => {
       selectedStudentProfile: signal(null),
       selectedTeacherProfile: signal(null),
       selectUser: vi.fn(),
+      resetFilters: vi.fn(),
       setSearchTerm: vi.fn(),
       setRoleFilter: vi.fn(),
       setStatusFilter: vi.fn(),
@@ -106,6 +109,40 @@ describe('UserListComponent', () => {
     fixture.detectChanges();
   });
 
+  it('shows the clear-filters button only when filters are active', () => {
+    expect(fixture.nativeElement.textContent).not.toContain('Xóa bộ lọc');
+
+    mockUserFacade.hasActiveFilters.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Xóa bộ lọc');
+
+    mockUserFacade.hasActiveFilters.set(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Xóa bộ lọc');
+  });
+
+  it('clears filters through the facade and synchronizes search control silently', () => {
+    component.searchControl.setValue('existing search');
+    mockUserFacade.searchTerm.set('existing search');
+    mockUserFacade.hasActiveFilters.set(true);
+    fixture.detectChanges();
+    mockUserFacade.setSearchTerm.mockClear();
+    mockUserFacade.resetFilters.mockImplementation(() => {
+      mockUserFacade.searchTerm.set('');
+    });
+
+    const buttons = fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    const clearButton = Array.from(buttons)
+      .find((button) => button.textContent?.includes('Xóa bộ lọc'));
+    expect(clearButton).toBeDefined();
+    clearButton?.click();
+    fixture.detectChanges();
+
+    expect(mockUserFacade.resetFilters).toHaveBeenCalledOnce();
+    expect(component.searchControl.value).toBe('');
+    expect(mockUserFacade.setSearchTerm).not.toHaveBeenCalled();
+  });
+
   it('debounces search input by 300ms before calling setSearchTerm', () => {
     vi.useFakeTimers();
     try {
@@ -120,6 +157,45 @@ describe('UserListComponent', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('shows no-results only when a non-empty search yields no filtered users', () => {
+    mockUserFacade.users.set(mockUsers);
+    mockUserFacade.searchTerm.set('missing');
+    mockUserFacade.filteredUsers.set([]);
+    mockUserFacade.pageUsers.set([]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không tìm thấy kết quả');
+
+    mockUserFacade.searchTerm.set('');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không có tài khoản nào.');
+  });
+
+  it('shows the regular empty state for an empty dataset or filter result', () => {
+    mockUserFacade.users.set([]);
+    mockUserFacade.searchTerm.set('missing');
+    mockUserFacade.filteredUsers.set([]);
+    mockUserFacade.pageUsers.set([]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không có tài khoản nào.');
+
+    mockUserFacade.users.set(mockUsers);
+    mockUserFacade.searchTerm.set('');
+    mockUserFacade.filteredUsers.set([]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không có tài khoản nào.');
+  });
+
+  it('gives loading state precedence over empty results', () => {
+    mockUserFacade.users.set([]);
+    mockUserFacade.pageUsers.set([]);
+    mockUserFacade.loading.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.loading-state')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.empty-state')).toBeNull();
   });
 
   it('renders page header, search-box, and primary add button', () => {

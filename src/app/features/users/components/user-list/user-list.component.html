@@ -128,6 +128,9 @@
           </select>
         </div>
       </div>
+      @if (userFacade.hasActiveFilters()) {
+        <button type="button" class="btn btn-secondary" (click)="resetFilters()">Xóa bộ lọc</button>
+      }
     </section>
 
     @if (userFacade.selectedUserCount() > 0) {
@@ -163,8 +166,12 @@
             </tr>
           } @else if (userFacade.pageUsers().length === 0) {
             <tr>
-              <td colspan="8" class="empty-state">
-                Không tìm thấy tài khoản nào phù hợp với điều kiện tìm kiếm.
+              <td colspan="7" class="empty-state">
+                @if (userFacade.users().length > 0 && userFacade.searchTerm().trim() && userFacade.filteredUsers().length === 0) {
+                  Không tìm thấy kết quả
+                } @else {
+                  Không có tài khoản nào.
+                }
               </td>
             </tr>
           } @else {

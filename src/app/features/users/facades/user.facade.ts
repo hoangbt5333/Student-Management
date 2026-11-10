@@ -23,6 +23,7 @@ export class UserFacade {
   readonly errorMessage = this.store.errorMessage;
   readonly successMessage = this.store.successMessage;
   readonly searchTerm = this.store.searchTerm;
+  readonly hasActiveFilters = this.store.hasActiveFilters;
   readonly roleFilter = this.store.roleFilter;
   readonly statusFilter = this.store.statusFilter;
   readonly sortBy = this.store.sortBy;
@@ -63,6 +64,10 @@ export class UserFacade {
 
   changeUserStatus(userId: string, newStatus: UserStatus, currentAdminId?: string): boolean {
     return this.store.changeUserStatus(userId, newStatus, currentAdminId);
+  }
+
+  resetFilters(): void {
+    this.store.resetFilters();
   }
 
   setSearchTerm(term: string): void {

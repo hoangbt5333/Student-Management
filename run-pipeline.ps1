@@ -1,9 +1,9 @@
 ﻿<#
 .SYNOPSIS
     Pipeline tự động cho Claude Code kết hợp Jira MCP trên Windows (PowerShell):
-    Jira MCP Fetch -> Planner -> Analyst -> Coder -> Reviewer Loop -> Doc-writer
+    Jira Fetch -> Planner -> Human Gate -> Analyst -> Coder (In Progress) -> Reviewer Loop -> Doc-writer (Comment PR lên Jira)
 .EXAMPLE
-    .\run-pipeline.ps1 SM-5
+    .\run-pipeline.ps1 SM-7
 #>
 
 [CmdletBinding()]
@@ -18,6 +18,7 @@ $ErrorActionPreference = "Stop"
 
 $T = "tasks\$TaskId"
 $TicketFile = Join-Path $T "00-ticket.md"
+$AtlassianCloudId = "3fafc9a5-35a2-48ad-86c7-773befa3471f"
 
 # 1. Nhận diện CLI binary (claudex hoặc claude)
 $ClaudeBin = $null
@@ -41,7 +42,7 @@ if (-not (Test-Path $TicketFile)) {
         New-Item -ItemType Directory -Path $T -Force | Out-Null
     }
 
-    & $ClaudeBin -p "Dùng tool mcp__atlassian__getJiraIssue để lấy thông tin issue '$TaskId' trên Jira. Hãy trích xuất: Issue Key, Summary, Issue Type, Description và ghi vào file $TicketFile với định dạng markdown chuẩn." --dangerously-skip-permissions
+    & $ClaudeBin -p "Dùng tool mcp__atlassian__getJiraIssue với cloudId '$AtlassianCloudId' để lấy thông tin issue '$TaskId' trên Jira. Hãy trích xuất: Issue Key, Summary, Issue Type, Description và ghi vào file $TicketFile với định dạng markdown chuẩn." --dangerously-skip-permissions
 
     if (-not (Test-Path $TicketFile)) {
         Write-Host "[LỖI] Không thể tải ticket $TaskId từ Jira." -ForegroundColor Red
@@ -67,32 +68,61 @@ function Run-Agent {
 }
 
 # --- STEP 1: Planner ---
-Write-Step "1/5 Planner: Lập kế hoạch phân rã subtasks"
 $BreakdownFile = Join-Path $T "01-breakdown.md"
-Run-Agent -AgentName "planner" -Prompt "Đọc $TicketFile, phân rã thành các subtask rõ ràng theo thứ tự phụ thuộc kiến trúc và ghi kết quả vào $BreakdownFile"
+if (-not (Test-Path $BreakdownFile)) {
+    Write-Step "1/5 Planner: Lập kế hoạch phân rã subtasks"
+    Run-Agent -AgentName "planner" -Prompt "Đọc $TicketFile, phân rã thành các subtask rõ ràng theo thứ tự phụ thuộc kiến trúc và ghi kết quả vào $BreakdownFile"
+} else {
+    Write-Host ">> [Đã có sẵn] Bỏ qua Planner, sử dụng $BreakdownFile" -ForegroundColor Cyan
+}
 
 # Human Gate: Điểm dừng phê duyệt kế hoạch
 Write-Host ""
-$Confirm = Read-Host ">> Đã ghi $BreakdownFile. Bạn có đồng ý tiếp tục? [y/N]"
-if ($Confirm -notmatch '^[yY]$') {
+$Confirm = Read-Host ">> Đã xem $BreakdownFile. Bạn có đồng ý tiếp tục? [y/N]"
+if ($Confirm -notmatch '^[yY]') {
     Write-Host ">> Đã dừng pipeline theo yêu cầu người dùng." -ForegroundColor Yellow
     exit 0
 }
 
 # --- STEP 2: Analyst ---
-Write-Step "2/5 Analyst: Khảo sát codebase và ranh giới kiến trúc"
 $AnalysisFile = Join-Path $T "02-analysis.md"
-Run-Agent -AgentName "analyst" -Prompt "Dựa vào $TicketFile và $BreakdownFile, khảo sát codebase Angular và ghi phân tích kỹ thuật vào $AnalysisFile"
+if (-not (Test-Path $AnalysisFile)) {
+    Write-Step "2/5 Analyst: Khảo sát codebase và ranh giới kiến trúc"
+    Run-Agent -AgentName "analyst" -Prompt "Dựa vào $TicketFile và $BreakdownFile, khảo sát codebase Angular và ghi phân tích kỹ thuật vào $AnalysisFile"
+} else {
+    Write-Host ">> [Đã có sẵn] Bỏ qua Analyst, sử dụng $AnalysisFile" -ForegroundColor Cyan
+}
 
 # --- STEP 3: Coder ---
 Write-Step "3/5 Coder: Triển khai mã nguồn và kiểm thử"
 $FeatureBranch = "feature/$TaskId"
 
-# Chuyển nhánh feature
-try {
-    git checkout -b $FeatureBranch 2>$null
-} catch {
-    git checkout $FeatureBranch
+# Chuyển nhánh feature từ main an toàn (dùng cmd.exe để tránh lỗi NativeCommandError trên PowerShell)
+$currentBranchRaw = cmd.exe /c "git branch --show-current"
+$currentBranch = if ($currentBranchRaw) { $currentBranchRaw.ToString().Trim() } else { "" }
+
+$branchCheck = cmd.exe /c "git branch --list $FeatureBranch"
+$hasBranch = if ($branchCheck) { $branchCheck.ToString().Trim() } else { "" }
+
+if (-not $hasBranch) {
+    if ($currentBranch -ne "main") {
+        cmd.exe /c "git checkout main"
+    }
+    cmd.exe /c "git checkout -b $FeatureBranch"
+} else {
+    if ($currentBranch -ne $FeatureBranch) {
+        cmd.exe /c "git checkout $FeatureBranch"
+    }
+}
+
+# Cập nhật Jira: chuyển sang In Progress & comment nhận task
+if ($TaskId -match '^[A-Za-z]+-\d+$') {
+    Write-Host ">> [Jira] Đang chuyển trạng thái $TaskId sang 'In Progress' và gửi thông báo..." -ForegroundColor Cyan
+    try {
+        & $ClaudeBin -p "Dùng tool mcp__atlassian__transitionJiraIssue với cloudId '$AtlassianCloudId', issueIdOrKey '$TaskId', transition id '21', và tool mcp__atlassian__addOrEditJiraIssueComment để thêm comment: '🤖 Subagent Coder đã nhận task và bắt đầu làm việc trên nhánh $FeatureBranch.'" --dangerously-skip-permissions
+    } catch {
+        Write-Host ">> [Jira] Bỏ qua cập nhật Jira." -ForegroundColor Yellow
+    }
 }
 
 Run-Agent -AgentName "coder" -Prompt "Dựa vào $BreakdownFile và $AnalysisFile, hãy implement code Angular, viết unit test (Vitest), chạy lệnh kiểm tra 'cmd /c npm run verify' đến khi pass hoàn toàn, sau đó commit code đã sửa (TUYỆT ĐỐI KHÔNG commit thư mục tasks/)."
@@ -128,14 +158,26 @@ for ($round = 1; $round -le ($MaxFixRounds + 1); $round++) {
 }
 
 # --- STEP 5: Doc-writer ---
-Write-Step "5/5 Doc-writer: Tổng kết PR, Changelog và hướng dẫn test"
+Write-Step "5/5 Doc-writer: Tổng kết PR, Changelog và cập nhật Jira"
 $DocsFile = Join-Path $T "04-docs.md"
 Run-Agent -AgentName "doc-writer" -Prompt "Dựa trên $TicketFile, $BreakdownFile và git diff main...HEAD, hãy viết mô tả PR chi tiết, changelog và hướng dẫn kiểm thử vào $DocsFile"
+
+# Đăng comment PR lên Jira
+if (($TaskId -match '^[A-Za-z]+-\d+$') -and (Test-Path $DocsFile)) {
+    Write-Host ">> [Jira] Đang đăng mẫu mô tả PR lên ticket $TaskId..." -ForegroundColor Cyan
+    try {
+        & $ClaudeBin -p "Đọc file $DocsFile, sau đó dùng tool mcp__atlassian__addOrEditJiraIssueComment với cloudId '$AtlassianCloudId' và issueIdOrKey '$TaskId' để đăng nội dung mô tả Pull Request và changelog từ file đó lên Jira." --dangerously-skip-permissions
+        Write-Host ">> [Jira] Đã cập nhật mô tả PR lên ticket Jira thành công!" -ForegroundColor Green
+    } catch {
+        Write-Host ">> [Jira] Không thể đăng comment lên Jira (bỏ qua)." -ForegroundColor Yellow
+    }
+}
 
 Write-Host ""
 Write-Host "==================================================" -ForegroundColor Green
 Write-Host ">> Pipeline hoàn thành thành công!" -ForegroundColor Green
 Write-Host ">> Tài liệu task: $T" -ForegroundColor Cyan
 Write-Host ">> Nhánh feature: $FeatureBranch" -ForegroundColor Cyan
+Write-Host ">> Ticket Jira: $TaskId đã được cập nhật In Progress & mô tả PR" -ForegroundColor Cyan
 Write-Host ">> Hãy kiểm tra lại và tiến hành tạo Pull Request." -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Green

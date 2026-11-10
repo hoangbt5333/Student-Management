@@ -151,6 +151,47 @@ describe('UserStore', () => {
     store.bulkChangeUserStatus('locked');
     expect(store.errorMessage()).toContain('Không có tài khoản phù hợp');
     expect(mockUserService.patchUser).not.toHaveBeenCalled();
+  it('starts with no active filters', () => {
+    expect(store.hasActiveFilters()).toBe(false);
+  });
+
+  it('marks search, role, and status filters active independently', () => {
+    store.setSearchTerm('  admin  ');
+    expect(store.hasActiveFilters()).toBe(true);
+    store.resetFilters();
+
+    store.setRoleFilter('teacher');
+    expect(store.hasActiveFilters()).toBe(true);
+    store.resetFilters();
+
+    store.setStatusFilter('locked');
+    expect(store.hasActiveFilters()).toBe(true);
+  });
+
+  it('resets filters and page without changing unrelated state', () => {
+    store.setSearchTerm('admin');
+    store.setRoleFilter('teacher');
+    store.setStatusFilter('locked');
+    store.setPage(3);
+    store.setPageSize(10);
+    store.setSortBy('username');
+    store.selectUser('USR001');
+    const users = store.users();
+    const students = store.students();
+    const teachers = store.teachers();
+
+    store.resetFilters();
+
+    expect(store.searchTerm()).toBe('');
+    expect(store.roleFilter()).toBe('all');
+    expect(store.statusFilter()).toBe('all');
+    expect(store.page()).toBe(1);
+    expect(store.pageSize()).toBe(10);
+    expect(store.sortBy()).toBe('username');
+    expect(store.selectedUserId()).toBe('USR001');
+    expect(store.users()).toBe(users);
+    expect(store.students()).toBe(students);
+    expect(store.teachers()).toBe(teachers);
   });
 
   it('loads all users, students, and teachers initially', () => {
@@ -172,49 +213,39 @@ describe('UserStore', () => {
     expect(availableTeachers[0].id).toBe('GV002');
   });
 
-  it('searches by display name, email, and username only', () => {
+  it('filters by name, email, username and linked IDs case- and diacritic-insensitively', () => {
     store.setSearchTerm('nguyen');
-    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003', 'USR002']);
+    expect(store.filteredUsers().map(user => user.id).sort()).toEqual(['USR002', 'USR003']);
 
-    store.setSearchTerm('minhan@example.com');
+    store.setSearchTerm('MINHAN@EXAMPLE.COM');
     expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
 
-    store.setSearchTerm('sv001');
-    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003']);
+    store.setSearchTerm('faculty-account');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
 
-    store.setSearchTerm('gv001');
-    expect(store.filteredUsers()).toEqual([]);
-
-    store.setSearchTerm('PROFILE-GV-001');
-    expect(store.filteredUsers()).toEqual([]);
+    store.setSearchTerm('admin');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR001']);
   });
 
-  it('does not use role or status as search fields and keeps their filters independent', () => {
-    store.setSearchTerm('teacher');
-    expect(store.filteredUsers()).toHaveLength(0);
-    store.setSearchTerm('active');
-    expect(store.filteredUsers()).toHaveLength(0);
-
-    store.setSearchTerm('');
+  it('trims search terms, returns all users for blank queries, and preserves source users', () => {
+    const sourceUsers = store.users();
+    store.setSearchTerm('  ');
     expect(store.filteredUsers()).toHaveLength(3);
+    expect(store.filteredUsers().map(user => user.id).sort()).toEqual(sourceUsers.map(user => user.id).sort());
 
+    store.setSearchTerm('no-match');
+    expect(store.filteredUsers()).toHaveLength(0);
+    expect(store.users()).toBe(sourceUsers);
+  });
+
+  it('combines search with role and status filters', () => {
     store.setRoleFilter('teacher');
+    store.setStatusFilter('active');
+    store.setSearchTerm('MINHAN');
     expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
 
-    store.setRoleFilter('all');
-    store.setStatusFilter('inactive');
-    expect(store.filteredUsers()).toEqual([]);
-    store.setStatusFilter('active');
-    expect(store.filteredUsers()).toHaveLength(3);
-  });
-
-  it('filters role and status independently when search matches supported fields', () => {
-    store.setSearchTerm('example.com');
-    store.setRoleFilter('student');
-    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003']);
-
-    store.setStatusFilter('locked');
-    expect(store.filteredUsers()).toEqual([]);
+    store.setSearchTerm('admin');
+    expect(store.filteredUsers()).toHaveLength(0);
   });
 
   it('BR-05: prevents creating user with duplicate username', () => {

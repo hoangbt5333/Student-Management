@@ -150,6 +150,10 @@ export class UserListComponent implements OnInit, HasPendingChanges {
     this.searchControl.setValue(keyword);
   }
 
+  resetFilters(): void {
+    this.userFacade.resetFilters();
+  }
+
   onRoleFilter(role: string): void {
     this.userFacade.setRoleFilter(role as 'all' | UserRole);
   }

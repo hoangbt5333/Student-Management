@@ -61,7 +61,13 @@ step "2/5 Analyst: Khảo sát codebase và ranh giới kiến trúc"
 
 # 3. Code (trên nhánh feature riêng)
 step "3/5 Coder: Triển khai mã nguồn và kiểm thử"
-git checkout -b "feature/$TASK_ID" 2>/dev/null || git checkout "feature/$TASK_ID"
+FEATURE_BRANCH="feature/$TASK_ID"
+if ! git branch --list "$FEATURE_BRANCH" | grep -q "$FEATURE_BRANCH"; then
+  git checkout main 2>/dev/null || true
+  git checkout -b "$FEATURE_BRANCH"
+else
+  git checkout "$FEATURE_BRANCH"
+fi
 
 "$CLAUDE_BIN" --agent coder -p "Dựa vào $T/01-breakdown.md và $T/02-analysis.md, hãy implement code Angular, viết unit test (Vitest), chạy lệnh kiểm tra 'cmd /c npm run verify' đến khi pass hoàn toàn, sau đó commit code đã sửa (TUYỆT ĐỐI KHÔNG commit thư mục tasks/)." \
   --dangerously-skip-permissions < /dev/null
