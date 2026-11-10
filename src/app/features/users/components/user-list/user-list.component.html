@@ -154,7 +154,7 @@
           } @else if (userFacade.pageUsers().length === 0) {
             <tr>
               <td colspan="7" class="empty-state">
-                @if (userFacade.searchTerm().trim()) {
+                @if (userFacade.users().length > 0 && userFacade.searchTerm().trim() && userFacade.filteredUsers().length === 0) {
                   Không tìm thấy kết quả
                 } @else {
                   Không có tài khoản nào.
