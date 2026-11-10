@@ -229,6 +229,22 @@ describe('UserStore', () => {
     expect(store.filteredUsers().map(user => user.id)).toEqual(['USR001']);
   });
 
+  it('filters by user ID and linked student/teacher IDs case-insensitively', () => {
+    const searches: Array<[string, string]> = [
+      ['USR001', 'USR001'],
+      ['usr001', 'USR001'],
+      ['SV001', 'USR003'],
+      ['sv001', 'USR003'],
+      ['GV001', 'USR002'],
+      ['gv001', 'USR002']
+    ];
+
+    for (const [query, expectedId] of searches) {
+      store.setSearchTerm(query);
+      expect(store.filteredUsers().map(user => user.id), query).toEqual([expectedId]);
+    }
+  });
+
   it('trims search terms, returns all users for blank queries, and preserves source users', () => {
     const sourceUsers = store.users();
     store.setSearchTerm('  ');
