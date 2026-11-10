@@ -28,7 +28,7 @@ describe('UserStore', () => {
     },
     {
       id: 'USR002',
-      username: 'gv001',
+      username: 'faculty-account',
       displayName: 'Nguyễn Minh An',
       email: 'minhan@example.com',
       role: 'teacher',
@@ -106,13 +106,39 @@ describe('UserStore', () => {
     expect(availableTeachers[0].id).toBe('GV002');
   });
 
-  it('filters users by search term with diacritic-insensitive matching', () => {
+  it('filters by name, email, username and linked IDs case- and diacritic-insensitively', () => {
     store.setSearchTerm('nguyen');
-    expect(store.filteredUsers().length).toBe(2); // USR002 (Nguyễn Minh An) & USR003 (Nguyen Van A)
+    expect(store.filteredUsers().map(user => user.id).sort()).toEqual(['USR002', 'USR003']);
+
+    store.setSearchTerm('MINHAN@EXAMPLE.COM');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
+
+    store.setSearchTerm('gv001');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
 
     store.setSearchTerm('admin');
-    expect(store.filteredUsers().length).toBe(1);
-    expect(store.filteredUsers()[0].username).toBe('admin');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR001']);
+  });
+
+  it('trims search terms, returns all users for blank queries, and preserves source users', () => {
+    const sourceUsers = store.users();
+    store.setSearchTerm('  ');
+    expect(store.filteredUsers()).toHaveLength(3);
+    expect(store.filteredUsers().map(user => user.id).sort()).toEqual(sourceUsers.map(user => user.id).sort());
+
+    store.setSearchTerm('no-match');
+    expect(store.filteredUsers()).toHaveLength(0);
+    expect(store.users()).toBe(sourceUsers);
+  });
+
+  it('combines search with role and status filters', () => {
+    store.setRoleFilter('teacher');
+    store.setStatusFilter('active');
+    store.setSearchTerm('MINHAN');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
+
+    store.setSearchTerm('admin');
+    expect(store.filteredUsers()).toHaveLength(0);
   });
 
   it('BR-05: prevents creating user with duplicate username', () => {
