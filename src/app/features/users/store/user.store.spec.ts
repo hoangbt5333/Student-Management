@@ -87,6 +87,17 @@ describe('UserStore', () => {
     store.loadAll();
   });
 
+  it('tracks row and current-page selections without duplicate IDs', () => {
+    store.toggleUserSelection('USR002');
+    store.toggleUserSelection('USR002');
+    expect(store.selectedUserIds()).toEqual([]);
+    store.togglePageSelection();
+    expect(store.selectedUserIds()).toHaveLength(3);
+    expect(store.allPageUsersSelected()).toBe(true);
+    store.togglePageSelection();
+    expect(store.selectedUserIds()).toEqual([]);
+  });
+
   it('loads all users, students, and teachers initially', () => {
     expect(store.users().length).toBe(3);
     expect(store.students().length).toBe(2);

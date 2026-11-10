@@ -32,6 +32,9 @@ export class UserFacade {
 
   // Computed Signals
   readonly selectedUser = this.store.selectedUser;
+  readonly selectedUserIds = this.store.selectedUserIds;
+  readonly selectedUserCount = this.store.selectedUserCount;
+  readonly allPageUsersSelected = this.store.allPageUsersSelected;
   readonly filteredUsers = this.store.filteredUsers;
   readonly totalFilteredCount = this.store.totalFilteredCount;
   readonly totalPages = this.store.totalPages;
@@ -90,6 +93,11 @@ export class UserFacade {
   selectUser(id: string | null): void {
     this.store.selectUser(id);
   }
+
+  toggleUserSelection(id: string): void { this.store.toggleUserSelection(id); }
+  togglePageSelection(): void { this.store.togglePageSelection(); }
+  clearSelection(): void { this.store.clearSelection(); }
+  bulkChangeUserStatus(status: 'locked' | 'active', currentAdminId?: string): void { this.store.bulkChangeUserStatus(status, currentAdminId); }
 
   clearMessages(): void {
     this.store.clearMessages();

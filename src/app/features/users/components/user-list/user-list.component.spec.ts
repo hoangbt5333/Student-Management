@@ -43,6 +43,13 @@ describe('UserListComponent', () => {
     mockUserFacade = {
       loadAll: vi.fn(),
       pageUsers: signal(mockUsers),
+      selectedUserIds: signal([]),
+      selectedUserCount: signal(0),
+      allPageUsersSelected: signal(false),
+      toggleUserSelection: vi.fn(),
+      togglePageSelection: vi.fn(),
+      clearSelection: vi.fn(),
+      bulkChangeUserStatus: vi.fn(),
       filteredUsers: signal(mockUsers),
       totalFilteredCount: signal(2),
       totalPages: signal(1),
