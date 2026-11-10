@@ -117,10 +117,15 @@ describe('UserListComponent', () => {
     mockUserFacade.hasActiveFilters.set(true);
     fixture.detectChanges();
     mockUserFacade.setSearchTerm.mockClear();
+    mockUserFacade.resetFilters.mockImplementation(() => {
+      mockUserFacade.searchTerm.set('');
+    });
 
-    const clearButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
-      .find((button: any) => button.textContent.includes('Xóa bộ lọc')) as HTMLButtonElement;
-    clearButton.click();
+    const buttons = fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    const clearButton = Array.from(buttons)
+      .find((button) => button.textContent?.includes('Xóa bộ lọc'));
+    expect(clearButton).toBeDefined();
+    clearButton?.click();
     fixture.detectChanges();
 
     expect(mockUserFacade.resetFilters).toHaveBeenCalledOnce();

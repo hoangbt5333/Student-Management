@@ -152,7 +152,6 @@ export class UserListComponent implements OnInit, HasPendingChanges {
 
   resetFilters(): void {
     this.userFacade.resetFilters();
-    this.searchControl.setValue('', { emitEvent: false });
   }
 
   onRoleFilter(role: string): void {
