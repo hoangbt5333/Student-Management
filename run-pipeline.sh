@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Pipeline tự động: planner -> analyst -> coder -> reviewer (tối đa 2 vòng sửa) -> doc-writer
-# Cách dùng: ./run-pipeline.sh TASK-001
+# Pipeline tự động: Jira MCP Fetch -> Planner -> Analyst -> Coder -> Reviewer Loop -> Doc-writer
+# Cách dùng: ./run-pipeline.sh SM-5
 set -euo pipefail
 
 TASK_ID="${1:?Cách dùng: ./run-pipeline.sh TASK-ID}"
@@ -19,11 +19,19 @@ fi
 
 echo ">> Sử dụng CLI: $CLAUDE_BIN"
 
-# Kiểm tra file ticket đầu vào
+# Tự động tạo thư mục và tải từ Jira nếu chưa có ticket cục bộ
 if [[ ! -f "$T/00-ticket.md" ]]; then
-  echo "[LỖI] Thiếu file $T/00-ticket.md."
-  echo "Vui lòng tạo file ticket hoặc đồng bộ từ Jira vào thư mục $T trước khi chạy."
-  exit 1
+  echo ">> Chưa có file $T/00-ticket.md cục bộ."
+  echo ">> Đang tự động kết nối Atlassian Jira MCP để tải issue $TASK_ID..."
+  mkdir -p "$T"
+  "$CLAUDE_BIN" -p "Dùng tool mcp__atlassian__getJiraIssue để lấy thông tin issue '$TASK_ID' trên Jira. Hãy trích xuất: Issue Key, Summary, Issue Type, Description và ghi vào file $T/00-ticket.md với định dạng markdown chuẩn." \
+    --dangerously-skip-permissions < /dev/null
+
+  if [[ ! -f "$T/00-ticket.md" ]]; then
+    echo "[LỖI] Không thể tải ticket $TASK_ID từ Jira."
+    exit 1
+  fi
+  echo ">> [SUCCESS] Đã tải ticket thành công về $T/00-ticket.md!"
 fi
 
 step() {

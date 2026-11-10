@@ -1,9 +1,9 @@
 ﻿<#
 .SYNOPSIS
-    Pipeline tự động cho Claude Code trên Windows (PowerShell):
-    Planner -> Analyst -> Coder -> Reviewer Loop -> Doc-writer
+    Pipeline tự động cho Claude Code kết hợp Jira MCP trên Windows (PowerShell):
+    Jira MCP Fetch -> Planner -> Analyst -> Coder -> Reviewer Loop -> Doc-writer
 .EXAMPLE
-    .\run-pipeline.ps1 TASK-001
+    .\run-pipeline.ps1 SM-5
 #>
 
 [CmdletBinding()]
@@ -19,14 +19,7 @@ $ErrorActionPreference = "Stop"
 $T = "tasks\$TaskId"
 $TicketFile = Join-Path $T "00-ticket.md"
 
-# 1. Kiểm tra ticket đầu vào
-if (-not (Test-Path $TicketFile)) {
-    Write-Host "[LỖI] Thiếu file ticket: $TicketFile" -ForegroundColor Red
-    Write-Host "Vui lòng tạo file ticket hoặc đồng bộ từ Jira trước khi chạy." -ForegroundColor Yellow
-    exit 1
-}
-
-# 2. Nhận diện CLI binary (claudex hoặc claude)
+# 1. Nhận diện CLI binary (claudex hoặc claude)
 $ClaudeBin = $null
 if (Get-Command "claudex" -ErrorAction SilentlyContinue) {
     $ClaudeBin = "claudex"
@@ -39,30 +32,30 @@ if (Get-Command "claudex" -ErrorAction SilentlyContinue) {
 
 Write-Host ">> Sử dụng CLI: $ClaudeBin" -ForegroundColor Cyan
 
+# 2. Kiểm tra ticket đầu vào, tự động fetch từ Jira nếu chưa có
+if (-not (Test-Path $TicketFile)) {
+    Write-Host ">> Chưa có file ticket cục bộ: $TicketFile" -ForegroundColor Yellow
+    Write-Host ">> Đang tự động kết nối Atlassian Jira MCP để tải issue $TaskId..." -ForegroundColor Cyan
+
+    if (-not (Test-Path $T)) {
+        New-Item -ItemType Directory -Path $T -Force | Out-Null
+    }
+
+    & $ClaudeBin -p "Dùng tool mcp__atlassian__getJiraIssue để lấy thông tin issue '$TaskId' trên Jira. Hãy trích xuất: Issue Key, Summary, Issue Type, Description và ghi vào file $TicketFile với định dạng markdown chuẩn." --dangerously-skip-permissions
+
+    if (-not (Test-Path $TicketFile)) {
+        Write-Host "[LỖI] Không thể tải ticket $TaskId từ Jira." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host ">> [SUCCESS] Đã tải ticket thành công về $TicketFile!" -ForegroundColor Green
+}
+
 function Write-Step {
     param([string]$Title)
     Write-Host ""
     Write-Host "==================================================" -ForegroundColor Green
     Write-Host "=== $Title" -ForegroundColor Green
     Write-Host "==================================================" -ForegroundColor Green
-}
-
-function Invoke-ClaudeAgent {
-    param(
-        [string]$AgentName,
-        [string]$Prompt
-    )
-    # Redirect $null vào stdin để tránh chờ stdin 3s
-    $process = Start-Process -FilePath $ClaudeBin -ArgumentList @("--agent", $AgentName, "-p", $Prompt, "--dangerously-skip-permissions") -NoNewWindow -PassThru -Wait -RedirectStandardInput ([System.IO.Path]::Combine($env:TEMP, "null.txt"))
-    if (-not (Test-Path ([System.IO.Path]::Combine($env:TEMP, "null.txt")))) {
-        "" | Out-File ([System.IO.Path]::Combine($env:TEMP, "null.txt")) -Encoding utf8
-    }
-}
-
-# Tạo file null rỗng cho stdin
-$NullInputFile = [System.IO.Path]::Combine($env:TEMP, "claude-null-input.txt")
-if (-not (Test-Path $NullInputFile)) {
-    "" | Out-File $NullInputFile -Encoding utf8
 }
 
 function Run-Agent {
