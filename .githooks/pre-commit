@@ -1,0 +1,29 @@
+#!/bin/sh
+# Git Pre-commit Hook cho dự án Student Management
+# Chặn mọi commit nếu không vượt qua được npm run verify (check:arch && build && test:ci)
+
+echo ""
+echo "============================================================"
+echo "🔍 [Pre-commit Hook] Đang kiểm tra mã nguồn trước khi commit..."
+echo "   1. Kiểm tra ranh giới kiến trúc (check:arch)"
+echo "   2. Kiểm tra biên dịch (build)"
+echo "   3. Chạy unit tests (test:ci)"
+echo "============================================================"
+echo ""
+
+npm.cmd run verify
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo ""
+  echo "❌ [Pre-commit Hook THẤT BẠI] 'npm run verify' không vượt qua (Mã lỗi: $RESULT)."
+  echo ">> Lệnh git commit đã bị hủy bỏ."
+  echo ">> Vui lòng sửa các lỗi kiến trúc, lỗi biên dịch hoặc unit test trước khi thử lại."
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "✅ [Pre-commit Hook THÀNH CÔNG] Toàn bộ kiểm tra PASS. Tiếp tục commit..."
+echo ""
+exit 0

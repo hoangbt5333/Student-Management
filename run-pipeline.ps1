@@ -88,10 +88,12 @@ Run-Agent -AgentName "analyst" -Prompt "Dựa vào $TicketFile và $BreakdownFil
 Write-Step "3/5 Coder: Triển khai mã nguồn và kiểm thử"
 $FeatureBranch = "feature/$TaskId"
 
-# Chuyển nhánh feature
-try {
-    git checkout -b $FeatureBranch 2>$null
-} catch {
+# Chuyen nhanh feature tu main
+$existingBranch = git branch --list $FeatureBranch
+if (-not $existingBranch) {
+    git checkout main 2>$null
+    git checkout -b $FeatureBranch
+} else {
     git checkout $FeatureBranch
 }
 
