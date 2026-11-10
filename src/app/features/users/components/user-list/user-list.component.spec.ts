@@ -50,6 +50,7 @@ describe('UserListComponent', () => {
       page: signal(1),
       pageSize: signal(5),
       searchTerm: signal(''),
+      hasActiveFilters: signal(false),
       roleFilter: signal('all'),
       statusFilter: signal('all'),
       sortBy: signal('createdAt'),

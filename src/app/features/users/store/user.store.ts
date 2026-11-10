@@ -192,6 +192,7 @@ export const UserStore = signalStore(
 
     return {
       selectedUser,
+      hasActiveFilters: computed(() => Boolean(searchTerm().trim()) || roleFilter() !== 'all' || statusFilter() !== 'all'),
       activeAdminCount,
       linkedStudentIds,
       linkedTeacherIds,
@@ -503,6 +504,10 @@ export const UserStore = signalStore(
       });
 
       return true;
+    },
+
+    resetFilters(): void {
+      patchState(store, { searchTerm: '', roleFilter: 'all', statusFilter: 'all', page: 1 });
     },
 
     setSearchTerm(searchTerm: string): void {
