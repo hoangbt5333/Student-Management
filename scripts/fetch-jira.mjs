@@ -60,7 +60,14 @@ try {
 
   const data = await res.json();
   const summary = data.fields?.summary || issueKey;
-  const issueType = data.fields?.issuetype?.name || 'Task';
+  const rawIssueType = data.fields?.issuetype?.name || 'Task';
+  let ticketType = 'feature';
+  const lower = rawIssueType.toLowerCase();
+  if (lower.includes('bug') || lower.includes('defect') || lower.includes('lỗi')) {
+    ticketType = 'bug';
+  } else if (lower.includes('refactor') || lower.includes('clean') || lower.includes('debt') || lower.includes('cải tiến')) {
+    ticketType = 'refactor';
+  }
   
   // Trích xuất mô tả (hỗ trợ Atlassian Document Format hoặc text đơn giản)
   let descriptionText = '';
@@ -72,14 +79,14 @@ try {
 
   const markdownContent = `# ${issueKey}: ${summary}
 
-## Loại Issue
-${issueType}
+Loại: ${ticketType}
+Loại Jira gốc: ${rawIssueType}
 
 ## Mô tả
 ${descriptionText || 'Không có mô tả chi tiết từ Jira.'}
 
 ## Yêu cầu & Tiêu chí chấp nhận
-- Xem kỹ phần mô tả trên để phân tích và lập kế hoạch thực hiện.
+- Xem kỹ phần mô tả trên để phân tích và lập kế hoạch thực hiện theo loại ticket: ${ticketType}.
 - Đảm bảo tuân thủ tiêu chí hoàn thành của ticket và chạy verify test trước khi đóng.
 `;
 

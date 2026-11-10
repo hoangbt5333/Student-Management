@@ -151,6 +151,8 @@ describe('UserStore', () => {
     store.bulkChangeUserStatus('locked');
     expect(store.errorMessage()).toContain('Không có tài khoản phù hợp');
     expect(mockUserService.patchUser).not.toHaveBeenCalled();
+  });
+
   it('starts with no active filters', () => {
     expect(store.hasActiveFilters()).toBe(false);
   });
