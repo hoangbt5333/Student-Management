@@ -28,7 +28,7 @@ describe('UserStore', () => {
     },
     {
       id: 'USR002',
-      username: 'gv001',
+      username: 'faculty-account',
       displayName: 'Nguyễn Minh An',
       email: 'minhan@example.com',
       role: 'teacher',
