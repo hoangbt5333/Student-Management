@@ -65,6 +65,7 @@ describe('UserListComponent', () => {
       selectedStudentProfile: signal(null),
       selectedTeacherProfile: signal(null),
       selectUser: vi.fn(),
+      resetFilters: vi.fn(),
       setSearchTerm: vi.fn(),
       setRoleFilter: vi.fn(),
       setStatusFilter: vi.fn(),
@@ -96,6 +97,35 @@ describe('UserListComponent', () => {
     fixture = TestBed.createComponent(UserListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  it('shows the clear-filters button only when filters are active', () => {
+    expect(fixture.nativeElement.textContent).not.toContain('Xóa bộ lọc');
+
+    mockUserFacade.hasActiveFilters.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Xóa bộ lọc');
+
+    mockUserFacade.hasActiveFilters.set(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Xóa bộ lọc');
+  });
+
+  it('clears filters through the facade and synchronizes search control silently', () => {
+    component.searchControl.setValue('existing search');
+    mockUserFacade.searchTerm.set('existing search');
+    mockUserFacade.hasActiveFilters.set(true);
+    fixture.detectChanges();
+    mockUserFacade.setSearchTerm.mockClear();
+
+    const clearButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button: any) => button.textContent.includes('Xóa bộ lọc')) as HTMLButtonElement;
+    clearButton.click();
+    fixture.detectChanges();
+
+    expect(mockUserFacade.resetFilters).toHaveBeenCalledOnce();
+    expect(component.searchControl.value).toBe('');
+    expect(mockUserFacade.setSearchTerm).not.toHaveBeenCalled();
   });
 
   it('debounces search input by 300ms before calling setSearchTerm', () => {

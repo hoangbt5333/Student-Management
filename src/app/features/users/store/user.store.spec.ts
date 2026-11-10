@@ -87,6 +87,49 @@ describe('UserStore', () => {
     store.loadAll();
   });
 
+  it('starts with no active filters', () => {
+    expect(store.hasActiveFilters()).toBe(false);
+  });
+
+  it('marks search, role, and status filters active independently', () => {
+    store.setSearchTerm('  admin  ');
+    expect(store.hasActiveFilters()).toBe(true);
+    store.resetFilters();
+
+    store.setRoleFilter('teacher');
+    expect(store.hasActiveFilters()).toBe(true);
+    store.resetFilters();
+
+    store.setStatusFilter('locked');
+    expect(store.hasActiveFilters()).toBe(true);
+  });
+
+  it('resets filters and page without changing unrelated state', () => {
+    store.setSearchTerm('admin');
+    store.setRoleFilter('teacher');
+    store.setStatusFilter('locked');
+    store.setPage(3);
+    store.setPageSize(10);
+    store.setSortBy('username');
+    store.selectUser('USR001');
+    const users = store.users();
+    const students = store.students();
+    const teachers = store.teachers();
+
+    store.resetFilters();
+
+    expect(store.searchTerm()).toBe('');
+    expect(store.roleFilter()).toBe('all');
+    expect(store.statusFilter()).toBe('all');
+    expect(store.page()).toBe(1);
+    expect(store.pageSize()).toBe(10);
+    expect(store.sortBy()).toBe('username');
+    expect(store.selectedUserId()).toBe('USR001');
+    expect(store.users()).toBe(users);
+    expect(store.students()).toBe(students);
+    expect(store.teachers()).toBe(teachers);
+  });
+
   it('loads all users, students, and teachers initially', () => {
     expect(store.users().length).toBe(3);
     expect(store.students().length).toBe(2);
