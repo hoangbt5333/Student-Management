@@ -42,6 +42,7 @@ describe('UserListComponent', () => {
   beforeEach(async () => {
     mockUserFacade = {
       loadAll: vi.fn(),
+      users: signal(mockUsers),
       pageUsers: signal(mockUsers),
       filteredUsers: signal(mockUsers),
       totalFilteredCount: signal(2),
@@ -110,6 +111,45 @@ describe('UserListComponent', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('shows no-results only when a non-empty search yields no filtered users', () => {
+    mockUserFacade.users.set(mockUsers);
+    mockUserFacade.searchTerm.set('missing');
+    mockUserFacade.filteredUsers.set([]);
+    mockUserFacade.pageUsers.set([]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không tìm thấy kết quả');
+
+    mockUserFacade.searchTerm.set('');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không có tài khoản nào.');
+  });
+
+  it('shows the regular empty state for an empty dataset or filter result', () => {
+    mockUserFacade.users.set([]);
+    mockUserFacade.searchTerm.set('missing');
+    mockUserFacade.filteredUsers.set([]);
+    mockUserFacade.pageUsers.set([]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không có tài khoản nào.');
+
+    mockUserFacade.users.set(mockUsers);
+    mockUserFacade.searchTerm.set('');
+    mockUserFacade.filteredUsers.set([]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.empty-state').textContent).toContain('Không có tài khoản nào.');
+  });
+
+  it('gives loading state precedence over empty results', () => {
+    mockUserFacade.users.set([]);
+    mockUserFacade.pageUsers.set([]);
+    mockUserFacade.loading.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.loading-state')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.empty-state')).toBeNull();
   });
 
   it('renders page header, search-box, and primary add button', () => {

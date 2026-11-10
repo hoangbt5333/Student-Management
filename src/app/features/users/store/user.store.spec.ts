@@ -106,49 +106,39 @@ describe('UserStore', () => {
     expect(availableTeachers[0].id).toBe('GV002');
   });
 
-  it('searches by display name, email, and username only', () => {
+  it('filters by name, email, username and linked IDs case- and diacritic-insensitively', () => {
     store.setSearchTerm('nguyen');
-    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003', 'USR002']);
+    expect(store.filteredUsers().map(user => user.id).sort()).toEqual(['USR002', 'USR003']);
 
-    store.setSearchTerm('minhan@example.com');
+    store.setSearchTerm('MINHAN@EXAMPLE.COM');
     expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
-
-    store.setSearchTerm('sv001');
-    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003']);
 
     store.setSearchTerm('gv001');
-    expect(store.filteredUsers()).toEqual([]);
-
-    store.setSearchTerm('PROFILE-GV-001');
-    expect(store.filteredUsers()).toEqual([]);
-  });
-
-  it('does not use role or status as search fields and keeps their filters independent', () => {
-    store.setSearchTerm('teacher');
-    expect(store.filteredUsers()).toHaveLength(0);
-    store.setSearchTerm('active');
-    expect(store.filteredUsers()).toHaveLength(0);
-
-    store.setSearchTerm('');
-    expect(store.filteredUsers()).toHaveLength(3);
-
-    store.setRoleFilter('teacher');
     expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
 
-    store.setRoleFilter('all');
-    store.setStatusFilter('inactive');
-    expect(store.filteredUsers()).toEqual([]);
-    store.setStatusFilter('active');
-    expect(store.filteredUsers()).toHaveLength(3);
+    store.setSearchTerm('admin');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR001']);
   });
 
-  it('filters role and status independently when search matches supported fields', () => {
-    store.setSearchTerm('example.com');
-    store.setRoleFilter('student');
-    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR003']);
+  it('trims search terms, returns all users for blank queries, and preserves source users', () => {
+    const sourceUsers = store.users();
+    store.setSearchTerm('  ');
+    expect(store.filteredUsers()).toHaveLength(3);
+    expect(store.filteredUsers().map(user => user.id).sort()).toEqual(sourceUsers.map(user => user.id).sort());
 
-    store.setStatusFilter('locked');
-    expect(store.filteredUsers()).toEqual([]);
+    store.setSearchTerm('no-match');
+    expect(store.filteredUsers()).toHaveLength(0);
+    expect(store.users()).toBe(sourceUsers);
+  });
+
+  it('combines search with role and status filters', () => {
+    store.setRoleFilter('teacher');
+    store.setStatusFilter('active');
+    store.setSearchTerm('MINHAN');
+    expect(store.filteredUsers().map(user => user.id)).toEqual(['USR002']);
+
+    store.setSearchTerm('admin');
+    expect(store.filteredUsers()).toHaveLength(0);
   });
 
   it('BR-05: prevents creating user with duplicate username', () => {
