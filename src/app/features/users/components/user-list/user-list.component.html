@@ -154,7 +154,11 @@
           } @else if (userFacade.pageUsers().length === 0) {
             <tr>
               <td colspan="7" class="empty-state">
-                Không tìm thấy tài khoản nào phù hợp với điều kiện tìm kiếm.
+                @if (userFacade.searchTerm().trim()) {
+                  Không tìm thấy kết quả
+                } @else {
+                  Không có tài khoản nào.
+                }
               </td>
             </tr>
           } @else {

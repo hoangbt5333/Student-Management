@@ -131,7 +131,7 @@ export const UserStore = signalStore(
     });
 
     const filteredUsers = computed(() => {
-      const keyword = normalizeVietnamese(searchTerm());
+      const keyword = normalizeVietnamese(searchTerm().trim());
       const role = roleFilter();
       const status = statusFilter();
       const field = sortBy();
