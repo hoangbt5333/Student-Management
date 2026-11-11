@@ -30,6 +30,7 @@ When handling tickets or features, the primary Claude Code session operates as t
 
 1. **`architect`**: Analyzes the codebase and proposes a concise technical implementation plan.
 2. **User Confirmation**: Present the plan to the user for quick approval before implementing.
-3. **`coder`**: Implements the code and runs unit tests (`--watch=false`).
-4. **`reviewer`**: Inspects the git diff for architectural compliance and test validity.
-5. **`release-agent`**: Compiles the PR description and updates Jira if applicable.
+3. **`coder`**: Implements code in its worktree, runs tests (`--watch=false`), commits changes, and reports branch name.
+4. **Lead Merge**: Upon Coder completion, Lead merges Coder's branch (`git merge <branch> --no-edit`).
+5. **`reviewer`**: Inspects the merged commit (`git diff HEAD~1`) for architectural compliance and test validity.
+6. **`release-agent`**: Compiles the PR description and updates Jira if applicable.
