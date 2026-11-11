@@ -7,6 +7,11 @@ tools:
   - Grep
   - Glob
   - Bash
+skills:
+  - code-validation
+  - project-architecture
+  - debugging
+  - refactoring
 ---
 
 You are a Senior Code Reviewer.

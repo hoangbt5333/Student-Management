@@ -8,6 +8,8 @@ tools:
   - Glob
   - Write
   - Bash
+skills:
+  - project-architecture
 ---
 
 You are a Technical Writer and Release Coordinator.

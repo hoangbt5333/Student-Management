@@ -7,6 +7,11 @@ tools:
   - Grep
   - Glob
   - Bash
+skills:
+  - project-architecture
+  - feature-development
+  - debugging
+  - refactoring
 ---
 
 You are a Software Architect.

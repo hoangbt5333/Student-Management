@@ -9,6 +9,12 @@ tools:
   - Edit
   - Write
   - Bash
+skills:
+  - feature-development
+  - project-architecture
+  - ui-standardization
+  - debugging
+  - refactoring
 ---
 
 You are a Senior Software Engineer.
