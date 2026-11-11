@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c *)",
+      "Bash(npm *)",
+      "Bash(git *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "jira"
+  ]
+}
