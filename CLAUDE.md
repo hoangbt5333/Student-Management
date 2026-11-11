@@ -35,30 +35,17 @@ SSR is provided by `src/server.ts`, `src/main.server.ts`, and `src/app/app.confi
 - Student state also reads `ClassStore` to resolve class names and provide class options (`student.store.ts`), so changes to class data may affect student list derivations.
 - README documents the mock API, demo accounts, data relationships, and current limitations. The mock API stores plain-text demo passwords and client-side authorization is not secure; do not use these demo credentials or this setup in production.
 
-## Hierarchical Subagent Orchestration
+## Subagents Workflow
 
-When handling complex tasks or Jira tickets, the primary Claude Code session operates as the **Lead Orchestrator** and coordinates the specialized subagents defined in `.claude/agents/`.
+When handling tickets or new features, the primary Claude Code session operates as the **Lead Orchestrator**:
 
-### Strict Orchestration Rules:
-1. **Worktree Lifecycle & Integration:**
-   - Claude Code runs background subagents in isolated git worktrees. Subagents are expected to work within their assigned worktree.
-   - **Coder Commit Requirement:** `coder` MUST commit its changes (`git add . && git commit -m '...'`) in its worktree before finishing and report its branch name to Lead.
-   - **Lead Merge Step:** Upon receiving Coder's completion report, `Lead Orchestrator` MUST immediately merge Coder's branch into the current working branch:
-     `git merge <coder-branch> --no-edit` (hoặc cherry-pick).
-   - This brings all changes cleanly into the primary workspace so `reviewer` can inspect `git diff HEAD~1` without any worktree permission or path issues.
-2. **Strict Sequential State Machine:**
-   - Execute strictly one step at a time: `Architect -> Human Gate -> Coder -> Lead Merge -> Reviewer -> Release-Agent`.
-   - Never launch subagents in parallel or speculate (e.g. NEVER call `release-agent` before `reviewer` gives `VERDICT: APPROVED`).
-   - If an issue occurs, pause and diagnose within the main session; do NOT spam multiple duplicate subagents.
-3. **Deterministic Testing:** Always run unit tests with `--watch=false` and `cmd /c` on Windows:
-   `cmd /c "npm test -- --include='<spec-file>' --watch=false"`.
+1. **`architect`**: Delegate to investigate the codebase, find relevant files, and propose a concise technical implementation plan.
+2. **User Confirmation**: Present the plan to the user for quick approval before implementing.
+3. **`coder`**: Delegate to implement the Angular code and write Vitest unit tests.
+4. **`reviewer`**: Delegate to inspect changes, ensuring architectural compliance and passing unit tests.
+5. **Completion**: Lead summarizes the changes, presents the PR description, or updates Jira directly.
 
-### Subagents & Responsibilities:
-1. **`architect`**: Analyzes the codebase, identifies root cause (for bugs), verifies architectural boundaries (Explicit Layering), and produces a concrete technical implementation spec with subtasks and test strategies.
-2. **`coder`**: Implements code directly in the main working tree, writes Vitest unit tests (TDD for bugs), and verifies locally with `npm test -- ... --watch=false`.
-3. **`reviewer`**: Independently inspects `git diff` against architecture standards, test coverage, and behavior preservation.
-   - **Scope Boundary:** Focus strictly on the ticket requirements. Do NOT reject or scope-creep for unrelated pre-existing edge cases.
-   - If `CHANGES_REQUESTED`: Lead sends specific action items back to `coder`.
-   - If `APPROVED`: Lead proceeds to `release-agent`.
-4. **`release-agent`**: Compiles final PR description, updates `docs/` if necessary, and syncs status/comments with Jira.
+### Windows Test Guideline
+Always run unit tests with `--watch=false` and `cmd /c` on Windows:
+`cmd /c "npm test -- --include='<spec-file>' --watch=false"`.
 
