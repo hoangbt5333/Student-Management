@@ -9,6 +9,7 @@
           <th>Số điện thoại</th>
           <th>Lớp</th>
           <th>Khoa / Ngành</th>
+          <th>Trạng thái</th>
           @if (authFacade.can('manage-students')) {
             <th class="col-actions actions-header">Thao tác</th>
           }
@@ -36,6 +37,13 @@
               }
             </td>
             <td>{{ student.faculty || '—' }}</td>
+            <td>
+              @if (student.status !== 'inactive') {
+                <span class="badge badge-success">Đang học</span>
+              } @else {
+                <span class="badge badge-neutral">Nghỉ học</span>
+              }
+            </td>
             @if (authFacade.can('manage-students')) {
               <td class="col-actions">
                 <div class="action-buttons actions">
@@ -91,7 +99,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="7" class="empty empty-state">Không có sinh viên nào phù hợp.</td>
+            <td [attr.colspan]="authFacade.can('manage-students') ? 8 : 7" class="empty empty-state">Không có sinh viên nào phù hợp.</td>
           </tr>
         }
       </tbody>

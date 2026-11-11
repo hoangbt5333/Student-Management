@@ -7,4 +7,5 @@ export interface Student {
   classId?: string;
   className?: string;
   faculty?: string;
+  status?: 'active' | 'inactive';
 }

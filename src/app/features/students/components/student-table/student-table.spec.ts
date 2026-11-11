@@ -48,6 +48,27 @@ describe('StudentTable', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should display the active badge by default when status is missing', () => {
+    const badge = fixture.debugElement.query(By.css('.badge-success'));
+    expect(badge.nativeElement.textContent.trim()).toBe('Đang học');
+  });
+
+  it('should display the active badge when status is active', () => {
+    fixture.componentRef.setInput('students', [{ ...mockStudents[0], status: 'active' }]);
+    fixture.detectChanges();
+
+    const badge = fixture.debugElement.query(By.css('.badge-success'));
+    expect(badge.nativeElement.textContent.trim()).toBe('Đang học');
+  });
+
+  it('should display the inactive badge when status is inactive', () => {
+    fixture.componentRef.setInput('students', [{ ...mockStudents[0], status: 'inactive' }]);
+    fixture.detectChanges();
+
+    const badge = fixture.debugElement.query(By.css('.badge-neutral'));
+    expect(badge.nativeElement.textContent.trim()).toBe('Nghỉ học');
+  });
+
   it('should render icon action buttons when user can manage students', () => {
     const actionButtons = fixture.debugElement.queryAll(By.css('.action-buttons .btn-icon-action'));
     expect(actionButtons.length).toBe(3);
@@ -85,6 +106,15 @@ describe('StudentTable', () => {
     expect(deleteSpy).toHaveBeenCalledWith('SV001');
   });
 
+  it('should set empty-state colspan to match visible columns when user can manage students', () => {
+    fixture.componentRef.setInput('students', []);
+    fixture.detectChanges();
+
+    const headers = fixture.debugElement.queryAll(By.css('thead th'));
+    const colspan = fixture.debugElement.query(By.css('.empty-state')).nativeElement.getAttribute('colspan');
+    expect(Number(colspan)).toBe(headers.length);
+  });
+
   it('should render view detail link pointing to student profile', () => {
     const viewDetailBtn = fixture.debugElement.query(By.css('.btn-view-detail'));
     expect(viewDetailBtn.nativeElement.getAttribute('href')).toBe('/students/SV001');
@@ -112,6 +142,12 @@ describe('StudentTable', () => {
 
     const actionHeader = noAuthFixture.debugElement.query(By.css('.actions-header'));
     expect(actionHeader).toBeNull();
+
+    noAuthFixture.componentRef.setInput('students', []);
+    noAuthFixture.detectChanges();
+    const noAuthHeaders = noAuthFixture.debugElement.queryAll(By.css('thead th'));
+    const noAuthColspan = noAuthFixture.debugElement.query(By.css('.empty-state')).nativeElement.getAttribute('colspan');
+    expect(Number(noAuthColspan)).toBe(noAuthHeaders.length);
 
     const actionCells = noAuthFixture.debugElement.queryAll(By.css('.col-actions'));
     expect(actionCells.length).toBe(0);
