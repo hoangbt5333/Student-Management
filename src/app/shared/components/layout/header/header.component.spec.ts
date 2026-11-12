@@ -53,6 +53,12 @@ describe('HeaderComponent', () => {
     expect(el.querySelector('h1')?.textContent).toContain('Student Management System');
   });
 
+  it('should render the application version badge', () => {
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.app-version')?.textContent?.trim()).toBe('v1.0.0');
+  });
+
   it('should render all navigation links when user has all permissions', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
