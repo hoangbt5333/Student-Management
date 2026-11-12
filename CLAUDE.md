@@ -28,9 +28,12 @@ This is an Angular 22 standalone application.
 
 When handling tickets or features, the primary Claude Code session operates as the **Lead Orchestrator**:
 
-1. **`architect`**: Analyzes the codebase and proposes a concise technical implementation plan.
+1. **`architect`**: Analyzes the codebase and proposes a concise technical implementation plan including the targeted test spec file.
 2. **User Confirmation**: Present the plan to the user for quick approval before implementing.
-3. **`coder`**: Implements code in its worktree, runs `npm run test:ci -- --include='...'` to verify `artifacts/test-results.json` passes, commits changes, and reports branch name.
-4. **Lead Merge & Verify**: Lead merges Coder's branch (`git merge <branch> --no-edit`) without blindly retrying commands in Coder's worktree. Lead runs `npm run test:ci` once on the integrated branch if needed.
+3. **`coder`**: Implements code in its worktree, runs the TARGETED test (`npm run test:ci -- --include='<spec-file>'`), confirms `artifacts/test-results.json` passes, commits changes, and reports branch name. Coder must NEVER run the full project test suite.
+4. **Lead Merge & Verification**:
+   - Lead MUST NOT run test commands inside Coder's worktree.
+   - Lead immediately merges Coder's branch into main (`git merge <branch> --no-edit`).
+   - On main, Lead verifies `artifacts/test-results.json` or runs `npm run test:ci -- --include='...'` once if needed.
 5. **`reviewer`**: Inspects the merged commit (`git diff HEAD~1`) and verifies `artifacts/test-results.json` as objective evidence.
 6. **`release-agent`**: Compiles the PR description and updates Jira if applicable.
