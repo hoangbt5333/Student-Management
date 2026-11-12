@@ -153,10 +153,13 @@ export const UserStore = signalStore(
             return true;
           }
 
+          const idMatch = normalizeVietnamese(user.id).includes(keyword);
+          const studentIdMatch = user.studentId ? normalizeVietnamese(user.studentId).includes(keyword) : false;
+          const teacherIdMatch = user.teacherId ? normalizeVietnamese(user.teacherId).includes(keyword) : false;
           const usernameMatch = normalizeVietnamese(user.username).includes(keyword);
           const nameMatch = normalizeVietnamese(user.displayName).includes(keyword);
           const emailMatch = normalizeVietnamese(user.email).includes(keyword);
-          return usernameMatch || nameMatch || emailMatch;
+          return idMatch || studentIdMatch || teacherIdMatch || usernameMatch || nameMatch || emailMatch;
         })
         .sort((a, b) => {
           const valA = a[field] ?? '';

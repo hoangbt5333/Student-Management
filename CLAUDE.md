@@ -1,10 +1,10 @@
-# CLAUDE.md
+# CLAUDE.md - Student Management System
 
-This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
+Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình làm việc cho Claude Code trong dự án **Student Management System**.
 
-## Common commands
+---
 
-Run commands from the repository root:
+## 1. Tổng quan dự án
 
 - `npm start` — start the Angular dev server at `http://localhost:4200`.
 - `npm run build` — production build, including the configured server/SSR output.
@@ -15,7 +15,7 @@ Run commands from the repository root:
 
 The app expects a mock REST API on port 3001. Services currently use hard-coded `http://localhost:3001` URLs.
 
-## Architecture
+Chạy các lệnh từ thư mục gốc của repository:
 
 This is an Angular 22 standalone application.
 - Data-access pattern: `Component → Facade → NgRx Signal Store → Service → REST API`.
