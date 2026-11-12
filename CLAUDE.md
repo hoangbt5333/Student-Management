@@ -16,17 +16,38 @@ Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình
 - `npm run serve:ssr:user-management` — serve the previously built SSR app (default port 4000; configurable with `PORT`).
 
 The app expects a mock REST API on port 3001. Services currently use hard-coded `http://localhost:3001` URLs.
-
-This is an Angular 22 standalone application.
-- Data-access pattern: `Component → Facade → NgRx Signal Store → Service → REST API`.
-- Stores own feature state and asynchronous operations; computed signals derive view data.
-- Facades expose state and operations to components.
-- State management uses `@ngrx/signals`.
-- UI uses Angular Standalone Components, Signal-based reactivity, and control flow (`@if`, `@for`).
+This is an Angular 22 standalone application with Server-Side Rendering (SSR), NgRx SignalStore (`@ngrx/signals`), and Vitest.
 
 ---
 
-## 2. Quy trình làm việc (Workflow Modes)
+## 2. Kiến trúc dự án (Explicit Layering Standard)
+
+Dự án áp dụng mô hình phân tầng đơn hướng nghiêm ngặt (được kiểm soát tự động bằng `npm run check:arch`):
+
+```text
+Component ──> Facade ──> Store (SignalStore) ──> Service (HttpClient) ──> REST API
+```
+
+### Cấu trúc thư mục chuẩn (`src/app/features/<feature>/`):
+- `components/`: UI components (Standalone Components, Signal-based reactivity, control flow `@if`, `@for`).
+- `facades/`: `<feature>.facade.ts` (điều phối nghiệp vụ, cung cấp Signals và action cho components).
+- `models/`: `<feature>.model.ts` (TypeScript interfaces/types dữ liệu thuần túy).
+- `services/`: `<feature>.service.ts` (thực hiện HTTP REST API calls qua Angular `HttpClient`).
+- `store/`: `<feature>.store.ts` (quản lý feature state và side-effects bằng `@ngrx/signals`).
+- `<feature>.routes.ts`: Cấu hình routing của feature.
+- Shared code: Nằm trong `src/app/shared/` (`utils/` cho helper functions thuần túy, `components/` cho layout, modal, button...).
+
+### Ranh giới kiến trúc bắt buộc (Strict Boundary Rules):
+1. **Component**: CHỈ ĐƯỢC inject và gọi **Facade**. TUYỆT ĐỐI KHÔNG import hoặc gọi trực tiếp từ `services/`, `store/`, hoặc `HttpClient`.
+2. **Facade**: Quản lý phối hợp giữa Store và Service. Không inject `HttpClient` trực tiếp.
+3. **Store**: Dùng `signalStore`. Không depend vào Component hay Facade.
+4. **Service**: Chỉ giao tiếp REST API. Không depend vào Component, Facade hay Store.
+
+*(Chi tiết đầy đủ về các feature và ranh giới xem tại: `.claude/skills/project-architecture/SKILL.md`)*
+
+---
+
+## 3. Quy trình làm việc (Workflow Modes)
 
 Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ phức tạp và yêu cầu của người dùng:
 
@@ -35,7 +56,7 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
 - **Áp dụng:** Các utility, bug fix nhỏ, chỉnh sửa style, refactor đơn giản, hoặc khi người dùng không yêu cầu subagents.
 - **Nguyên tắc:**
   1. Claude tự đọc hiểu mã nguồn, lập luận và triển khai trực tiếp trong phiên hiện tại.
-  2. Luôn tuân thủ kiến trúc Explicit Layering.
+  2. Luôn tuân thủ kiến trúc Explicit Layering ở Mục 2.
   3. Chỉ chạy **Targeted Test** cho file liên quan (`npm run test:ci -- --include='<path-to-spec>'`) để kiểm chứng kết quả; không chạy full test suite cho các sửa đổi nhỏ.
   4. Đảm bảo working tree sạch sẽ sau khi hoàn thành.
 
