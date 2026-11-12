@@ -9,8 +9,8 @@ Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình
 - `npm start` — start the Angular dev server at `http://localhost:4200`.
 - `npm run build` — production build, including the configured server/SSR output.
 - `npm run watch` — rebuild continuously in development configuration.
-- `npm test` — run the Angular CLI unit-test builder (Vitest). On Windows, ALWAYS append `--watch=false` to exit cleanly: `cmd /c "npm test -- --include='<path-to-spec>' --watch=false"`.
-- `npm run test:ci` — run all unit tests once without watch mode.
+- `npm run test:ci` — canonical test command; runs non-watch mode, outputs to console and writes JSON report to `artifacts/test-results.json`.
+  - Specific file: `npm run test:ci -- --include='<path-to-spec>'`
 - `npm run serve:ssr:user-management` — serve the previously built SSR app (default port 4000; configurable with `PORT`).
 
 The app expects a mock REST API on port 3001. Services currently use hard-coded `http://localhost:3001` URLs.
@@ -30,7 +30,7 @@ When handling tickets or features, the primary Claude Code session operates as t
 
 1. **`architect`**: Analyzes the codebase and proposes a concise technical implementation plan.
 2. **User Confirmation**: Present the plan to the user for quick approval before implementing.
-3. **`coder`**: Implements code in its worktree, verifies tests pass, commits changes, and reports branch name.
-4. **Lead Merge & Verify**: Lead merges Coder's branch (`git merge <branch> --no-edit`). If Coder could not run tests due to subagent environment limits, Lead runs the test on the merged workspace.
-5. **`reviewer`**: Inspects the merged commit (`git diff HEAD~1`) for architectural compliance and test validity.
+3. **`coder`**: Implements code in its worktree, runs `npm run test:ci -- --include='...'` to verify `artifacts/test-results.json` passes, commits changes, and reports branch name.
+4. **Lead Merge & Verify**: Lead merges Coder's branch (`git merge <branch> --no-edit`) without blindly retrying commands in Coder's worktree. Lead runs `npm run test:ci` once on the integrated branch if needed.
+5. **`reviewer`**: Inspects the merged commit (`git diff HEAD~1`) and verifies `artifacts/test-results.json` as objective evidence.
 6. **`release-agent`**: Compiles the PR description and updates Jira if applicable.

@@ -51,4 +51,8 @@ db.json
 .env.*.local
 !.env.example
 
+# Test artifacts
+/artifacts
+
+
 
