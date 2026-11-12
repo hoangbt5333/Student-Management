@@ -24,9 +24,11 @@ This is an Angular 22 standalone application.
 - State management uses `@ngrx/signals`.
 - UI uses Angular Standalone Components, Signal-based reactivity, and control flow (`@if`, `@for`).
 
-## Subagents Workflow
+## Subagents Workflow (MANDATORY)
 
-When handling tickets or features, the primary Claude Code session operates as the **Lead Orchestrator**:
+The primary Claude Code session operates EXCLUSIVELY as the **Lead Orchestrator**:
+- **STRICT PROHIBITION**: The Lead Orchestrator MUST NEVER create, edit, or modify source code directly in the primary session.
+- ALL implementation tasks, feature requests, bug fixes, and utility creations—regardless of size—MUST be delegated to the specialized subagents in `.claude/agents/`:
 
 1. **`architect`**: Analyzes the codebase and proposes a concise technical implementation plan including the targeted test spec file.
 2. **User Confirmation**: Present the plan to the user for quick approval before implementing.
