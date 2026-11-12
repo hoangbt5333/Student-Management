@@ -89,6 +89,10 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
   - Coder A làm việc trên Worktree A.
   - Coder B làm việc trên Worktree B.
   - Các task độc lập (`[PARALLEL]`) được kích hoạt chạy đồng thời; các task phụ thuộc (`[SEQUENTIAL]`) chờ đợt trước hoàn thành.
+- **Quy tắc chuyển giao Coder -> Reviewer**:
+  - Coder BẮT BUỘC phải commit thay đổi lên nhánh worktree (`git add . && git commit`) trước khi báo hoàn thành.
+  - Main Agent kiểm tra commit hash từ Coder trước khi gọi Reviewer.
+  - TUYỆT ĐỐI KHÔNG sao chép (copy) file thủ công giữa worktree và main! Mọi thay đổi phải đi qua Git commit và `git merge`.
 
 #### Bước 5: Automated Validation (Chốt chặn tự động - Scripts & Hooks)
 - Mỗi Coder chạy validation tự động trực tiếp trên worktree bằng lệnh:
