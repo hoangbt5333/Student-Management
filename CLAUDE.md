@@ -12,6 +12,8 @@ Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình
 - `npm run test:ci` — canonical test command; runs non-watch mode, outputs to console and writes JSON report to `artifacts/test-results.json`.
   - Specific file: `npm run test:ci -- --include='<path-to-spec>'`
 - `npm run check:arch` — check Explicit Layering architecture boundary violations.
+- `npm run validate` — deterministic automated validation (check:arch + typecheck + targeted test).
+  - Specific file: `npm run validate -- --spec='<path-to-spec>'`
 - `npm run verify` — run check:arch, build, and full test suite.
 - `npm run serve:ssr:user-management` — serve the previously built SSR app (default port 4000; configurable with `PORT`).
 
@@ -57,29 +59,57 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
 - **Nguyên tắc:**
   1. Claude tự đọc hiểu mã nguồn, lập luận và triển khai trực tiếp trong phiên hiện tại.
   2. Luôn tuân thủ kiến trúc Explicit Layering ở Mục 2.
-  3. Chỉ chạy **Targeted Test** cho file liên quan (`npm run test:ci -- --include='<path-to-spec>'`) để kiểm chứng kết quả; không chạy full test suite cho các sửa đổi nhỏ.
+  3. Chạy **Automated Validation** (`npm run validate -- --spec='<path-to-spec>'`) để kiểm chứng kết quả trong vài giây; không chạy full test suite cho các sửa đổi nhỏ.
   4. Đảm bảo working tree sạch sẽ sau khi hoàn thành.
 
 ---
 
-### Chế độ 2: Subagents Workflow (Khi người dùng yêu cầu trong prompt hoặc feature lớn)
-- **Kích hoạt khi:** Prompt người dùng có yêu cầu gọi subagent (ví dụ: *"theo quy trình subagent"*, *"dùng architect/coder/reviewer"*, *"chạy theo mô hình điều phối"*, hoặc khi triển khai các module/feature lớn cần kiểm soát chặt chẽ).
-- Khi kích hoạt chế độ này, phiên chính đóng vai trò là **Lead Orchestrator** điều phối các subagents trong `.claude/agents/`:
+### Chế độ 2: Subagents Workflow (Quy trình 8 bước Enterprise)
+- **Kích hoạt khi:** Prompt người dùng có yêu cầu gọi subagent (ví dụ: *"theo quy trình subagent"*, *"chạy quy trình 8 bước"*, *"dùng architect/coder/reviewer"*), hoặc khi triển khai các module/feature lớn cần kiểm soát chất lượng chặt chẽ.
+- Khi kích hoạt, phiên chính đóng vai trò là **Lead Orchestrator** điều phối theo 8 bước:
 
-1. **`architect`**:
-   - Phân tích kiến trúc, phân rã task thành các task con nguyên tử và phân định ranh giới file để tránh xung đột git ("Một file - Một Coder").
-   - Đánh dấu rõ các task có thể chạy song song `[PARALLEL]` (file độc lập) hoặc tuần tự `[SEQUENTIAL]` (phụ thuộc).
-   - Đề xuất file targeted test spec cho từng task.
-2. **User Confirmation**: Trình kế hoạch và phương án phân rã cho người dùng duyệt nhanh trước khi triển khai.
-3. **`coder`**:
-   - Triển khai mã nguồn trên worktree riêng (Lead có thể điều phối nhiều Coder chạy song song trên các worktree độc lập nếu có task `[PARALLEL]`).
-   - Coder chạy targeted test (`npm run test:ci -- --include='<spec>'`), xác nhận pass và commit lên nhánh riêng.
-4. **`reviewer` (Thẩm định độc lập TRƯỚC khi merge)**:
-   - Rà soát code trên nhánh của Coder (`git diff main...<branch>`) và đối soát bằng chứng `artifacts/test-results.json` (hoặc tự chạy targeted test nếu cần verify độc lập).
-   - Đưa ra kết luận:
-     - `CHANGES_REQUESTED` (Chưa đạt, tối đa 2 vòng lặp): Lead chuyển feedback cho Coder sửa lại trên worktree. Nếu quá 2 vòng vẫn lỗi, báo cáo User can thiệp.
-     - `APPROVED` (Đạt): Chuyển sang bước Merge.
-5. **Lead Merge**:
-   - Khi Reviewer đã duyệt `APPROVED`, Lead merge nhánh của Coder vào `main` (`git merge <branch> --no-edit`).
-   - Lead không chạy lại test trên `main` vì Coder và Reviewer đã thẩm định.
-6. **`release-agent`**: Tổng hợp mô tả thay đổi (PR description), cập nhật tài liệu và đồng bộ Jira nếu có yêu cầu.
+#### Bước 1: Tiếp nhận & Phân tích yêu cầu (Main Agent)
+- Main Agent tiếp nhận yêu cầu từ User.
+- Phân tích bối cảnh dự án (Project Context), đối chiếu kiến trúc và kết nối Jira MCP nếu được yêu cầu.
+
+#### Bước 2: Kiến trúc & Đặc tả kỹ thuật (`architect`)
+- Phân tích kiến trúc chi tiết, xác định phạm vi thay đổi và các tầng bị ảnh hưởng.
+- **Tạo Acceptance Criteria (AC)**: Checklist tiêu chí nghiệm thu rõ ràng (`[ ] AC-1`, `[ ] AC-2...`) làm căn cứ cho Reviewer đối soát.
+- **Phân rã task & Lập kế hoạch song song**: Chia nhỏ task, xác định dependencies. Đánh dấu `[PARALLEL]` cho các task độc lập (nghiêm ngặt áp dụng quy tắc *"Một file - Một Coder"* để triệt tiêu xung đột Git) hoặc `[SEQUENTIAL]` cho các task phụ thuộc.
+
+#### Bước 3: Người dùng phê duyệt (User Approval)
+- Trình kế hoạch kỹ thuật, Acceptance Criteria và phương án phân rã task cho User duyệt.
+- Nếu User không đạt: `architect` điều chỉnh lại kế hoạch cho đến khi thống nhất.
+
+#### Bước 4: Điều phối thực thi đa Coder (Main Agent Orchestrator)
+- Main Agent phân công task cho các subagent Coder làm việc trên các worktree độc lập:
+  - Coder A làm việc trên Worktree A.
+  - Coder B làm việc trên Worktree B.
+  - Các task độc lập (`[PARALLEL]`) được kích hoạt chạy đồng thời; các task phụ thuộc (`[SEQUENTIAL]`) chờ đợt trước hoàn thành.
+
+#### Bước 5: Automated Validation (Chốt chặn tự động - Scripts & Hooks)
+- Mỗi Coder chạy validation tự động trực tiếp trên worktree bằng lệnh:
+  ```bash
+  npm run validate -- --spec='<path-to-spec>'
+  ```
+  *(Chuỗi lệnh tự động: Prettier format hook $\rightarrow$ Kiểm tra kiến trúc `check:arch` $\rightarrow$ TypeScript type check `tsc --noEmit` $\rightarrow$ Targeted Unit Test $\rightarrow$ Xuất report `artifacts/test-results.json`).*
+- Coder tự sửa mọi lỗi phát sinh trên worktree. Chỉ commit khi toàn bộ kiểm tra tự động báo xanh 100%.
+
+#### Bước 6: Thẩm định chất lượng (`reviewer`)
+- `reviewer` tiến hành audit độc lập trên nhánh của Coder trước khi merge (`git diff main...<branch>`).
+- Đối chiếu 100% với checklist **Acceptance Criteria (AC)** của Bước 2.
+- Kiểm tra kiến trúc phân tầng, logic nghiệp vụ, bảo mật và đối soát bằng chứng testing.
+- Đưa ra kết luận:
+  - `CHANGES_REQUESTED`: Chuyển feedback cho Coder sửa lại trên worktree (tối đa 2 vòng lặp; nếu vượt quá thì báo cáo User can thiệp).
+  - `APPROVED`: Xác nhận đạt chuẩn để chuyển sang bước Tích hợp.
+
+#### Bước 7: Tích hợp hệ thống (Integration - Main Agent)
+- Main Agent nhận các nhánh/commit đã được `reviewer` duyệt `APPROVED` và merge vào nhánh tích hợp (`main`): `git merge <branch> --no-edit`.
+- **Xử lý xung đột (nếu có)**: Main Agent yêu cầu Coder rebase (`git fetch origin main && git rebase main`), tự giải quyết conflict trên worktree, chạy lại `npm run validate` rồi nộp lại. Main Agent không trực tiếp sửa mã nguồn.
+- Chạy kiểm tra tích hợp / regression test nếu cần.
+
+#### Bước 8: Tài liệu & Báo cáo phát hành (`documentation-agent` / `release-agent`)
+- Đối chiếu code đã tích hợp với tài liệu hiện hành.
+- Cập nhật `README.md` hoặc tài liệu API trong `docs/` nếu có thay đổi interface/cấu hình.
+- Tổng hợp PR description, release notes và đồng bộ cập nhật ticket trên Jira.
+- Báo cáo hoàn tất cho User.

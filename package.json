@@ -9,6 +9,7 @@
     "test": "ng test",
     "test:ci": "ng test --watch=false --reporters=default --reporters=json --output-file=artifacts/test-results.json",
     "check:arch": "node scripts/check-architecture.mjs",
+    "validate": "node scripts/quick-validate.mjs",
     "verify": "npm run check:arch && npm run build && npm run test:ci",
     "serve:ssr:user-management": "node dist/user-management/server/server.mjs"
   },
