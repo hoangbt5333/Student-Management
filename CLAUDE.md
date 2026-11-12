@@ -66,12 +66,20 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
 - **Kích hoạt khi:** Prompt người dùng có yêu cầu gọi subagent (ví dụ: *"theo quy trình subagent"*, *"dùng architect/coder/reviewer"*, *"chạy theo mô hình điều phối"*, hoặc khi triển khai các module/feature lớn cần kiểm soát chặt chẽ).
 - Khi kích hoạt chế độ này, phiên chính đóng vai trò là **Lead Orchestrator** điều phối các subagents trong `.claude/agents/`:
 
-1. **`architect`**: Phân tích codebase và đề xuất kế hoạch kỹ thuật ngắn gọn cùng file spec cần test.
-2. **User Confirmation**: Trình kế hoạch cho người dùng duyệt nhanh trước khi triển khai.
-3. **`coder`**: Triển khai mã nguồn trên worktree riêng, chạy targeted test (`npm run test:ci -- --include='<spec>'`), xác nhận test pass và commit thay đổi lên nhánh riêng.
-4. **Lead Merge & Verification**:
-   - Lead không chạy lệnh test bên trong worktree của Coder.
-   - Lead merge nhánh của Coder vào `main` (`git merge <branch> --no-edit`).
-   - Trên `main`, Lead xác minh `artifacts/test-results.json` hoặc chạy lại targeted test 1 lần nếu cần.
-5. **`reviewer`**: Soát commit vừa merge (`git diff HEAD~1`) và đối soát bằng chứng test report.
-6. **`release-agent`**: Tổng hợp mô tả thay đổi (PR description) hoặc cập nhật Jira nếu có yêu cầu.
+1. **`architect`**:
+   - Phân tích kiến trúc, phân rã task thành các task con nguyên tử và phân định ranh giới file để tránh xung đột git ("Một file - Một Coder").
+   - Đánh dấu rõ các task có thể chạy song song `[PARALLEL]` (file độc lập) hoặc tuần tự `[SEQUENTIAL]` (phụ thuộc).
+   - Đề xuất file targeted test spec cho từng task.
+2. **User Confirmation**: Trình kế hoạch và phương án phân rã cho người dùng duyệt nhanh trước khi triển khai.
+3. **`coder`**:
+   - Triển khai mã nguồn trên worktree riêng (Lead có thể điều phối nhiều Coder chạy song song trên các worktree độc lập nếu có task `[PARALLEL]`).
+   - Coder chạy targeted test (`npm run test:ci -- --include='<spec>'`), xác nhận pass và commit lên nhánh riêng.
+4. **`reviewer` (Thẩm định độc lập TRƯỚC khi merge)**:
+   - Rà soát code trên nhánh của Coder (`git diff main...<branch>`) và đối soát bằng chứng `artifacts/test-results.json` (hoặc tự chạy targeted test nếu cần verify độc lập).
+   - Đưa ra kết luận:
+     - `CHANGES_REQUESTED` (Chưa đạt, tối đa 2 vòng lặp): Lead chuyển feedback cho Coder sửa lại trên worktree. Nếu quá 2 vòng vẫn lỗi, báo cáo User can thiệp.
+     - `APPROVED` (Đạt): Chuyển sang bước Merge.
+5. **Lead Merge**:
+   - Khi Reviewer đã duyệt `APPROVED`, Lead merge nhánh của Coder vào `main` (`git merge <branch> --no-edit`).
+   - Lead không chạy lại test trên `main` vì Coder và Reviewer đã thẩm định.
+6. **`release-agent`**: Tổng hợp mô tả thay đổi (PR description), cập nhật tài liệu và đồng bộ Jira nếu có yêu cầu.
