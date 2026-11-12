@@ -66,14 +66,17 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
 
 ### Chế độ 2: Subagents Workflow (Quy trình 8 bước Enterprise)
 - **Kích hoạt khi:** Prompt người dùng có yêu cầu gọi subagent (ví dụ: *"theo quy trình subagent"*, *"chạy quy trình 8 bước"*, *"dùng architect/coder/reviewer"*), hoặc khi triển khai các module/feature lớn cần kiểm soát chất lượng chặt chẽ.
-- Khi kích hoạt, phiên chính đóng vai trò là **Lead Orchestrator** điều phối theo 8 bước:
+- **Quy tắc bất khả xâm phạm của Main Agent (Lead Orchestrator):**
+  - TUYỆT ĐỐI KHÔNG tự vào Plan Mode (`Entered plan mode`) ở phiên chính.
+  - TUYỆT ĐỐI KHÔNG tự tìm kiếm/đọc nhiều file trong phiên chính để tự thiết kế giải pháp. Toàn bộ việc khảo sát codebase, phân tích patterns và thiết kế thuộc 100% trách nhiệm của `architect`.
+  - HÀNH ĐỘNG ĐẦU TIÊN khi nhận lệnh: Spawn ngay lập tức subagent `architect`.
 
-#### Bước 1: Tiếp nhận & Phân tích yêu cầu (Main Agent)
-- Main Agent tiếp nhận yêu cầu từ User.
-- Phân tích bối cảnh dự án (Project Context), đối chiếu kiến trúc và kết nối Jira MCP nếu được yêu cầu.
+#### Bước 1: Tiếp nhận & Ủy quyền tức thì (Main Agent)
+- Main Agent tiếp nhận yêu cầu và kết nối Jira MCP nếu được yêu cầu.
+- Ngay lập tức gọi `architect` với đầy đủ yêu cầu của User mà không tự phân tích hay đọc file trước.
 
 #### Bước 2: Kiến trúc & Đặc tả kỹ thuật (`architect`)
-- Phân tích kiến trúc chi tiết, xác định phạm vi thay đổi và các tầng bị ảnh hưởng.
+- `architect` độc lập khảo sát codebase, phân tích kiến trúc chi tiết, xác định phạm vi thay đổi và các tầng bị ảnh hưởng.
 - **Tạo Acceptance Criteria (AC)**: Checklist tiêu chí nghiệm thu rõ ràng (`[ ] AC-1`, `[ ] AC-2...`) làm căn cứ cho Reviewer đối soát.
 - **Phân rã task & Lập kế hoạch song song**: Chia nhỏ task, xác định dependencies. Đánh dấu `[PARALLEL]` cho các task độc lập (nghiêm ngặt áp dụng quy tắc *"Một file - Một Coder"* để triệt tiêu xung đột Git) hoặc `[SEQUENTIAL]` cho các task phụ thuộc.
 
