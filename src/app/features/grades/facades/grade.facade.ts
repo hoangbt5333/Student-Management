@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { GradeStore, type SaveGradeRequest } from '../store/grade.store';
+import { GradeStore } from '../store/grade.store';
 import type { Grade } from '../models/grade.model';
 
 @Injectable({

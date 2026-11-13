@@ -65,7 +65,12 @@ function main() {
     process.exit(1);
   }
 
-  // 2. TypeScript Type Checking
+  // 2. ESLint Quality Check
+  if (!runStep('ESLint Code Quality Check', 'npm run lint')) {
+    process.exit(1);
+  }
+
+  // 3. TypeScript Type Checking
   if (!runStep('TypeScript Type Check (tsc --noEmit)', 'npx tsc --noEmit')) {
     process.exit(1);
   }
@@ -87,6 +92,7 @@ function main() {
   console.log('\n=============================================');
   console.log('🎉 ALL AUTOMATED VALIDATION CHECKS PASSED!');
   console.log('✔ Architecture: OK');
+  console.log('✔ ESLint Quality: OK');
   console.log('✔ Type Check: OK');
   console.log('✔ Unit Tests & Evidence: OK');
   console.log('=============================================\n');

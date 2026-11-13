@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import {
   pendingChangesGuard,
-  confirmDiscardChanges,
   HasPendingChanges,
   CONFIRM_DISCARD_CHANGES_MESSAGE
 } from './pending-changes.guard';

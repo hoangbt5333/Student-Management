@@ -9,8 +9,6 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { ClassForm } from '../class-form/class-form';
 import type { ClassModel } from '../../models/class.model';
-import { ClassFacade } from '../../facades/class.facade';
-import { StudentFacade } from '../../../students/facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 
 describe('ClassList', () => {

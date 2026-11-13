@@ -18,7 +18,7 @@ import {
 } from 'rxjs';
 
 import { ClassService } from '../services/class.service';
-import { ClassModel, CreateClassDto, UpdateClassDto } from '../models/class.model';
+import { ClassModel } from '../models/class.model';
 import { normalizeVietnamese } from '../../../shared/utils/vietnamese.util';
 
 type ClassSortField = keyof ClassModel;

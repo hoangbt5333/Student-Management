@@ -11,10 +11,11 @@ Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình
 - `npm run watch` — rebuild continuously in development configuration.
 - `npm run test:ci` — canonical test command; runs non-watch mode, outputs to console and writes JSON report to `artifacts/test-results.json`.
   - Specific file: `npm run test:ci -- --include='<path-to-spec>'`
+- `npm run lint` — check code quality using ESLint & Angular-ESLint.
 - `npm run check:arch` — check Explicit Layering architecture boundary violations.
-- `npm run validate` — deterministic automated validation (check:arch + typecheck + targeted test).
+- `npm run validate` — deterministic automated validation (check:arch + lint + typecheck + targeted test).
   - Specific file: `npm run validate -- --spec='<path-to-spec>'`
-- `npm run verify` — run check:arch, build, and full test suite.
+- `npm run verify` — run check:arch, lint, build, and full test suite.
 - `npm run serve:ssr:user-management` — serve the previously built SSR app (default port 4000; configurable with `PORT`).
 
 The app expects a mock REST API on port 3001. Services currently use hard-coded `http://localhost:3001` URLs.
@@ -99,7 +100,7 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
   ```bash
   npm run validate -- --spec='<path-to-spec>'
   ```
-  *(Chuỗi lệnh tự động: Prettier format hook $\rightarrow$ Kiểm tra kiến trúc `check:arch` $\rightarrow$ TypeScript type check `tsc --noEmit` $\rightarrow$ Targeted Unit Test $\rightarrow$ Xuất report `artifacts/test-results.json`).*
+  *(Chuỗi lệnh tự động: Prettier format hook $\rightarrow$ Kiểm tra kiến trúc `check:arch` $\rightarrow$ ESLint `npm run lint` $\rightarrow$ TypeScript type check `tsc --noEmit` $\rightarrow$ Targeted Unit Test $\rightarrow$ Xuất report `artifacts/test-results.json`).*
 - Coder tự sửa mọi lỗi phát sinh trên worktree. Chỉ commit khi toàn bộ kiểm tra tự động báo xanh 100%.
 
 #### Bước 6: Thẩm định chất lượng (`reviewer`)

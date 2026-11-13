@@ -4,5 +4,5 @@ export function formatCurrency(amount: number): string {
     currency: 'VND',
   })
     .format(amount)
-    .replace(/ /g, ' ');
+    .replace(/\u00A0/g, ' ');
 }

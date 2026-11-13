@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 
 import { AuthStore } from '../store/auth.store';
 import { LoginCredentials, UserRole, AppPermission } from '../models/auth.model';
-import { App } from '../../../app';
 
 @Injectable({
   providedIn: 'root'
