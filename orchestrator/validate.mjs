@@ -8,7 +8,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadConfig } from './config.mjs';
-import { REPORT_FILE, REVIEW_FILE } from './paths-policy.mjs';
+import { REPORT_FILE, REVIEW_FILE, ensureNodeModules } from './paths-policy.mjs';
 
 // Các kiểm tra thuộc cổng của Coder. e2e/install không nằm ở đây.
 export const GATE_CHECKS = ['build', 'typecheck', 'lint', 'unit_test'];
@@ -65,6 +65,7 @@ export function classifyFailure(r) {
 
 export async function runGate({ config, taskId, execId, worktree, root = process.cwd(), base = null }) {
   const cwd = resolve(worktree);
+  ensureNodeModules(root, cwd);
   const checks = GATE_CHECKS
     .filter((name) => config.commands[name]?.cmd)
     .map((name) => ({ name, ...config.commands[name] }));

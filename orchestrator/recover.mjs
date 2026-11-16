@@ -21,6 +21,7 @@ import { loadConfig } from './config.mjs';
 import { loadState, updateState, transition, getTask } from './state.mjs';
 import { runGate } from './validate.mjs';
 import { worktreePathFor, baseBranchFor, REPORT_FILE, REVIEW_FILE } from './report.mjs';
+import { ensureNodeModules } from './paths-policy.mjs';
 
 export class RecoverError extends Error {
   constructor(message, { code = 2, detail = null } = {}) {
@@ -198,6 +199,7 @@ export async function recoverTask({ root = process.cwd(), execId, taskId }) {
     git(mainRoot, ['worktree', 'add', worktree, taskBranch]);
     worktreeRecreated = true;
   }
+  ensureNodeModules(mainRoot, worktree);
 
   // Nguồn 3: Kiểm tra uncommitted changes trong worktree
   const dirty = git(worktree, ['status', '--porcelain'])

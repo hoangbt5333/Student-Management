@@ -15,6 +15,7 @@ import { loadConfig } from './config.mjs';
 import { loadState, updateState, transition, getTask } from './state.mjs';
 import { runGate } from './validate.mjs';
 import { worktreePathFor, checkHandoff, baseBranchFor, REPORT_FILE } from './report.mjs';
+import { unlinkNodeModules } from './paths-policy.mjs';
 
 export class IntegrateError extends Error {
   constructor(message, { code = 2, detail = null } = {}) {
@@ -277,12 +278,9 @@ export async function integrateTask({
   // 10. Dọn dẹp worktree nếu được yêu cầu
   if (cleanWorktree && existsSync(worktree)) {
     try {
-      const wtModules = join(worktree, 'node_modules');
-      if (existsSync(wtModules)) {
-        try { rmSync(wtModules, { recursive: false }); } catch (_) {}
-      }
+      unlinkNodeModules(worktree);
       git(mainRoot, ['worktree', 'remove', '--force', worktree]);
-    } catch (err){
+    } catch {
       /* bỏ qua nếu worktree đang bận */
     }
   }

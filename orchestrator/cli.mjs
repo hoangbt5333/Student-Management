@@ -13,7 +13,8 @@
 //   node cli.mjs report  --exec E1 [--format markdown|json] [--output <path>] (xuất báo cáo tổng kết phiên)
 // Exit code: 0 ok, 1 kế hoạch có xung đột / báo cáo không đạt / tích hợp thất bại, 2 lỗi sử dụng/cấu hình/state.
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { resolve, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { loadConfig } from './config.mjs';
 import {
@@ -21,11 +22,16 @@ import {
   readyTasks, detectDeadlock, statePath,
 } from './state.mjs';
 import { planCheck } from './ownership.mjs';
-import { buildBrief, checkHandoff, validateBriefShape, worktreePathFor, REPORT_FILE } from './report.mjs';
+import { buildBrief, checkHandoff, validateBriefShape, worktreePathFor, baseBranchFor, REPORT_FILE } from './report.mjs';
+import { ensureNodeModules } from './paths-policy.mjs';
 import { integrateTask } from './integrate.mjs';
 import { recoverTask, recoverExecution, recordReview } from './recover.mjs';
 import { saveExecutionReport, formatMarkdownReport, generateExecutionSummary } from './report-summary.mjs';
-import { join } from 'node:path';
+
+const git = (cwd, args) =>
+  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+    .replace(/\r/g, '')
+    .trim();
 
 const [command, ...rest] = process.argv.slice(2);
 const { values, positionals } = parseArgs({
@@ -52,8 +58,8 @@ const readTasks = () => {
 };
 
 try {
-  if (!['check', 'init', 'next', 'move', 'status', 'brief', 'report-check', 'integrate', 'recover', 'review-record', 'report'].includes(command)) {
-    throw new Error('Lệnh: check | init | next | move | status | brief | report-check | integrate | recover | review-record | report');
+  if (!['check', 'init', 'next', 'move', 'status', 'brief', 'report-check', 'integrate', 'recover', 'review-record', 'report', 'worktree'].includes(command)) {
+    throw new Error('Lệnh: check | init | next | move | status | brief | report-check | integrate | recover | review-record | report | worktree');
   }
   if (command !== 'check' && !values.exec) throw new Error('Thiếu --exec <exec_id>');
   const config = loadConfig(root);
@@ -162,6 +168,44 @@ try {
       console.log(formatMarkdownReport(reportRes.summary));
     }
     process.exit(0);
+  } else if (command === 'worktree') {
+    const [taskId] = positionals;
+    if (!taskId) throw new Error('Dùng: worktree <TASK> --exec <id>');
+    const task = getTask(loadState(root, values.exec), taskId);
+    const worktree = worktreePathFor(root, config, taskId);
+    const taskBranch = `${config.git.task_branch_prefix}${taskId}`;
+    const baseBranch = baseBranchFor(config, values.exec);
+
+    if (!existsSync(worktree)) {
+      let startPoint = baseBranch;
+      try {
+        git(root, ['rev-parse', '--verify', '--quiet', baseBranch]);
+      } catch {
+        startPoint = config.project.base_branch || 'main';
+      }
+
+      let branchExists = false;
+      try {
+        git(root, ['rev-parse', '--verify', '--quiet', `refs/heads/${taskBranch}`]);
+        branchExists = true;
+      } catch {}
+
+      if (branchExists) {
+        git(root, ['worktree', 'add', worktree, taskBranch]);
+      } else {
+        git(root, ['worktree', 'add', worktree, '-b', taskBranch, startPoint]);
+      }
+    }
+
+    const nodeModulesResult = ensureNodeModules(root, worktree);
+    out({
+      ok: true,
+      task_id: taskId,
+      worktree,
+      branch: taskBranch,
+      node_modules: nodeModulesResult,
+      message: `Worktree ${worktree} đã sẵn sàng${nodeModulesResult.linked ? ' (đã tự động liên kết node_modules)' : ''}.`,
+    });
   } else {
     const state = loadState(root, values.exec);
     out({ exec_id: state.exec_id, tasks: state.tasks.map((t) => ({ id: t.id, status: t.status, attempts: t.attempts, assigned_to: t.assigned_to })), ...detectDeadlock(state) });

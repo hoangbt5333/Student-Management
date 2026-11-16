@@ -1,4 +1,6 @@
 // Luật đường dẫn dùng chung: hook chặn sửa file (lúc sửa) và kiểm tra bàn giao (lúc nộp, theo git diff).
+import { symlinkSync, unlinkSync, existsSync, lstatSync } from 'node:fs';
+import { join } from 'node:path';
 import { hasGlob, matchesAny, normalize } from './ownership.mjs';
 
 export const REPORT_FILE = '.task-report.json'; // nằm ở gốc worktree, phải được .gitignore
@@ -30,3 +32,42 @@ export function ownedViolation(relPath, owned, config, actor) {
 }
 
 export const ownershipViolation = (rel, owned, config, actor) => pathViolation(rel, config) ?? ownedViolation(rel, owned, config, actor);
+
+/**
+ * Tự động liên kết node_modules từ thư mục gốc dự án sang worktree.
+ * Trên Windows dùng Junction ('junction') không cần quyền Admin.
+ * Trên macOS/Linux dùng Symbolic Link ('dir').
+ */
+export function ensureNodeModules(root, worktree) {
+  const rootModules = join(root, 'node_modules');
+  const wtModules = join(worktree, 'node_modules');
+  if (existsSync(rootModules) && !existsSync(wtModules)) {
+    try {
+      const type = process.platform === 'win32' ? 'junction' : 'dir';
+      symlinkSync(rootModules, wtModules, type);
+      return { linked: true, type, path: wtModules };
+    } catch (err) {
+      return { linked: false, error: err.message };
+    }
+  }
+  return { linked: false, already_exists: existsSync(wtModules) };
+}
+
+/**
+ * Tháo gỡ liên kết junction/symlink node_modules trước khi dọn dẹp worktree.
+ */
+export function unlinkNodeModules(worktree) {
+  const wtModules = join(worktree, 'node_modules');
+  try {
+    if (existsSync(wtModules)) {
+      const stat = lstatSync(wtModules);
+      if (stat.isSymbolicLink() || (process.platform === 'win32' && stat.isDirectory())) {
+        unlinkSync(wtModules);
+        return true;
+      }
+    }
+  } catch (_) {
+    // Bỏ qua lỗi nếu không phải symlink/junction hoặc đã bị xóa
+  }
+  return false;
+}
