@@ -58,3 +58,4 @@ db.json
 
 state/
 logs/
+.task-report.json

@@ -2,7 +2,7 @@
   "framework_version": "0.4.0",
   "project": {
     "name": "user-management",
-    "base_branch": "main"
+    "base_branch": "test/multi-agent-framework"
   },
   "commands": {
     "install": {

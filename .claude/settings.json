@@ -55,9 +55,38 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node orchestrator/hooks/log-event.mjs",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node orchestrator/hooks/guard-bash.mjs",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node orchestrator/hooks/guard-edit.mjs",
+            "timeout": 10
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [
@@ -146,6 +175,15 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node orchestrator/hooks/guard-handoff.mjs",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "SubagentStop": [
@@ -175,7 +213,17 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node orchestrator/hooks/guard-handoff.mjs",
+            "timeout": 30
+          }
+        ]
       }
     ]
-  }
+  },
+  "effortLevel": "medium"
 }

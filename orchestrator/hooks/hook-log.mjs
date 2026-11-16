@@ -15,21 +15,23 @@ export function redact(text) {
 }
 
 export function buildEntry(input, { execId = 'none', now = new Date() } = {}) {
-  const ti = input.tool_input ?? {};
-  const target = ti.file_path ?? ti.path ?? (typeof ti.command === 'string' ? redact(ti.command).slice(0, 200) : null);
-  const cwd = input.cwd ?? '';
+  const ti = input.tool_input ?? input.toolCall?.args ?? {};
+  const cmd = ti.CommandLine ?? ti.command;
+  const target = ti.Path ?? ti.path ?? ti.file_path ?? (typeof cmd === 'string' ? redact(cmd).slice(0, 200) : null);
+  const cwd = input.cwd ?? (Array.isArray(input.workspacePaths) ? input.workspacePaths[0] : '');
   const taskId = process.env.AGENT_TASK_ID || cwd.match(/TASK-[\w-]+/)?.[0] || null;
   const entry = {
     ts: now.toISOString(),
     exec_id: execId,
     task_id: taskId,
-    event: input.hook_event_name ?? null,
-    tool: input.tool_name ?? null,
+    event: input.hook_event_name ?? (input.toolCall ? 'PostToolUse' : null),
+    tool: input.tool_name ?? input.toolCall?.name ?? null,
     target,
-    session_id: input.session_id ?? null,
+    session_id: input.session_id ?? input.conversationId ?? null,
     cwd,
   };
-  if (input.tool_use_id) entry.dedupe = `${entry.event}:${input.tool_use_id}`;
+  const dedupeKey = input.tool_use_id ?? (input.stepIdx !== undefined ? `step:${input.stepIdx}` : null);
+  if (dedupeKey) entry.dedupe = `${entry.event}:${dedupeKey}`;
   return entry;
 }
 
