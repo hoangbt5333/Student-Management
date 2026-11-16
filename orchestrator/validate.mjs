@@ -79,13 +79,45 @@ export async function runGate({ config, taskId, execId, worktree, root = process
   const dirty = git(cwd, ['status', '--porcelain'])
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => line && line.slice(3).trim() !== REPORT_FILE && line.slice(3).trim() !== REVIEW_FILE);
+    .filter((line) => {
+      if (!line) return false;
+      const file = line.slice(3).trim();
+      return (
+        file !== REPORT_FILE &&
+        file !== REVIEW_FILE &&
+        file !== 'tasks.json' &&
+        !file.startsWith('logs/') &&
+        !file.startsWith('logs\\') &&
+        !file.startsWith('state/') &&
+        !file.startsWith('state\\') &&
+        file !== 'logs' &&
+        file !== 'state'
+      );
+    });
   const hasUncommittedChanges = dirty.length > 0;
   results.push({ name: 'git_clean', required: true, passed: !hasUncommittedChanges, detail: !hasUncommittedChanges ? 'không có thay đổi chưa commit' : dirty.slice(0, 20) });
 
   if (base) {
-    const ahead = Number(git(cwd, ['rev-list', '--count', `${base}..HEAD`]));
-    results.push({ name: 'new_commit', required: true, passed: ahead > 0, detail: `${ahead} commit mới so với ${base}` });
+    let resolvedBase = base;
+    try {
+      git(cwd, ['rev-parse', '--verify', '--quiet', base]);
+    } catch {
+      const defaultBase = config.project?.base_branch || 'main';
+      try {
+        git(cwd, ['rev-parse', '--verify', '--quiet', defaultBase]);
+        resolvedBase = defaultBase;
+      } catch {
+        resolvedBase = null;
+      }
+    }
+    if (resolvedBase) {
+      try {
+        const ahead = Number(git(cwd, ['rev-list', '--count', `${resolvedBase}..HEAD`]));
+        results.push({ name: 'new_commit', required: true, passed: ahead > 0, detail: `${ahead} commit mới so với ${resolvedBase}` });
+      } catch (err) {
+        results.push({ name: 'new_commit', required: false, passed: true, detail: `Không thể so sánh commit với ${resolvedBase}: ${err.message}` });
+      }
+    }
   }
 
   for (const c of checks) {

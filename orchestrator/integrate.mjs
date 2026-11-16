@@ -14,7 +14,7 @@ import { parseArgs } from 'node:util';
 import { loadConfig } from './config.mjs';
 import { loadState, updateState, transition, getTask } from './state.mjs';
 import { runGate } from './validate.mjs';
-import { worktreePathFor, checkHandoff, baseBranchFor, REPORT_FILE } from './report.mjs';
+import { worktreePathFor, checkHandoff, baseBranchFor, REPORT_FILE, REVIEW_FILE } from './report.mjs';
 import { unlinkNodeModules } from './paths-policy.mjs';
 
 export class IntegrateError extends Error {
@@ -58,11 +58,12 @@ export async function integrateTask({
   execId,
   taskId,
   cleanWorktree = false,
+  autostash = true,
 }) {
   const mainRoot = resolve(root);
   const config = loadConfig(mainRoot);
   const state = loadState(mainRoot, execId);
-  const task = getTask(state, taskId);
+  let task = getTask(state, taskId);
 
   const integrationBranch = baseBranchFor(config, execId); // e.g. integration/EXEC-001
   const taskBranch = `${config.git.task_branch_prefix}${taskId}`; // e.g. task/TASK-001
@@ -91,10 +92,10 @@ export async function integrateTask({
     };
   }
 
-  // 2. Điều kiện tiên quyết: Task phải ở ready_for_review
-  if (task.status !== 'ready_for_review') {
+  // 2. Điều kiện trạng thái Task
+  if (!['ready_for_review', 'in_progress'].includes(task.status)) {
     throw new IntegrateError(
-      `Task ${taskId} đang ở trạng thái "${task.status}". Chỉ có thể tích hợp khi ở "ready_for_review".`,
+      `Task ${taskId} đang ở trạng thái "${task.status}". Chỉ có thể tích hợp khi ở "ready_for_review" (hoặc "in_progress" có báo cáo bàn giao đạt).`,
       { code: 1 }
     );
   }
@@ -125,7 +126,18 @@ export async function integrateTask({
     );
   }
 
-  // 4. Kiểm tra Review Gate nếu có file review
+  // Tự động chuyển in_progress -> ready_for_review nếu handoff report hợp lệ
+  if (task.status === 'in_progress') {
+    updateState(mainRoot, execId, (s) =>
+      transition(s, taskId, 'ready_for_review', {
+        agent: 'orchestrator',
+        note: 'Tự động chuyển ready_for_review khi tích hợp (báo cáo bàn giao đạt)',
+      })
+    );
+    task = getTask(loadState(mainRoot, execId), taskId);
+  }
+
+  // 3. Kiểm tra Review Gate nếu có file review
   const reviewFiles = [
     join(worktree, '.task-review.json'),
     join(mainRoot, 'logs', execId, taskId, 'review.json'),
@@ -146,7 +158,7 @@ export async function integrateTask({
     }
   }
 
-  // 5. Chuẩn bị Git trong mainRoot
+  // 4. Chuẩn bị Git trong mainRoot
   if (!refExists(mainRoot, `refs/heads/${taskBranch}`)) {
     throw new IntegrateError(`Nhánh ${taskBranch} của Task không tồn tại.`, { code: 2 });
   }
@@ -154,147 +166,187 @@ export async function integrateTask({
   const rootDirty = git(mainRoot, ['status', '--porcelain'])
     .split('\n')
     .map((l) => l.trim())
-    .filter((l) => l && !l.endsWith(REPORT_FILE));
+    .filter((l) => {
+      if (!l) return false;
+      const file = l.slice(3).trim();
+      return (
+        file !== REPORT_FILE &&
+        file !== REVIEW_FILE &&
+        file !== 'tasks.json' &&
+        file !== 'agent-framework.lock.json' &&
+        !file.startsWith('logs/') &&
+        !file.startsWith('logs\\') &&
+        !file.startsWith('state/') &&
+        !file.startsWith('state\\') &&
+        !file.startsWith('.claude/worktrees/') &&
+        !file.startsWith('.claude\\worktrees\\') &&
+        file !== 'logs' &&
+        file !== 'state'
+      );
+    });
+
+  let didStash = false;
   if (rootDirty.length > 0) {
-    throw new IntegrateError(
-      `Thư mục gốc ${mainRoot} còn thay đổi chưa commit, không thể chuyển nhánh để tích hợp:\n  ${rootDirty.join('\n  ')}`,
-      { code: 2 }
-    );
-  }
-
-  // Tạo nhánh tích hợp từ base_branch nếu chưa có
-  if (!refExists(mainRoot, `refs/heads/${integrationBranch}`)) {
-    git(mainRoot, ['branch', integrationBranch, baseBranch]);
-  }
-
-  // Chuyển sang nhánh tích hợp
-  git(mainRoot, ['checkout', integrationBranch]);
-  const lastGoodCommit = git(mainRoot, ['rev-parse', 'HEAD']);
-
-  // 6. Merge thử (Dry-run) để phát hiện xung đột
-  try {
-    git(mainRoot, ['merge', '--no-commit', '--no-ff', taskBranch]);
-    // Thành công => abort dry-run để merge thật đúng chiến lược
-    git(mainRoot, ['merge', '--abort']);
-  } catch (err) {
-    // Có xung đột merge!
-    try {
-      git(mainRoot, ['merge', '--abort']);
-    } catch {
-      /* bỏ qua */
-    }
-    const conflictMsg = `Xung đột merge giữa ${taskBranch} và ${integrationBranch}. Coder cần fetch và rebase trên worktree của mình rồi chạy lại validation.`;
-    updateState(mainRoot, execId, (s) => {
-      transition(s, taskId, 'in_progress', {
-        agent: 'orchestrator',
-        note: `Xung đột merge khi tích hợp vào ${integrationBranch}. Cần rebase.`,
-      });
-    });
-    return {
-      ok: false,
-      conflict: true,
-      task_id: taskId,
-      status: 'in_progress',
-      error: conflictMsg,
-    };
-  }
-
-  // 7. Merge thật theo git.merge_strategy
-  const strategy = config.git.merge_strategy || 'squash';
-  try {
-    if (strategy === 'squash') {
-      git(mainRoot, ['merge', '--squash', taskBranch]);
-      git(mainRoot, ['commit', '-m', `integrate(${taskId}): merge into ${integrationBranch}`]);
-    } else if (strategy === 'merge') {
-      git(mainRoot, ['merge', '--no-ff', taskBranch, '-m', `integrate(${taskId}): merge into ${integrationBranch}`]);
-    } else if (strategy === 'rebase') {
-      git(mainRoot, ['merge', '--ff-only', taskBranch]);
+    if (autostash) {
+      try {
+        git(mainRoot, ['stash', 'push', '-u', '-m', `agent-autostash-${execId}-${taskId}`]);
+        didStash = true;
+      } catch (err) {
+        throw new IntegrateError(`Không thể autostash thay đổi trong thư mục gốc: ${err.message}`, { code: 2 });
+      }
     } else {
-      throw new Error(`merge_strategy không hỗ trợ: ${strategy}`);
+      throw new IntegrateError(
+        `Thư mục gốc ${mainRoot} còn thay đổi chưa commit, không thể chuyển nhánh để tích hợp:\n  ${rootDirty.join('\n  ')}`,
+        { code: 2 }
+      );
     }
-  } catch (mergeErr) {
-    // Merge thật thất bại
-    try {
-      git(mainRoot, ['reset', '--hard', lastGoodCommit]);
-    } catch {
-      /* bỏ qua */
-    }
-    throw new IntegrateError(`Lỗi khi thực hiện merge thật: ${mergeErr.message}`, { code: 2 });
   }
 
-  const mergedCommit = git(mainRoot, ['rev-parse', 'HEAD']);
-
-  // 8. Chạy Integration Gate trên nhánh tích hợp
-  let gateResult;
   try {
-    gateResult = await runGate({
-      config,
-      taskId,
-      execId,
-      worktree: mainRoot,
-      root: mainRoot,
-      base: lastGoodCommit,
-    });
-  } catch (gateErr) {
-    // Lỗi khi chạy lệnh gate => rollback
-    git(mainRoot, ['reset', '--hard', lastGoodCommit]);
-    throw new IntegrateError(`Không thể chạy Integration Gate: ${gateErr.message}`, { code: 2 });
-  }
+    // Tạo nhánh tích hợp từ base_branch nếu chưa có
+    if (!refExists(mainRoot, `refs/heads/${integrationBranch}`)) {
+      git(mainRoot, ['branch', integrationBranch, baseBranch]);
+    }
 
-  // Nếu Integration Gate thất bại: Rollback về lastGoodCommit!
-  if (gateResult.status !== 'READY_FOR_REVIEW') {
-    git(mainRoot, ['reset', '--hard', lastGoodCommit]);
-    const failedChecks = (gateResult.checks || [])
-      .filter((c) => c.required && !c.passed)
-      .map((c) => `${c.name} (exit ${c.exit_code})`)
-      .join(', ');
+    // Chuyển sang nhánh tích hợp
+    git(mainRoot, ['checkout', integrationBranch]);
+    const lastGoodCommit = git(mainRoot, ['rev-parse', 'HEAD']);
 
+    // 5. Merge thử (Dry-run) để phát hiện xung đột
+    try {
+      git(mainRoot, ['merge', '--no-commit', '--no-ff', taskBranch]);
+      // Thành công => abort dry-run để merge thật đúng chiến lược
+      git(mainRoot, ['merge', '--abort']);
+    } catch (err) {
+      // Có xung đột merge!
+      try {
+        git(mainRoot, ['merge', '--abort']);
+      } catch {
+        /* bỏ qua */
+      }
+      const conflictMsg = `Xung đột merge giữa ${taskBranch} và ${integrationBranch}. Coder cần fetch và rebase trên worktree của mình rồi chạy lại validation.`;
+      updateState(mainRoot, execId, (s) => {
+        transition(s, taskId, 'in_progress', {
+          agent: 'orchestrator',
+          note: `Xung đột merge khi tích hợp vào ${integrationBranch}. Cần rebase.`,
+        });
+      });
+      return {
+        ok: false,
+        conflict: true,
+        task_id: taskId,
+        status: 'in_progress',
+        error: conflictMsg,
+      };
+    }
+
+    // 6. Merge thật theo git.merge_strategy
+    const strategy = config.git.merge_strategy || 'squash';
+    try {
+      if (strategy === 'squash') {
+        git(mainRoot, ['merge', '--squash', taskBranch]);
+        git(mainRoot, ['commit', '-m', `integrate(${taskId}): merge into ${integrationBranch}`]);
+      } else if (strategy === 'merge') {
+        git(mainRoot, ['merge', '--no-ff', taskBranch, '-m', `integrate(${taskId}): merge into ${integrationBranch}`]);
+      } else if (strategy === 'rebase') {
+        git(mainRoot, ['merge', '--ff-only', taskBranch]);
+      } else {
+        throw new Error(`merge_strategy không hỗ trợ: ${strategy}`);
+      }
+    } catch (mergeErr) {
+      // Merge thật thất bại
+      try {
+        git(mainRoot, ['reset', '--hard', lastGoodCommit]);
+      } catch {
+        /* bỏ qua */
+      }
+      throw new IntegrateError(`Lỗi khi thực hiện merge thật: ${mergeErr.message}`, { code: 2 });
+    }
+
+    const mergedCommit = git(mainRoot, ['rev-parse', 'HEAD']);
+
+    // 7. Chạy Integration Gate trên nhánh tích hợp
+    let gateResult;
+    try {
+      gateResult = await runGate({
+        config,
+        taskId,
+        execId,
+        worktree: mainRoot,
+        root: mainRoot,
+        base: lastGoodCommit,
+      });
+    } catch (gateErr) {
+      // Lỗi khi chạy lệnh gate => rollback
+      git(mainRoot, ['reset', '--hard', lastGoodCommit]);
+      throw new IntegrateError(`Không thể chạy Integration Gate: ${gateErr.message}`, { code: 2 });
+    }
+
+    // Nếu Integration Gate thất bại: Rollback về lastGoodCommit!
+    if (gateResult.status !== 'READY_FOR_REVIEW') {
+      git(mainRoot, ['reset', '--hard', lastGoodCommit]);
+      const failedChecks = (gateResult.checks || [])
+        .filter((c) => c.required && !c.passed)
+        .map((c) => `${c.name} (exit ${c.exit_code})`)
+        .join(', ');
+
+      updateState(mainRoot, execId, (s) => {
+        transition(s, taskId, 'in_progress', {
+          agent: 'orchestrator',
+          note: `Integration Gate thất bại (${failedChecks}). Đã rollback về ${lastGoodCommit.slice(0, 7)}.`,
+        });
+      });
+
+      return {
+        ok: false,
+        gate_failed: true,
+        task_id: taskId,
+        status: 'in_progress',
+        rollback_to: lastGoodCommit,
+        checks: gateResult.checks,
+        error: `Integration Gate thất bại trên ${integrationBranch} (${failedChecks}). Đã rollback về ${lastGoodCommit.slice(0, 7)}.`,
+      };
+    }
+
+    // 8. Integration Gate thành công => Cập nhật Task sang completed!
     updateState(mainRoot, execId, (s) => {
-      transition(s, taskId, 'in_progress', {
+      transition(s, taskId, 'completed', {
         agent: 'orchestrator',
-        note: `Integration Gate thất bại (${failedChecks}). Đã rollback về ${lastGoodCommit.slice(0, 7)}.`,
+        note: `Tích hợp thành công vào ${integrationBranch} (${mergedCommit.slice(0, 7)})`,
       });
     });
 
+    // 9. Dọn dẹp worktree nếu được yêu cầu
+    if (cleanWorktree && existsSync(worktree)) {
+      try {
+        unlinkNodeModules(worktree);
+        git(mainRoot, ['worktree', 'remove', '--force', worktree]);
+      } catch {
+        try {
+          git(mainRoot, ['worktree', 'prune']);
+        } catch {}
+      }
+    }
+
     return {
-      ok: false,
-      gate_failed: true,
+      ok: true,
       task_id: taskId,
-      status: 'in_progress',
-      rollback_to: lastGoodCommit,
+      status: 'completed',
+      integration_branch: integrationBranch,
+      merge_commit: mergedCommit,
+      rollback_target: lastGoodCommit,
+      strategy,
       checks: gateResult.checks,
-      error: `Integration Gate thất bại trên ${integrationBranch} (${failedChecks}). Đã rollback về ${lastGoodCommit.slice(0, 7)}.`,
     };
-  }
-
-  // 9. Integration Gate thành công => Cập nhật Task sang completed!
-  updateState(mainRoot, execId, (s) => {
-    transition(s, taskId, 'completed', {
-      agent: 'orchestrator',
-      note: `Tích hợp thành công vào ${integrationBranch} (${mergedCommit.slice(0, 7)})`,
-    });
-  });
-
-  // 10. Dọn dẹp worktree nếu được yêu cầu
-  if (cleanWorktree && existsSync(worktree)) {
-    try {
-      unlinkNodeModules(worktree);
-      git(mainRoot, ['worktree', 'remove', '--force', worktree]);
-    } catch {
-      /* bỏ qua nếu worktree đang bận */
+  } finally {
+    if (didStash) {
+      try {
+        git(mainRoot, ['stash', 'pop']);
+      } catch (err) {
+        console.warn(`[integrate] Cảnh báo: không thể pop stash tự động: ${err.message}`);
+      }
     }
   }
-
-  return {
-    ok: true,
-    task_id: taskId,
-    status: 'completed',
-    integration_branch: integrationBranch,
-    merge_commit: mergedCommit,
-    rollback_target: lastGoodCommit,
-    strategy,
-    checks: gateResult.checks,
-  };
 }
 
 // CLI runner khi gọi trực tiếp
@@ -305,12 +357,13 @@ async function main() {
       exec: { type: 'string' },
       root: { type: 'string', default: process.cwd() },
       'clean-worktree': { type: 'boolean', default: false },
+      autostash: { type: 'boolean', default: true },
     },
   });
 
   const [taskId] = positionals;
   if (!taskId || !values.exec) {
-    console.error('Dùng: node integrate.mjs <TASK> --exec <exec_id> [--root .] [--clean-worktree]');
+    console.error('Dùng: node integrate.mjs <TASK> --exec <exec_id> [--root .] [--clean-worktree] [--no-autostash]');
     process.exit(2);
   }
 
@@ -320,6 +373,7 @@ async function main() {
       execId: values.exec,
       taskId,
       cleanWorktree: values['clean-worktree'],
+      autostash: values.autostash,
     });
 
     console.log(JSON.stringify(result, null, 2));

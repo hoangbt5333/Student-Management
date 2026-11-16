@@ -82,6 +82,12 @@ export function recordReview({
     mkdirSync(reviewLogDir, { recursive: true });
 
     if (verdict === 'APPROVED') {
+      if (task.status === 'in_progress') {
+        transition(state, taskId, 'ready_for_review', {
+          agent: reviewer,
+          note: 'Tự động chuyển ready_for_review khi reviewer APPROVED',
+        });
+      }
       const reviewData = {
         task_id: taskId,
         verdict: 'APPROVED',
