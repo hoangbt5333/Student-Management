@@ -2,7 +2,7 @@
   "framework_version": "0.4.0",
   "project": {
     "name": "user-management",
-    "base_branch": "main"
+    "base_branch": "test/multi-agent-framework"
   },
   "commands": {
     "install": {
@@ -67,9 +67,9 @@
     ]
   },
   "models": {
-    "architect": "sonet",
+    "architect": "sonnet",
     "coder": "sonnet",
-    "reviewer": "sonet",
+    "reviewer": "sonnet",
     "release": "haiku"
   },
   "handoff": {
