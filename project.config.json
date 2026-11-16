@@ -67,10 +67,10 @@
     ]
   },
   "models": {
-    "architect": "opus",
+    "architect": "sonet",
     "coder": "sonnet",
-    "reviewer": "opus",
-    "release": "sonnet"
+    "reviewer": "sonet",
+    "release": "haiku"
   },
   "handoff": {
     "agent_types": [
