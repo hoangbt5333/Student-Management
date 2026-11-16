@@ -14,10 +14,15 @@
    - **Tích hợp Task:** `node orchestrator/cli.mjs integrate <task_id> --exec <id> --clean-worktree`
    - **Báo cáo Tổng kết:** `node orchestrator/cli.mjs report --exec <id> --format markdown`
    - **Tự động Phục hồi:** `node orchestrator/cli.mjs recover --exec <id>`
-3. **Task Scope & Guardrails:**
+3. **Nguyên tắc Điều phối Song song (Parallel Dispatching):**
+   - Khi `node orchestrator/cli.mjs next --exec <id>` trả về nhiều task sẵn sàng trong mảng `ready` (không có dependency và không xung đột `owned_files`), Coordinator **BẮT BUỘC PHẢI KHỞI CHẠY SONG SONG**:
+     1. Tạo worktree cho toàn bộ các task sẵn sàng.
+     2. Gọi đồng thời (batch) các công cụ `invoke_subagent` cho từng Coder trong cùng 1 lượt xử lý.
+     3. TUYỆT ĐỐI không chờ Task 1 hoàn tất tích hợp mới bắt đầu Task 2.
+4. **Task Scope & Guardrails:**
    - Khi Coordinator ủy quyền cho Coder Subagent (`invoke_subagent`), Coder làm việc strictly trong worktree `../wt/<task_id>` và chỉ sửa các file thuộc `owned_files`.
    - Các hành vi sửa ngoài worktree hoặc chạy lệnh cấm (`git push`, `rm -rf`, v.v.) sẽ bị Hook `guard-edit` và `guard-bash` chặn ngay lập tức.
-4. **Security & Permissions:**
+5. **Security & Permissions:**
    - Git push, xóa branch, và merge vào main cần người dùng phê duyệt trực tiếp.
    - Không được đọc các file nhạy cảm khớp `.env*` hoặc khóa bảo mật (`.pem`, `.key`).
 <!-- framework:end -->
