@@ -48,10 +48,34 @@ describe('StudentList', () => {
     expect(component).toBeTruthy();
   });
 
+  it('exports the complete filtered student set rather than only the current page', () => {
+    const first = { id: 'SV01', name: 'A', email: 'a@example.com', phone: '1' };
+    const second = { id: 'SV02', name: 'B', email: 'b@example.com', phone: '2' };
+    const facade = component.facade;
+    const filteredStudents = vi.spyOn(facade, 'filteredStudents').mockReturnValue([first, second]);
+    vi.spyOn(facade, 'pageStudents').mockReturnValue([first]);
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:students');
+    const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+
+    component.exportStudents();
+
+    expect(filteredStudents).toHaveBeenCalled();
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    const blob = createObjectURL.mock.calls[0][0] as Blob;
+    expect(blob.type).toBe('text/csv;charset=utf-8');
+    expect(click).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:students');
+  });
+
   it('shows the student form only after clicking the add button', () => {
     expect(fixture.debugElement.query(By.directive(StudentForm))).toBeNull();
 
-    const addButton = fixture.nativeElement.querySelector('button.primary-button') as HTMLButtonElement;
+    const addButton = fixture.nativeElement.querySelector(
+      'button.primary-button',
+    ) as HTMLButtonElement;
     addButton.click();
     fixture.detectChanges();
 
@@ -120,12 +144,12 @@ describe('StudentList', () => {
     }
   });
 
-
   it('warns and blocks closing form when form has unsaved changes and user cancels confirm', () => {
     component.openAddStudent();
     fixture.detectChanges();
 
-    const formComp = fixture.debugElement.query(By.directive(StudentForm)).componentInstance as StudentForm;
+    const formComp = fixture.debugElement.query(By.directive(StudentForm))
+      .componentInstance as StudentForm;
     formComp.form.controls.name.setValue('New Student Name');
     formComp.form.markAsDirty();
     fixture.detectChanges();
@@ -143,7 +167,8 @@ describe('StudentList', () => {
     component.openAddStudent();
     fixture.detectChanges();
 
-    const formComp = fixture.debugElement.query(By.directive(StudentForm)).componentInstance as StudentForm;
+    const formComp = fixture.debugElement.query(By.directive(StudentForm))
+      .componentInstance as StudentForm;
     formComp.form.controls.name.setValue('New Student Name');
     formComp.form.markAsDirty();
     fixture.detectChanges();

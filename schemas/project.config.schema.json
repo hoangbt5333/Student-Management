@@ -1,0 +1,158 @@
+{
+  "$comment": "Schema cho project.config.json. Dùng bởi orchestrator/config.mjs (bộ validate nhỏ trong schema-lite.mjs hỗ trợ: type, enum, required, properties, additionalProperties, items, minimum, minLength, minItems, pattern).",
+  "type": "object",
+  "required": [
+    "framework_version",
+    "project",
+    "commands"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "framework_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "name",
+        "base_branch"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_branch": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "cmd"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "cmd": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "timeout_s": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task_branch_prefix": {
+          "type": "string"
+        },
+        "integration_branch_prefix": {
+          "type": "string"
+        },
+        "worktree_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "merge_strategy": {
+          "type": "string",
+          "enum": [
+            "merge",
+            "squash",
+            "rebase"
+          ]
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_parallel": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_review_rounds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "agent_timeout_min": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "circuit_breaker_failures": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shared_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deny_read": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "require_human_approval": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "agent_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

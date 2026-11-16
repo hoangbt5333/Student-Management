@@ -1,0 +1,24 @@
+{
+  "$comment": "Task Brief: thông tin tối thiểu khi giao việc cho Coder (sinh bằng `cli.mjs brief`).",
+  "type": "object",
+  "required": ["task_id", "title", "goal", "owned_files", "acceptance_criteria", "worktree", "branch", "base_branch", "validation_command", "report_file", "report_schema", "forbidden"],
+  "additionalProperties": false,
+  "properties": {
+    "task_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1 },
+    "context": { "type": "string" },
+    "depends_on": { "type": "array", "items": { "type": "string" } },
+    "owned_files": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "read_only_files": { "type": "array", "items": { "type": "string" } },
+    "contract": { "type": "string" },
+    "acceptance_criteria": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "worktree": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 },
+    "base_branch": { "type": "string", "minLength": 1 },
+    "validation_command": { "type": "string", "minLength": 1 },
+    "report_file": { "type": "string", "minLength": 1 },
+    "report_schema": { "type": "string", "minLength": 1 },
+    "forbidden": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+  }
+}

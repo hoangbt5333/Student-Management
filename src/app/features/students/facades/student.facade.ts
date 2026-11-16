@@ -3,7 +3,7 @@ import { StudentStore } from '../store/student.store';
 import type { Student } from '../models/student.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StudentFacade {
   private store = inject(StudentStore);

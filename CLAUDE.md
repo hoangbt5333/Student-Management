@@ -1,3 +1,26 @@
+<!-- framework:start -->
+# Agent Framework Guidelines (v0.4.0)
+
+> **Notice:** This section is managed by `agent-framework`. Do not edit directly; changes will be overwritten upon upgrade.
+
+## Multi-Agent Workflow Rules
+1. **Core vs Project Boundary:** Never modify files under `orchestrator/` or `core/` to fit project needs. All project-specific commands, rules, and limits are declared in `project.config.json`.
+2. **Canonical Orchestration Commands:**
+   - **Initialize Execution:** `node orchestrator/cli.mjs init --exec <id> --tasks tasks.json`
+   - **Start Task & Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, liên kết node_modules qua Junction/Symlink, và chuyển task sang in_progress)*
+   - **Validate Task (Coder Gate):** `node orchestrator/validate.mjs <task_id> ../wt/<task_id> --exec <id> --base integration/<id>` *(chạy build, typecheck, lint, test)*
+   - **Task Handoff:** Coder tạo `.task-report.json` trong worktree với `result: "READY_FOR_REVIEW"`.
+   - **Review Verdict:** `node orchestrator/cli.mjs review-record <task_id> --exec <id> --verdict APPROVED` *(nếu task ở in_progress sẽ tự động chuyển sang ready_for_review)*
+   - **Integrate Task:** `node orchestrator/cli.mjs integrate <task_id> --exec <id> --clean-worktree` *(tự động autostash, merge vào integration/<id>, chạy Integration Gate, dọn dẹp worktree và khôi phục stash)*
+   - **Execution Report:** `node orchestrator/cli.mjs report --exec <id> --format markdown`
+3. **Task Scope & Guardrails:**
+   - Coder làm việc strictly trong worktree `../wt/<task_id>`, chỉ sửa các file được phân quyền trong `owned_files`.
+   - Không được sửa file khung (`orchestrator/`, `state/`, `logs/`, `.claude/`, `project.config.json`).
+4. **Security & Permissions:**
+   - Git push, branch deletion, và merge vào main require human approval.
+   - Do NOT attempt to read protected files matching `.env*` or cryptographic keys.
+<!-- framework:end -->
+
 # CLAUDE.md - Student Management System
 
 Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình làm việc cho Claude Code trong dự án **Student Management System**.

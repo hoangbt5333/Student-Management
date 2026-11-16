@@ -5,9 +5,12 @@
       <p>Danh sách hồ sơ sinh viên, thông tin lớp học và trạng thái học tập.</p>
     </div>
     @if (authFacade.can('manage-students')) {
-      <button type="button" class="btn btn-primary primary-button" (click)="openAddStudent()">
-        + Thêm sinh viên
-      </button>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" (click)="exportStudents()">Xuất CSV</button>
+        <button type="button" class="btn btn-primary primary-button" (click)="openAddStudent()">
+          + Thêm sinh viên
+        </button>
+      </div>
     }
   </header>
 
@@ -85,10 +88,7 @@
 
     <label class="filter-item">
       <span>Sắp xếp theo</span>
-      <select
-        [value]="facade.sortBy()"
-        (change)="setSortBy($any($event.target).value)"
-      >
+      <select [value]="facade.sortBy()" (change)="setSortBy($any($event.target).value)">
         @for (field of sortFields; track field.value) {
           <option [value]="field.value">{{ field.label }}</option>
         }
@@ -105,7 +105,6 @@
         <option value="desc">Giảm dần</option>
       </select>
     </label>
-
   </section>
 
   @if (facade.loading()) {
