@@ -1,0 +1,36 @@
+{
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Tiện ích chuẩn hóa hiển thị thông tin sinh viên",
+      "description": "Tạo các hàm pure trong shared utils: formatStudentCode (ví dụ: SV-00123), maskEmail (ví dụ: h***g@gmail.com) và formatPhoneNumber. Viết kèm unit test đầy đủ các trường hợp biên.",
+      "depends_on": [],
+      "owned_files": [
+        "src/app/shared/utils/student-formatter.util.ts",
+        "src/app/shared/utils/student-formatter.util.spec.ts"
+      ],
+      "acceptance_criteria": [
+        "AC-1: formatStudentCode format số nguyên thành chuỗi tiền tố SV- cùng 5 chữ số đệm 0.",
+        "AC-2: maskEmail che ký tự ở giữa username email để đảm bảo bảo mật thông tin.",
+        "AC-3: formatPhoneNumber định dạng số điện thoại Việt Nam 10 số theo dạng xxxx.xxx.xxx.",
+        "AC-4: Toàn bộ hàm là pure function và unit test đạt 100% coverage."
+      ]
+    },
+    {
+      "id": "TASK-002",
+      "title": "Tiện ích phân tích và xếp loại học lực sinh viên",
+      "description": "Tạo các hàm pure trong shared utils: classifyAcademicRank (Xuất sắc, Giỏi, Khá, Trung bình, Yếu theo thang điểm 4.0) và calculateGradeDistribution (đếm số lượng từng loại học lực từ danh sách sinh viên). Viết kèm unit test.",
+      "depends_on": [],
+      "owned_files": [
+        "src/app/shared/utils/student-analytics.util.ts",
+        "src/app/shared/utils/student-analytics.util.spec.ts"
+      ],
+      "acceptance_criteria": [
+        "AC-1: classifyAcademicRank trả về đúng hạng học lực tương ứng với GPA thang 4.0.",
+        "AC-2: calculateGradeDistribution trả về object đếm chính xác số lượng từng loại học lực từ mảng sinh viên.",
+        "AC-3: Xử lý an toàn mảng rỗng và GPA âm hoặc vượt quá 4.0 mà không ném exception.",
+        "AC-4: Toàn bộ hàm là pure function và unit test đạt 100% coverage."
+      ]
+    }
+  ]
+}
