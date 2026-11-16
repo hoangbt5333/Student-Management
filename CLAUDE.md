@@ -1,3 +1,23 @@
+<!-- framework:start -->
+# Agent Framework Guidelines (v0.4.0)
+
+> **Notice:** This section is managed by `agent-framework`. Do not edit directly; changes will be overwritten upon upgrade.
+
+## Multi-Agent Workflow Rules
+1. **Core vs Project Boundary:** Never modify files under `orchestrator/` or `core/` to fit project needs. All project-specific commands, rules, and limits are declared in `project.config.json`.
+2. **Validation:** Agents MUST NOT run ad-hoc build or test commands directly. Always trigger validation via:
+   ```bash
+   node orchestrator/validate.mjs <task_id>
+   ```
+3. **Task State & Handoff:**
+   - Architecture tasks generate task briefs and DAG dependencies.
+   - Coder tasks work strictly on assigned branch (`task/<id>`) and owned files.
+   - Reviewer tasks verify changes against `validate.mjs` outputs before approving merge.
+4. **Security & Permissions:**
+   - Git push, branch deletion, and merging to base branch require human approval.
+   - Do NOT attempt to read protected files matching `.env*` or cryptographic keys.
+<!-- framework:end -->
+
 # CLAUDE.md - Student Management System
 
 Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình làm việc cho Claude Code trong dự án **Student Management System**.

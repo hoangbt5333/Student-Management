@@ -1,0 +1,81 @@
+{
+  "framework_version": "0.4.0",
+  "project": {
+    "name": "user-management",
+    "base_branch": "main"
+  },
+  "commands": {
+    "install": {
+      "cmd": "npm ci",
+      "timeout_s": 600
+    },
+    "build": {
+      "cmd": "npm run build",
+      "required": true,
+      "timeout_s": 300
+    },
+    "typecheck": {
+      "cmd": "npx tsc --noEmit -p tsconfig.app.json",
+      "required": true,
+      "timeout_s": 120
+    },
+    "lint": {
+      "cmd": "npm run lint",
+      "required": true,
+      "timeout_s": 120
+    },
+    "unit_test": {
+      "cmd": "npm test -- --watch=false",
+      "required": true,
+      "timeout_s": 600
+    },
+    "e2e": {
+      "cmd": null,
+      "required": false
+    }
+  },
+  "git": {
+    "task_branch_prefix": "task/",
+    "integration_branch_prefix": "integration/",
+    "worktree_dir": "../wt",
+    "merge_strategy": "squash"
+  },
+  "limits": {
+    "max_parallel": 3,
+    "max_attempts": 3,
+    "max_review_rounds": 2,
+    "agent_timeout_min": 30,
+    "circuit_breaker_failures": 3
+  },
+  "ownership": {
+    "shared_files": [
+      "package.json",
+      "package-lock.json",
+      "src/app/app.routes.ts",
+      "src/app/app.config.ts"
+    ]
+  },
+  "security": {
+    "deny_read": [
+      ".env*",
+      "**/*.pem"
+    ],
+    "require_human_approval": [
+      "push",
+      "merge_to_base",
+      "delete_branch"
+    ]
+  },
+  "models": {
+    "architect": "opus",
+    "coder": "sonnet",
+    "reviewer": "opus",
+    "release": "sonnet"
+  },
+  "handoff": {
+    "agent_types": [
+      "coder",
+      "coding-agent"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$comment": "Báo cáo bàn giao của Coder: .task-report.json trong worktree. Không tin trường checks do Agent tự khai: hook đối chiếu với bằng chứng validate.mjs.",
+  "type": "object",
+  "required": ["task_id", "agent", "result", "summary", "branch", "commits", "files_changed", "checks", "evidence", "open_issues", "needs_human"],
+  "additionalProperties": false,
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+    "agent": { "type": "string", "minLength": 1 },
+    "result": { "type": "string", "enum": ["READY_FOR_REVIEW", "FAIL", "BLOCKED"] },
+    "summary": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 },
+    "commits": { "type": "array", "items": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" } },
+    "files_changed": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "checks": { "type": "object", "additionalProperties": { "type": "string", "enum": ["pass", "fail", "skipped"] } },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "open_issues": { "type": "array", "items": { "type": "string" } },
+    "needs_human": { "type": "boolean" }
+  }
+}
