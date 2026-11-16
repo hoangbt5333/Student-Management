@@ -33,6 +33,15 @@ const git = (cwd, args) =>
     .replace(/\r/g, '')
     .trim();
 
+function refExists(cwd, ref) {
+  try {
+    git(cwd, ['rev-parse', '--verify', '--quiet', ref]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const [command, ...rest] = process.argv.slice(2);
 const { values, positionals } = parseArgs({
   args: rest,
@@ -47,6 +56,7 @@ const { values, positionals } = parseArgs({
     force: { type: 'boolean', default: false },
     'allow-conflicts': { type: 'boolean', default: false },
     'clean-worktree': { type: 'boolean', default: false },
+    autostash: { type: 'boolean', default: true },
   },
 });
 const root = resolve(values.root);
@@ -77,7 +87,17 @@ try {
     }
     const state = createState({ execId: values.exec, tasks, maxAttempts: config.limits.max_attempts });
     saveState(root, state);
-    out({ ok: true, exec_id: state.exec_id, tasks: state.tasks.length, warnings: plan.warnings, conflicts: plan.errors });
+
+    // Đảm bảo nhánh tích hợp integration/<exec_id> được tạo sẵn từ base_branch
+    const integrationBranch = baseBranchFor(config, values.exec);
+    const rootBase = config.project.base_branch || 'main';
+    if (!refExists(root, `refs/heads/${integrationBranch}`)) {
+      try {
+        git(root, ['branch', integrationBranch, rootBase]);
+      } catch (_) {}
+    }
+
+    out({ ok: true, exec_id: state.exec_id, tasks: state.tasks.length, integration_branch: integrationBranch, warnings: plan.warnings, conflicts: plan.errors });
   } else if (command === 'next') {
     const state = loadState(root, values.exec);
     out({ ready: readyTasks(state, config.limits.max_parallel).map((t) => t.id), ...detectDeadlock(state) });
@@ -107,12 +127,13 @@ try {
     process.exit(problems.length ? 1 : 0);
   } else if (command === 'integrate') {
     const [taskId] = positionals;
-    if (!taskId) throw new Error('Dùng: integrate <TASK> --exec <id> [--clean-worktree]');
+    if (!taskId) throw new Error('Dùng: integrate <TASK> --exec <id> [--clean-worktree] [--no-autostash]');
     const result = await integrateTask({
       root,
       execId: values.exec,
       taskId,
       cleanWorktree: values['clean-worktree'],
+      autostash: values.autostash,
     });
     out(result);
     process.exit(result.ok ? 0 : 1);
@@ -170,20 +191,21 @@ try {
     process.exit(0);
   } else if (command === 'worktree') {
     const [taskId] = positionals;
-    if (!taskId) throw new Error('Dùng: worktree <TASK> --exec <id>');
-    const task = getTask(loadState(root, values.exec), taskId);
+    if (!taskId) throw new Error('Dùng: worktree <TASK> --exec <id> [--agent <name>]');
+    let task = getTask(loadState(root, values.exec), taskId);
     const worktree = worktreePathFor(root, config, taskId);
     const taskBranch = `${config.git.task_branch_prefix}${taskId}`;
     const baseBranch = baseBranchFor(config, values.exec);
 
-    if (!existsSync(worktree)) {
-      let startPoint = baseBranch;
+    // Đảm bảo nhánh tích hợp tồn tại
+    if (!refExists(root, `refs/heads/${baseBranch}`)) {
+      const rootBase = config.project.base_branch || 'main';
       try {
-        git(root, ['rev-parse', '--verify', '--quiet', baseBranch]);
-      } catch {
-        startPoint = config.project.base_branch || 'main';
-      }
+        git(root, ['branch', baseBranch, rootBase]);
+      } catch (_) {}
+    }
 
+    if (!existsSync(worktree)) {
       let branchExists = false;
       try {
         git(root, ['rev-parse', '--verify', '--quiet', `refs/heads/${taskBranch}`]);
@@ -193,18 +215,31 @@ try {
       if (branchExists) {
         git(root, ['worktree', 'add', worktree, taskBranch]);
       } else {
-        git(root, ['worktree', 'add', worktree, '-b', taskBranch, startPoint]);
+        git(root, ['worktree', 'add', worktree, '-b', taskBranch, baseBranch]);
       }
     }
 
     const nodeModulesResult = ensureNodeModules(root, worktree);
+
+    // Tự động chuyển pending -> in_progress nếu task đang ở pending
+    if (task.status === 'pending') {
+      updateState(root, values.exec, (s) =>
+        transition(s, taskId, 'in_progress', {
+          agent: values.agent || 'coder',
+          note: 'Worktree created via CLI',
+        })
+      );
+      task = getTask(loadState(root, values.exec), taskId);
+    }
+
     out({
       ok: true,
       task_id: taskId,
+      status: task.status,
       worktree,
       branch: taskBranch,
       node_modules: nodeModulesResult,
-      message: `Worktree ${worktree} đã sẵn sàng${nodeModulesResult.linked ? ' (đã tự động liên kết node_modules)' : ''}.`,
+      message: `Worktree ${worktree} đã sẵn sàng (trạng thái: ${task.status})${nodeModulesResult.linked ? ', đã tự động liên kết node_modules' : ''}.`,
     });
   } else {
     const state = loadState(root, values.exec);
