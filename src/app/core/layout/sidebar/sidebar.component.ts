@@ -1,6 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { AuthFacade } from '../../auth/facades/auth.facade';
 
 @Component({
   selector: 'app-sidebar',

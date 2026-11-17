@@ -3,8 +3,8 @@ import { provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { HeaderComponent } from './header.component';
-import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
-import { AuthUser } from '../../../../core/auth/models/auth.model';
+import { AuthFacade } from '../../auth/facades/auth.facade';
+import { AuthUser } from '../../auth/models/auth.model';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
