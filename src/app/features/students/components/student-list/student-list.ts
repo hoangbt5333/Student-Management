@@ -1,16 +1,29 @@
-import { Component, inject, OnInit, signal, effect, ViewChild, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+  effect,
+  ViewChild,
+  ChangeDetectionStrategy,
+  HostListener,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 import type { Student } from '../../models/student.model';
+import { studentsToCsv } from '../../../../shared/utils/student-csv.util';
 import { StudentTable } from '../student-table/student-table';
 import { StudentForm } from '../student-form/student-form';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { StudentFacade } from '../../facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
-import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
+import {
+  confirmDiscardChanges,
+  HasPendingChanges,
+} from '../../../../core/guards/pending-changes.guard';
 
 @Component({
   selector: 'app-student-list',
@@ -51,7 +64,6 @@ export class StudentListComponent implements OnInit, HasPendingChanges {
     }
   }
 
-
   students = this.facade.students;
   loading = this.facade.loading;
   errorMessage = this.facade.errorMessage;
@@ -70,7 +82,7 @@ export class StudentListComponent implements OnInit, HasPendingChanges {
     { value: 'email', label: 'Email' },
     { value: 'phone', label: 'Số điện thoại' },
     { value: 'className', label: 'Lớp' },
-    { value: 'faculty', label: 'Khoa' }
+    { value: 'faculty', label: 'Khoa' },
   ];
 
   constructor() {
@@ -87,11 +99,7 @@ export class StudentListComponent implements OnInit, HasPendingChanges {
     }
 
     this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntilDestroyed()
-      )
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((keyword) => {
         this.facade.setSearchTerm(keyword);
       });
@@ -159,11 +167,30 @@ export class StudentListComponent implements OnInit, HasPendingChanges {
     this.selectedStudent.set(null);
     this.showForm.set(false);
   }
-  
+
   saveStudent(student: Student): void {
     const mode = this.selectedStudent() ? 'update' : 'add';
 
     this.facade.saveStudent(student, mode);
+  }
+
+  exportStudents(): void {
+    if (
+      typeof document === 'undefined' ||
+      typeof URL === 'undefined' ||
+      typeof URL.createObjectURL !== 'function'
+    ) {
+      return;
+    }
+
+    const csv = studentsToCsv(this.facade.filteredStudents());
+    const blob = new Blob(['﻿', csv], { type: 'text/csv;charset=utf-8' });
+    const objectUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = objectUrl;
+    downloadLink.download = 'students.csv';
+    downloadLink.click();
+    URL.revokeObjectURL(objectUrl);
   }
 
   deleteStudent(id: string): void {
@@ -172,7 +199,7 @@ export class StudentListComponent implements OnInit, HasPendingChanges {
     if (!confirmed) {
       return;
     }
-    
+
     this.facade.deleteStudent(id);
   }
 }

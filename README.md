@@ -108,3 +108,4 @@ Server mặc định lắng nghe cổng `4000`; có thể đổi cổng bằng b
 - Các thao tác ghi thay đổi file `db.json`. Sao lưu file nếu cần giữ dữ liệu; không có lệnh reset dữ liệu riêng trong dự án.
 - Ứng dụng hiện dùng URL API `http://localhost:3001` trực tiếp trong các service.
 - JSON Server và xác thực phía client chỉ phục vụ demo. Một triển khai thực tế cần backend, xác thực/phân quyền phía máy chủ, lưu mật khẩu an toàn và kiểm tra dữ liệu ở phía server.
+"# agent-test" 
