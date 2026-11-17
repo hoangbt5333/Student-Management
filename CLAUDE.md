@@ -4,7 +4,7 @@
 > **Notice:** This section is managed by `agent-framework`. Do not edit directly; changes will be overwritten upon upgrade.
 
 ## Multi-Agent Workflow Rules
-1. **Core vs Project Boundary:** Never modify files under `orchestrator/` or `core/` to fit project needs. All project-specific commands, rules, and limits are declared in `project.config.json`.
+1. **Core vs Project Boundary:** Never modify files under `orchestrator/`, `core/`, `state/`, `logs/`, `.claude/`, `.agents/`, or `project.config.json` to fit specific task requirements.
 2. **Canonical Orchestration Commands:**
    - **Initialize Execution:** `node orchestrator/cli.mjs init --exec <id> --tasks tasks.json`
    - **Start Task & Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, liên kết node_modules qua Junction/Symlink, và chuyển task sang in_progress)*
@@ -13,11 +13,17 @@
    - **Review Verdict:** `node orchestrator/cli.mjs review-record <task_id> --exec <id> --verdict APPROVED` *(nếu task ở in_progress sẽ tự động chuyển sang ready_for_review)*
    - **Integrate Task:** `node orchestrator/cli.mjs integrate <task_id> --exec <id> --clean-worktree` *(tự động autostash, merge vào integration/<id>, chạy Integration Gate, dọn dẹp worktree và khôi phục stash)*
    - **Execution Report:** `node orchestrator/cli.mjs report --exec <id> --format markdown`
-3. **Task Scope & Guardrails:**
-   - Coder làm việc strictly trong worktree `../wt/<task_id>`, chỉ sửa các file được phân quyền trong `owned_files`.
-   - Không được sửa file khung (`orchestrator/`, `state/`, `logs/`, `.claude/`, `project.config.json`).
-4. **Security & Permissions:**
-   - Git push, branch deletion, và merge vào main require human approval.
+   - **Auto-Recovery:** `node orchestrator/cli.mjs recover --exec <id>`
+3. **Parallel Dispatching Principles:**
+   - When `node orchestrator/cli.mjs next --exec <id>` returns multiple tasks in `ready` (no mutual dependencies and disjoint `owned_files`), Coordinator **MUST LAUNCH THEM CONCURRENTLY**:
+     1. Create worktrees for all ready tasks: `node orchestrator/cli.mjs worktree <task_id> --exec <id>`.
+     2. Spawn Coder subagents in parallel (batch) in the same turn.
+     3. NEVER wait for Task 1 to integrate before starting Task 2.
+4. **Task Scope & Guardrails:**
+   - Coder works strictly inside worktree `../wt/<task_id>`, modifying only files declared in `owned_files`.
+   - Modifying framework files (`orchestrator/`, `state/`, `logs/`, `.claude/`, `.agents/`, `project.config.json`) is strictly blocked.
+5. **Security & Permissions:**
+   - Git push, branch deletion, and merging to main require direct human approval.
    - Do NOT attempt to read protected files matching `.env*` or cryptographic keys.
 <!-- framework:end -->
 
