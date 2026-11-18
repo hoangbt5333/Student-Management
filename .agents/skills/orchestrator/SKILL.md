@@ -1,15 +1,19 @@
 ---
 name: orchestrator
 description: >-
-  Điều phối và thực thi các Task đa tác nhân (Multi-Agent Orchestrator) với Antigravity:
-  ủy quyền Architect lập kế hoạch, khởi tạo execution, tạo worktree song song,
-  ủy quyền đồng thời Coder qua subagent, kiểm định chất lượng (Coder Gate),
-  đánh giá (Reviewer Gate) và tích hợp tự động vào integration branch.
+  CHỈ DÙNG KHI người dùng yêu cầu rõ ràng ("dùng orchestrator", "chạy multi-agent", "dùng subagent")
+  hoặc khi người dùng đã phê duyệt đề xuất chạy Multi-Agent cho các task lớn phức tạp.
+  Tuyệt đối KHÔNG tự động kích hoạt cho các yêu cầu thông thường (dùng Chế độ trực tiếp mặc định).
 ---
 
 # Antigravity Orchestrator Skill
 
 Skill này hướng dẫn **Antigravity Main Agent (Coordinator / Nhạc trưởng)** điều phối một nhóm các tác nhân chuyên biệt (**Architect Subagent**, **Coder Subagents**, **Reviewer Subagents**) thông qua công cụ dòng lệnh `orchestrator/cli.mjs`.
+
+> [!IMPORTANT]
+> **Điều kiện áp dụng:**
+> Skill này và vai trò "Coordinator / Pure Orchestrator" CHỈ được áp dụng khi người dùng yêu cầu rõ ràng hoặc đồng ý dùng quy trình Multi-Agent.
+> Với các tác vụ thông thường, Main Agent hoạt động ở **Chế độ trực tiếp (Direct Mode)**, tự đọc code và tự sửa file mà không kích hoạt skill này.
 
 ---
 
@@ -73,7 +77,7 @@ Nếu mảng `ready` có từ 2 Task trở lên:
 ## 3. Quy trình điều phối chi tiết từng bước
 
 ### Bước 0: Ủy quyền cho Architect Subagent (Architect Phase)
-Khi người dùng đưa ra một yêu cầu mới mà chưa có `tasks.json`:
+Khi đã xác định thực thi theo Chế độ Multi-Agent Orchestrator và chưa có `tasks.json`:
 1. Coordinator **TUYỆT ĐỐI KHÔNG TỰ MÌNH KHẢO SÁT TOÀN BỘ CODE** (tránh làm phình context window của phiên chính).
 2. Coordinator gọi `invoke_subagent`:
    * **Role**: `Architect`

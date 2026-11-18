@@ -53,6 +53,8 @@ db.json
 
 # Test artifacts
 /artifacts
+/test-results
+/playwright-report
 
 
 

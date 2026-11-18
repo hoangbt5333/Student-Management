@@ -27,6 +27,24 @@
    - Không được đọc các file nhạy cảm khớp `.env*` hoặc khóa bảo mật (`.pem`, `.key`).
 <!-- framework:end -->
 
+## Workflow Modes (Quy trình làm việc)
+
+Agent linh hoạt hoạt động theo 2 chế độ:
+
+### Chế độ 1: Trực tiếp / Single-Agent (MẶC ĐỊNH cho hầu hết các yêu cầu)
+- **Áp dụng:** Bug fix, refactor, thêm tính năng vừa/nhỏ, viết test, căn chỉnh UI, hoặc bất kỳ task nào người dùng không yêu cầu dùng subagent/orchestrator.
+- **Nguyên tắc hoạt động:**
+  1. Agent tự đọc hiểu mã nguồn, chọn kỹ năng (skill) phù hợp trong `.agents/skills/` (như `feature-development`, `debugging`, `code-validation`, `refactoring`, `ui-standardization`, `test-execution`...).
+  2. Triển khai trực tiếp trên workspace hiện tại (không tạo git worktree, không gọi lệnh `orchestrator/cli.mjs`).
+  3. Tự chạy kiểm thử và xác minh (`npm run validate` hoặc `npm run verify`).
+  4. Đảm bảo working tree sạch sẽ và báo cáo kết quả kèm bằng chứng.
+
+### Chế độ 2: Multi-Agent Orchestrator (CHỈ KÍCH HOẠT KHI ĐƯỢC CHỈ ĐỊNH)
+- **Điều kiện kích hoạt:**
+  1. Người dùng yêu cầu rõ ràng (ví dụ: *"dùng orchestrator"*, *"chạy multi-agent"*, *"dùng subagent"*, *"quy trình 8 bước"*).
+  2. HOẶC khi task quá phức tạp (ảnh hưởng > 5-10 files, thay đổi cross-cutting nhiều feature, cần chia task song song): Agent **chủ động ĐỀ XUẤT** dùng Multi-Agent; chỉ kích hoạt khi người dùng đồng ý.
+- **Nguyên tắc hoạt động:** Khi ở chế độ này, Agent đóng vai trò Coordinator và tuân thủ các quy tắc trong `Multi-Agent Workflow Rules` và skill `orchestrator`.
+
 # Project Guidelines & Architecture
 
 ## Project Overview

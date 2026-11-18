@@ -30,7 +30,7 @@
       "timeout_s": 600
     },
     "e2e": {
-      "cmd": null,
+      "cmd": "npm run test:e2e",
       "required": false
     }
   },
