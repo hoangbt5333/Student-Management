@@ -181,4 +181,12 @@ describe('StudentList', () => {
     expect(confirmSpy).toHaveBeenCalled();
     expect(component.showForm()).toBe(false);
   });
+
+  it('initializes sort dropdown with student id ("id") matching facade.sortBy()', () => {
+    expect(component.facade.sortBy()).toBe('id');
+    const selects = fixture.nativeElement.querySelectorAll('.filter-toolbar select');
+    const sortSelect = selects[2] as HTMLSelectElement;
+    expect(sortSelect).toBeTruthy();
+    expect(sortSelect.value).toBe('id');
+  });
 });

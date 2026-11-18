@@ -51,7 +51,7 @@ const initialState: StudentState = {
   searchTerm: '',
   classFilter: '',
   facultyFilter: '',
-  sortBy: 'name',
+  sortBy: 'id',
   sortDirection: 'asc',
   page: 1,
   pageSize: 5

@@ -90,7 +90,7 @@
       <span>Sắp xếp theo</span>
       <select [value]="facade.sortBy()" (change)="setSortBy($any($event.target).value)">
         @for (field of sortFields; track field.value) {
-          <option [value]="field.value">{{ field.label }}</option>
+          <option [value]="field.value" [selected]="field.value === facade.sortBy()">{{ field.label }}</option>
         }
       </select>
     </label>
