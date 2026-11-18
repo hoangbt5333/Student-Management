@@ -126,6 +126,20 @@ describe('StudentStore', () => {
     expect(store.loading()).toBe(false);
   });
 
+  it('should initialize sortBy with id and sort by student ID by default', () => {
+    expect(store.sortBy()).toBe('id');
+
+    const students: Student[] = [
+      { id: 'SV002', name: 'An', email: 'an@example.com', phone: '0900000002' },
+      { id: 'SV001', name: 'Zung', email: 'zung@example.com', phone: '0900000001' }
+    ];
+
+    store.loadStudents();
+    httpMock.expectOne('http://localhost:3001/students').flush(students);
+
+    expect(store.pageStudents().map((s) => s.id)).toEqual(['SV001', 'SV002']);
+  });
+
   it('should search, filter, sort, and paginate consistently', () => {
     const students: Student[] = Array.from({ length: 7 }, (_, index) => ({
       id: `SV00${index + 1}`,
