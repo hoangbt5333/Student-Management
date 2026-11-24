@@ -4,7 +4,7 @@
 > **Notice:** This section is managed by `agent-framework`. Do not edit directly; changes will be overwritten upon upgrade.
 
 ## Multi-Agent Workflow Rules
-1. **Core vs Project Boundary:** Never modify files under `orchestrator/` or `core/` to fit project needs. All project-specific commands, rules, and limits are declared in `project.config.json`.
+1. **Core vs Project Boundary:** Never modify files under `orchestrator/`, `core/`, `state/`, `logs/`, `.claude/`, `.agents/`, or `project.config.json` to fit specific task requirements.
 2. **Canonical Orchestration Commands:**
    - **Initialize Execution:** `node orchestrator/cli.mjs init --exec <id> --tasks tasks.json`
    - **Start Task & Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, liên kết node_modules qua Junction/Symlink, và chuyển task sang in_progress)*
@@ -13,11 +13,17 @@
    - **Review Verdict:** `node orchestrator/cli.mjs review-record <task_id> --exec <id> --verdict APPROVED` *(nếu task ở in_progress sẽ tự động chuyển sang ready_for_review)*
    - **Integrate Task:** `node orchestrator/cli.mjs integrate <task_id> --exec <id> --clean-worktree` *(tự động autostash, merge vào integration/<id>, chạy Integration Gate, dọn dẹp worktree và khôi phục stash)*
    - **Execution Report:** `node orchestrator/cli.mjs report --exec <id> --format markdown`
-3. **Task Scope & Guardrails:**
-   - Coder làm việc strictly trong worktree `../wt/<task_id>`, chỉ sửa các file được phân quyền trong `owned_files`.
-   - Không được sửa file khung (`orchestrator/`, `state/`, `logs/`, `.claude/`, `project.config.json`).
-4. **Security & Permissions:**
-   - Git push, branch deletion, và merge vào main require human approval.
+   - **Auto-Recovery:** `node orchestrator/cli.mjs recover --exec <id>`
+3. **Parallel Dispatching Principles:**
+   - When `node orchestrator/cli.mjs next --exec <id>` returns multiple tasks in `ready` (no mutual dependencies and disjoint `owned_files`), Coordinator **MUST LAUNCH THEM CONCURRENTLY**:
+     1. Create worktrees for all ready tasks: `node orchestrator/cli.mjs worktree <task_id> --exec <id>`.
+     2. Spawn Coder subagents in parallel (batch) in the same turn.
+     3. NEVER wait for Task 1 to integrate before starting Task 2.
+4. **Task Scope & Guardrails:**
+   - Coder works strictly inside worktree `../wt/<task_id>`, modifying only files declared in `owned_files`.
+   - Modifying framework files (`orchestrator/`, `state/`, `logs/`, `.claude/`, `.agents/`, `project.config.json`) is strictly blocked.
+5. **Security & Permissions:**
+   - Git push, branch deletion, and merging to main require direct human approval.
    - Do NOT attempt to read protected files matching `.env*` or cryptographic keys.
 <!-- framework:end -->
 
@@ -51,23 +57,24 @@ This is an Angular 22 standalone application with Server-Side Rendering (SSR), N
 Dự án áp dụng mô hình phân tầng đơn hướng nghiêm ngặt (được kiểm soát tự động bằng `npm run check:arch`):
 
 ```text
-Component ──> Facade ──> Store (SignalStore) ──> Service (HttpClient) ──> REST API
+Page / Component ──> Facade ──> Store (SignalStore) ──> Service (HttpClient) ──> REST API
 ```
 
 ### Cấu trúc thư mục chuẩn (`src/app/features/<feature>/`):
-- `components/`: UI components (Standalone Components, Signal-based reactivity, control flow `@if`, `@for`).
-- `facades/`: `<feature>.facade.ts` (điều phối nghiệp vụ, cung cấp Signals và action cho components).
+- `pages/`: (Tùy chọn/Khuyến nghị cho feature có routing) Routed / Container components gắn với `<feature>.routes.ts` (điều phối layout, nhận URL params, inject Facade).
+- `components/`: UI components / Dumb widgets nội bộ (Standalone Components, Signal-based reactivity, control flow `@if`, `@for`; nhận data qua `input()`, phát event qua `output()`).
+- `facades/`: `<feature>.facade.ts` (điều phối nghiệp vụ, cung cấp Signals và action cho components/pages).
 - `models/`: `<feature>.model.ts` (TypeScript interfaces/types dữ liệu thuần túy).
 - `services/`: `<feature>.service.ts` (thực hiện HTTP REST API calls qua Angular `HttpClient`).
 - `store/`: `<feature>.store.ts` (quản lý feature state và side-effects bằng `@ngrx/signals`).
-- `<feature>.routes.ts`: Cấu hình routing của feature.
+- `<feature>.routes.ts`: Cấu hình routing của feature (ưu tiên trỏ tới `pages/`).
 - Shared code: Nằm trong `src/app/shared/` (`utils/` cho helper functions thuần túy, `components/` cho layout, modal, button...).
 
 ### Ranh giới kiến trúc bắt buộc (Strict Boundary Rules):
-1. **Component**: CHỈ ĐƯỢC inject và gọi **Facade**. TUYỆT ĐỐI KHÔNG import hoặc gọi trực tiếp từ `services/`, `store/`, hoặc `HttpClient`.
-2. **Facade**: Quản lý phối hợp giữa Store và Service. Không inject `HttpClient` trực tiếp.
-3. **Store**: Dùng `signalStore`. Không depend vào Component hay Facade.
-4. **Service**: Chỉ giao tiếp REST API. Không depend vào Component, Facade hay Store.
+1. **Component & Page**: CHỈ ĐƯỢC inject và gọi **Facade**. TUYỆT ĐỐI KHÔNG import hoặc gọi trực tiếp từ `services/`, `store/`, hoặc `HttpClient`. Components không được import Pages.
+2. **Facade**: Quản lý phối hợp giữa Store và Service. Không inject `HttpClient` trực tiếp. Không import Component hay Page.
+3. **Store**: Dùng `signalStore`. Không depend vào Component, Page hay Facade.
+4. **Service**: Chỉ giao tiếp REST API. Không depend vào Component, Page, Facade hay Store.
 
 *(Chi tiết đầy đủ về các feature và ranh giới xem tại: `.claude/skills/project-architecture/SKILL.md`)*
 
@@ -77,70 +84,101 @@ Component ──> Facade ──> Store (SignalStore) ──> Service (HttpClient
 
 Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ phức tạp và yêu cầu của người dùng:
 
-### Chế độ 1: Trực tiếp (Mặc định cho các task thông thường / task nhỏ)
+### Chế độ 1: Trực tiếp (Mặc định cho các task nhỏ / độc lập)
 - **Mục tiêu:** Tối ưu hóa chi phí token, phản hồi nhanh và giải quyết trực tiếp.
 - **Áp dụng:** Các utility, bug fix nhỏ, chỉnh sửa style, refactor đơn giản, hoặc khi người dùng không yêu cầu subagents.
 - **Nguyên tắc:**
   1. Claude tự đọc hiểu mã nguồn, lập luận và triển khai trực tiếp trong phiên hiện tại.
   2. Luôn tuân thủ kiến trúc Explicit Layering ở Mục 2.
-  3. Chạy **Automated Validation** (`npm run validate -- --spec='<path-to-spec>'`) để kiểm chứng kết quả trong vài giây; không chạy full test suite cho các sửa đổi nhỏ.
-  4. Đảm bảo working tree sạch sẽ sau khi hoàn thành.
+  3. Chạy **Automated Validation** (`npm run validate -- --spec='<path-to-spec>'`) để kiểm chứng kết quả nhanh chóng.
+  4. **Git Commit chuẩn hóa:** Sau khi validation pass, tự động stage và commit các thay đổi theo Conventional Commits (tham chiếu skill `git-commit`). Không tự ý `git push`.
+  5. Đảm bảo working tree sạch sẽ và báo cáo kết quả kèm commit hash và bằng chứng nghiệm thu.
 
 ---
 
-### Chế độ 2: Subagents Workflow (Quy trình 8 bước Enterprise)
+### Chế độ 2: Multi-Agent Workflow Chuẩn (Canonical 8-Step Enterprise Process)
 - **Kích hoạt khi:** Prompt người dùng có yêu cầu gọi subagent (ví dụ: *"theo quy trình subagent"*, *"chạy quy trình 8 bước"*, *"dùng architect/coder/reviewer"*), hoặc khi triển khai các module/feature lớn cần kiểm soát chất lượng chặt chẽ.
 - **Quy tắc bất khả xâm phạm của Main Agent (Lead Orchestrator):**
   - TUYỆT ĐỐI KHÔNG tự vào Plan Mode (`Entered plan mode`) ở phiên chính.
   - TUYỆT ĐỐI KHÔNG tự tìm kiếm/đọc nhiều file trong phiên chính để tự thiết kế giải pháp. Toàn bộ việc khảo sát codebase, phân tích patterns và thiết kế thuộc 100% trách nhiệm của `architect`.
   - HÀNH ĐỘNG ĐẦU TIÊN khi nhận lệnh: Spawn ngay lập tức subagent `architect`.
 
-#### Bước 1: Tiếp nhận & Ủy quyền tức thì (Main Agent)
-- Main Agent tiếp nhận yêu cầu và kết nối Jira MCP nếu được yêu cầu.
-- Ngay lập tức gọi `architect` với đầy đủ yêu cầu của User mà không tự phân tích hay đọc file trước.
+#### Bước 1: Tiếp nhận & Ủy quyền tức thì (Lead Orchestrator)
+- Main Agent tiếp nhận yêu cầu từ người dùng và ủy quyền toàn quyền khảo sát cho subagent `architect`.
 
-#### Bước 2: Kiến trúc & Đặc tả kỹ thuật (`architect`)
-- `architect` độc lập khảo sát codebase, phân tích kiến trúc chi tiết, xác định phạm vi thay đổi và các tầng bị ảnh hưởng.
-- **Tạo Acceptance Criteria (AC)**: Checklist tiêu chí nghiệm thu rõ ràng (`[ ] AC-1`, `[ ] AC-2...`) làm căn cứ cho Reviewer đối soát.
-- **Phân rã task & Lập kế hoạch song song**: Chia nhỏ task, xác định dependencies. Đánh dấu `[PARALLEL]` cho các task độc lập (nghiêm ngặt áp dụng quy tắc *"Một file - Một Coder"* để triệt tiêu xung đột Git) hoặc `[SEQUENTIAL]` cho các task phụ thuộc.
-
-#### Bước 3: Người dùng phê duyệt (User Approval)
-- Trình kế hoạch kỹ thuật, Acceptance Criteria và phương án phân rã task cho User duyệt.
-- Nếu User không đạt: `architect` điều chỉnh lại kế hoạch cho đến khi thống nhất.
-
-#### Bước 4: Điều phối thực thi đa Coder (Main Agent Orchestrator)
-- Main Agent phân công task cho các subagent Coder làm việc trên các worktree độc lập:
-  - Coder A làm việc trên Worktree A.
-  - Coder B làm việc trên Worktree B.
-  - Các task độc lập (`[PARALLEL]`) được kích hoạt chạy đồng thời; các task phụ thuộc (`[SEQUENTIAL]`) chờ đợt trước hoàn thành.
-- **Quy tắc chuyển giao Coder -> Reviewer**:
-  - Coder BẮT BUỘC phải commit thay đổi lên nhánh worktree (`git add . && git commit`) trước khi báo hoàn thành.
-  - Main Agent kiểm tra commit hash từ Coder trước khi gọi Reviewer.
-  - TUYỆT ĐỐI KHÔNG sao chép (copy) file thủ công giữa worktree và main! Mọi thay đổi phải đi qua Git commit và `git merge`.
-
-#### Bước 5: Automated Validation (Chốt chặn tự động - Scripts & Hooks)
-- Mỗi Coder chạy validation tự động trực tiếp trên worktree bằng lệnh:
+#### Bước 2: Kiến trúc, DAG & Task Brief (`architect`)
+- `architect` độc lập khảo sát codebase, xác định phạm vi thay đổi và các tầng bị ảnh hưởng.
+- **Lập Acceptance Criteria (AC)**: Tiêu chí nghiệm thu rõ ràng (`[ ] AC-1`, `[ ] AC-2...`) làm căn cứ cho Coder và Reviewer.
+- **Phân rã DAG Task vào `tasks.json`**:
+  - Mỗi Task phải có `owned_files` rõ ràng, không trùng lặp file giữa các task song song.
+  - Đánh dấu `[PARALLEL]` cho các task độc lập (`depends_on: []`) và `[SEQUENTIAL]` cho các task phụ thuộc.
+- Chạy lệnh kiểm tra tính hợp lệ của kế hoạch:
   ```bash
-  npm run validate -- --spec='<path-to-spec>'
+  node orchestrator/cli.mjs check --tasks tasks.json
   ```
-  *(Chuỗi lệnh tự động: Prettier format hook $\rightarrow$ Kiểm tra kiến trúc `check:arch` $\rightarrow$ ESLint `npm run lint` $\rightarrow$ TypeScript type check `tsc --noEmit` $\rightarrow$ Targeted Unit Test $\rightarrow$ Xuất report `artifacts/test-results.json`).*
-- Coder tự sửa mọi lỗi phát sinh trên worktree. Chỉ commit khi toàn bộ kiểm tra tự động báo xanh 100%.
 
-#### Bước 6: Thẩm định chất lượng (`reviewer`)
-- `reviewer` tiến hành audit độc lập trên nhánh của Coder trước khi merge (`git diff main...<branch>`).
-- Đối chiếu 100% với checklist **Acceptance Criteria (AC)** của Bước 2.
-- Kiểm tra kiến trúc phân tầng, logic nghiệp vụ, bảo mật và đối soát bằng chứng testing.
-- Đưa ra kết luận:
-  - `CHANGES_REQUESTED`: Chuyển feedback cho Coder sửa lại trên worktree (tối đa 2 vòng lặp; nếu vượt quá thì báo cáo User can thiệp).
-  - `APPROVED`: Xác nhận đạt chuẩn để chuyển sang bước Tích hợp.
+#### Bước 3: Người dùng phê duyệt & Khởi tạo Execution
+- Trình kế hoạch kỹ thuật, Acceptance Criteria và danh sách task cho người dùng duyệt.
+- Sau khi được người dùng duyệt, Lead Orchestrator khởi tạo đợt thực thi:
+  ```bash
+  node orchestrator/cli.mjs init --exec <id> --tasks tasks.json
+  ```
+  *(Lệnh này tự động tạo file trạng thái `state/<id>.json` và nhánh tích hợp `integration/<id>`).*
 
-#### Bước 7: Tích hợp hệ thống (Integration - Main Agent)
-- Main Agent nhận các nhánh/commit đã được `reviewer` duyệt `APPROVED` và merge vào nhánh tích hợp (`main`): `git merge <branch> --no-edit`.
-- **Xử lý xung đột (nếu có)**: Main Agent yêu cầu Coder rebase (`git fetch origin main && git rebase main`), tự giải quyết conflict trên worktree, chạy lại `npm run validate` rồi nộp lại. Main Agent không trực tiếp sửa mã nguồn.
-- Chạy kiểm tra tích hợp / regression test nếu cần.
+#### Bước 4: Khởi chạy Coder & Worktree cô lập
+- Main Agent kiểm tra các task sẵn sàng: `node orchestrator/cli.mjs next --exec <id>`.
+- Khởi tạo worktree cho từng Coder bằng lệnh:
+  ```bash
+  node orchestrator/cli.mjs worktree <task_id> --exec <id> --agent <coder_name>
+  ```
+  *(Tự động tạo worktree `../wt/<task_id>`, liên kết node_modules qua NTFS Junction, và chuyển task sang trạng thái in_progress).*
+- Coder làm việc strictly trong worktree `../wt/<task_id>` và CHỈ sửa các file thuộc `owned_files`. Không sao chép thủ công qua lại với thư mục gốc.
 
-#### Bước 8: Tài liệu & Báo cáo phát hành (`documentation-agent` / `release-agent`)
-- Đối chiếu code đã tích hợp với tài liệu hiện hành.
-- Cập nhật `README.md` hoặc tài liệu API trong `docs/` nếu có thay đổi interface/cấu hình.
-- Tổng hợp PR description, release notes và đồng bộ cập nhật ticket trên Jira.
-- Báo cáo hoàn tất cho User.
+#### Bước 5: Coder Completion Gate & Bàn giao Handoff
+- Sau khi viết mã, Coder BẮT BUỘC phải commit trên nhánh task và chạy bộ kiểm định chất lượng:
+  ```bash
+  node orchestrator/validate.mjs <task_id> ../wt/<task_id> --exec <id> --base integration/<id>
+  ```
+  *(Chạy tự động 4 chốt: git_clean, new_commit, build/typecheck, lint/unit_test và xuất file bằng chứng `logs/<exec_id>/<task_id>/<commit_short>/result.json`).*
+- Khi kết quả validate báo `READY_FOR_REVIEW`, Coder tạo file `.task-report.json` tại gốc worktree:
+  ```json
+  {
+    "task_id": "<task_id>",
+    "agent": "coder",
+    "result": "READY_FOR_REVIEW",
+    "summary": "Mô tả ngắn gọn kết quả triển khai",
+    "branch": "task/<task_id>",
+    "commits": ["<commit_hash>"],
+    "files_changed": ["<file_1>", "<file_2>"],
+    "checks": { "build": "pass", "typecheck": "pass", "lint": "pass", "unit_test": "pass" },
+    "evidence": ["logs/<exec_id>/<task_id>/<commit_short>/result.json"],
+    "open_issues": [],
+    "needs_human": false
+  }
+  ```
+
+#### Bước 6: Thẩm định Độc lập (`reviewer`)
+- Lead Orchestrator chạy kiểm tra độc lập báo cáo bàn giao:
+  ```bash
+  node orchestrator/cli.mjs report-check <task_id> --exec <id>
+  ```
+- Gọi subagent `reviewer` audit diff và đối chiếu với Acceptance Criteria.
+- Sau khi kiểm toán, ghi nhận kết quả bằng lệnh:
+  ```bash
+  node orchestrator/cli.mjs review-record <task_id> --exec <id> --verdict APPROVED
+  ```
+  *(Nếu phát hiện lỗi, chọn `--verdict CHANGES_REQUESTED --findings '[...]'` để Coder sửa lại).*
+
+#### Bước 7: Tích hợp Tự động (Integration Gate)
+- Lead Orchestrator tích hợp Task vào nhánh tích hợp chung:
+  ```bash
+  node orchestrator/cli.mjs integrate <task_id> --exec <id> --clean-worktree
+  ```
+  *(Lệnh này tự động: autostash thay đổi tại root nếu có, merge task branch vào integration/<id>, chạy Integration Gate toàn cục, tự động rollback nếu đỏ gate, dọn dẹp worktree và cập nhật task sang completed).*
+
+#### Bước 8: Báo cáo Tổng kết & Phát hành
+- Sau khi toàn bộ các task hoàn thành, xuất báo cáo tổng kết đợt thực thi:
+  ```bash
+  node orchestrator/cli.mjs report --exec <id> --format markdown
+  ```
+- Trình báo cáo cho người dùng. Khi được con người phê duyệt, merge nhánh `integration/<id>` vào nhánh cơ sở (`main` hoặc `test/multi-agent-framework`).

@@ -57,7 +57,7 @@ describe('SubjectStore', () => {
   it('should load subjects successfully', () => {
     store.loadSubjects();
 
-    const req = httpMock.expectOne('http://localhost:3001/subjects');
+    const req = httpMock.expectOne('/subjects');
     expect(req.request.method).toBe('GET');
     req.flush(mockSubjects);
 
@@ -69,7 +69,7 @@ describe('SubjectStore', () => {
 
   it('should search subjects with Vietnamese diacritic insensitivity', () => {
     store.loadSubjects();
-    const req = httpMock.expectOne('http://localhost:3001/subjects');
+    const req = httpMock.expectOne('/subjects');
     req.flush(mockSubjects);
 
     // 1. Search unaccented "toan" -> matches "Toán cao cấp"
@@ -123,7 +123,7 @@ describe('SubjectStore', () => {
     }));
 
     store.loadSubjects();
-    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+    httpMock.expectOne('/subjects').flush(sevenSubjects);
 
     expect(store.subjectCount()).toBe(7);
     expect(store.filteredSubjectCount()).toBe(7);
@@ -143,7 +143,7 @@ describe('SubjectStore', () => {
     }));
 
     store.loadSubjects();
-    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+    httpMock.expectOne('/subjects').flush(sevenSubjects);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -169,7 +169,7 @@ describe('SubjectStore', () => {
     }));
 
     store.loadSubjects();
-    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+    httpMock.expectOne('/subjects').flush(sevenSubjects);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -188,7 +188,7 @@ describe('SubjectStore', () => {
     }));
 
     store.loadSubjects();
-    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+    httpMock.expectOne('/subjects').flush(sevenSubjects);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -219,13 +219,13 @@ describe('SubjectStore', () => {
     }));
 
     store.loadSubjects();
-    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects);
+    httpMock.expectOne('/subjects').flush(sevenSubjects);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
 
     store.loadSubjects();
-    httpMock.expectOne('http://localhost:3001/subjects').flush(sevenSubjects.slice(0, 3));
+    httpMock.expectOne('/subjects').flush(sevenSubjects.slice(0, 3));
 
     expect(store.totalPages()).toBe(1);
     expect(store.currentPage()).toBe(1);

@@ -8,7 +8,7 @@ import type { User } from '../models/user.model';
 })
 export class UserService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3001/users';
+  private readonly apiUrl = '/users';
 
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.apiUrl);

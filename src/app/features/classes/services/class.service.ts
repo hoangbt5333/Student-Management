@@ -9,7 +9,7 @@ import { ClassModel, CreateClassDto, UpdateClassDto } from "../models/class.mode
 export class ClassService {
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'http://localhost:3001/classes';
+  private readonly apiUrl = '/classes';
 
   getAll(): Observable<ClassModel[]> {
     return this.http.get<ClassModel[]>(this.apiUrl);

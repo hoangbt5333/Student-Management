@@ -8,7 +8,7 @@ export const GRADE_ROUTES: Routes = [
     canActivate: [roleGuard],
     data: { roles: ['admin', 'teacher'] },
     loadComponent: () =>
-      import('./components/grade-list/grade-list').then((m) => m.GradeListComponent),
+      import('./pages/grade-list/grade-list').then((m) => m.GradeListComponent),
     canDeactivate: [pendingChangesGuard],
   },
 ];

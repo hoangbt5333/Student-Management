@@ -3,7 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const FEATURES_DIR = path.resolve('src/app/features');
-const ALLOWED_FEATURE_DIRS = new Set(['components', 'facades', 'models', 'services', 'store']);
+const ALLOWED_FEATURE_DIRS = new Set(['components', 'pages', 'facades', 'models', 'services', 'store']);
 
 let violations = [];
 
@@ -47,7 +47,7 @@ if (fs.existsSync(FEATURES_DIR)) {
           violations.push({
             file: path.relative(process.cwd(), path.join(featurePath, sub.name)),
             rule: 'File Location',
-            message: `Root feature file "${sub.name}" must be named "*.routes.ts". Move other files into models/, services/, store/, facades/, or components/.`
+            message: `Root feature file "${sub.name}" must be named "*.routes.ts". Move other files into models/, services/, store/, facades/, pages/, or components/.`
           });
         }
       }
@@ -62,8 +62,9 @@ walk(FEATURES_DIR, (filePath) => {
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split('\n');
 
-  // Rule 2A: Components must not import services or store directly (non-spec only)
-  if (normPath.includes('/components/') && !isSpec && normPath.endsWith('.ts')) {
+  // Rule 2A: Components and Pages must not import services or store directly (non-spec only)
+  const isComponentOrPage = (normPath.includes('/components/') || normPath.includes('/pages/')) && !isSpec && normPath.endsWith('.ts');
+  if (isComponentOrPage) {
     lines.forEach((line, idx) => {
       const match = line.match(/import\s+.*from\s+['"](.*)['"]/);
       if (match) {
@@ -72,16 +73,16 @@ walk(FEATURES_DIR, (filePath) => {
           violations.push({
             file: path.relative(process.cwd(), filePath),
             line: idx + 1,
-            rule: 'Component -> Service Violation',
-            message: `Components must NOT directly import services ("${importSource}"). Use Facade instead.`
+            rule: 'Component/Page -> Service Violation',
+            message: `Components and Pages must NOT directly import services ("${importSource}"). Use Facade instead.`
           });
         }
         if (importSource.includes('/store/') || importSource.endsWith('/store')) {
           violations.push({
             file: path.relative(process.cwd(), filePath),
             line: idx + 1,
-            rule: 'Component -> Store Violation',
-            message: `Components must NOT directly import store ("${importSource}"). Use Facade instead.`
+            rule: 'Component/Page -> Store Violation',
+            message: `Components and Pages must NOT directly import store ("${importSource}"). Use Facade instead.`
           });
         }
       }
@@ -102,18 +103,54 @@ walk(FEATURES_DIR, (filePath) => {
     });
   }
 
-  // Rule 2C: Services must not import components, facades, or store
+  // Rule 2C: Services must not import components, pages, facades, or store
   if (normPath.includes('/services/') && !isSpec && normPath.endsWith('.ts')) {
     lines.forEach((line, idx) => {
       const match = line.match(/import\s+.*from\s+['"](.*)['"]/);
       if (match) {
         const importSource = match[1];
-        if (importSource.includes('/components/') || importSource.includes('/facades/') || importSource.includes('/store/')) {
+        if (importSource.includes('/components/') || importSource.includes('/pages/') || importSource.includes('/facades/') || importSource.includes('/store/')) {
           violations.push({
             file: path.relative(process.cwd(), filePath),
             line: idx + 1,
             rule: 'Service Dependency Inversion Violation',
-            message: `Services must NOT import components, facades, or store ("${importSource}").`
+            message: `Services must NOT import components, pages, facades, or store ("${importSource}").`
+          });
+        }
+      }
+    });
+  }
+
+  // Rule 2D: Components must not import pages (Pages depend on components, not vice-versa)
+  if (normPath.includes('/components/') && !isSpec && normPath.endsWith('.ts')) {
+    lines.forEach((line, idx) => {
+      const match = line.match(/import\s+.*from\s+['"](.*)['"]/);
+      if (match) {
+        const importSource = match[1];
+        if (importSource.includes('/pages/') || importSource.endsWith('/pages')) {
+          violations.push({
+            file: path.relative(process.cwd(), filePath),
+            line: idx + 1,
+            rule: 'Component -> Page Inversion Violation',
+            message: `Components must NOT import pages ("${importSource}"). Pages depend on components, not vice-versa.`
+          });
+        }
+      }
+    });
+  }
+
+  // Rule 2E: Store and Facades must not import components or pages
+  if ((normPath.includes('/store/') || normPath.includes('/facades/')) && !isSpec && normPath.endsWith('.ts')) {
+    lines.forEach((line, idx) => {
+      const match = line.match(/import\s+.*from\s+['"](.*)['"]/);
+      if (match) {
+        const importSource = match[1];
+        if (importSource.includes('/components/') || importSource.includes('/pages/')) {
+          violations.push({
+            file: path.relative(process.cwd(), filePath),
+            line: idx + 1,
+            rule: 'Store/Facade Dependency Inversion Violation',
+            message: `Store and Facades must NOT import components or pages ("${importSource}").`
           });
         }
       }
@@ -124,10 +161,10 @@ walk(FEATURES_DIR, (filePath) => {
 // 3. Report Results
 if (violations.length === 0) {
   console.log('✅ ALL ARCHITECTURE BOUNDARY CHECKS PASSED!\n');
-  console.log('  ✔ Folder structure strictly conforms to Explicit Layering');
-  console.log('  ✔ Components communicate exclusively through Facades');
-  console.log('  ✔ Zero direct Component -> Service calls');
-  console.log('  ✔ Zero direct Component -> Store calls');
+  console.log('  ✔ Folder structure strictly conforms to Explicit Layering (with pages/ and components/)');
+  console.log('  ✔ Components and Pages communicate exclusively through Facades');
+  console.log('  ✔ Zero direct Component/Page -> Service calls');
+  console.log('  ✔ Zero direct Component/Page -> Store calls');
   console.log('  ✔ Layer separation is intact');
   process.exit(0);
 } else {

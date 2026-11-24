@@ -6,8 +6,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { UserFacade } from '../../facades/user.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
-import { UserFormComponent } from '../user-form/user-form.component';
-import { UserDetailComponent } from '../user-detail/user-detail.component';
+import { UserFormComponent } from '../../components/user-form/user-form.component';
+import { UserDetailComponent } from '../../components/user-detail/user-detail.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';

@@ -1,7 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
-import { TooltipDirective } from '../../../directives/tooltip/tooltip.directive';
+import { AuthFacade } from '../../auth/facades/auth.facade';
+import { TooltipDirective } from '../../../shared/directives/tooltip/tooltip.directive';
 
 @Component({
   selector: 'app-header',

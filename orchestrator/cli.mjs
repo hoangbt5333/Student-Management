@@ -42,6 +42,15 @@ function refExists(cwd, ref) {
   }
 }
 
+function isAncestor(cwd, ancestor, descendant) {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd, stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const [command, ...rest] = process.argv.slice(2);
 const { values, positionals } = parseArgs({
   args: rest,
@@ -213,6 +222,9 @@ try {
       } catch {}
 
       if (branchExists) {
+        if (!isAncestor(root, baseBranch, taskBranch)) {
+          git(root, ['branch', '-f', taskBranch, baseBranch]);
+        }
         git(root, ['worktree', 'add', worktree, taskBranch]);
       } else {
         git(root, ['worktree', 'add', worktree, '-b', taskBranch, baseBranch]);

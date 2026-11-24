@@ -7,8 +7,8 @@ import { UserListComponent } from './user-list.component';
 import { UserFacade } from '../../facades/user.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
-import { UserFormComponent } from '../user-form/user-form.component';
-import { UserDetailComponent } from '../user-detail/user-detail.component';
+import { UserFormComponent } from '../../components/user-form/user-form.component';
+import { UserDetailComponent } from '../../components/user-detail/user-detail.component';
 import type { User } from '../../models/user.model';
 
 describe('UserListComponent', () => {

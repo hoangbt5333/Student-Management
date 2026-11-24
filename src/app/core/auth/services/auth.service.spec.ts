@@ -37,7 +37,7 @@ describe('AuthService', () => {
       result = user;
     });
 
-    const request = httpMock.expectOne('http://localhost:3001/users');
+    const request = httpMock.expectOne('/users');
     expect(request.request.method).toBe('GET');
     request.flush([
       {
@@ -78,7 +78,7 @@ describe('AuthService', () => {
       }
     });
 
-    const request = httpMock.expectOne('http://localhost:3001/users');
+    const request = httpMock.expectOne('/users');
     request.flush([
       {
         id: 'USR999',
@@ -111,7 +111,7 @@ describe('AuthService', () => {
       }
     });
 
-    const request = httpMock.expectOne('http://localhost:3001/users');
+    const request = httpMock.expectOne('/users');
     request.flush([
       {
         id: 'USR998',

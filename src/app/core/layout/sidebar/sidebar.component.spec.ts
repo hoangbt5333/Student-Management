@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SidebarComponent } from './sidebar.component';
-import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { AuthFacade } from '../../auth/facades/auth.facade';
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;

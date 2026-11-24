@@ -61,10 +61,12 @@ If errors arise:
 - For type/build errors: Check for broken import paths or missing exported interfaces.
 - For test errors: Ensure mocked services match the updated method signatures.
 
-### Step 5: Clean Dead Code & Finalize
+### Step 5: Clean Dead Code, Commit & Finalize
 - Delete obsolete directories (e.g., empty `data-access/`, retired monolith folders).
 - Verify zero lingering unused files or dangling imports.
 - Confirm final pass on `npm run verify`.
+- Stage refactored files and commit locally following `git-commit` skill (`git commit -m "refactor(<scope>): <description>"`). Never push to remote.
+- Report commit hash and summary of cleanups to the user.
 
 ---
 

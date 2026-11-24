@@ -48,7 +48,7 @@ describe('ClassStore', () => {
 
   it('should paginate classes into pages of default size (5)', () => {
     store.loadClasses();
-    const req = httpMock.expectOne('http://localhost:3001/classes');
+    const req = httpMock.expectOne('/classes');
     req.flush(mockClasses);
 
     expect(store.classes()).toHaveLength(7);
@@ -62,7 +62,7 @@ describe('ClassStore', () => {
 
   it('should navigate between pages and clamp page index', () => {
     store.loadClasses();
-    httpMock.expectOne('http://localhost:3001/classes').flush(mockClasses);
+    httpMock.expectOne('/classes').flush(mockClasses);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -81,7 +81,7 @@ describe('ClassStore', () => {
 
   it('should reset page to 1 when changing search term, sort field, or sort direction', () => {
     store.loadClasses();
-    httpMock.expectOne('http://localhost:3001/classes').flush(mockClasses);
+    httpMock.expectOne('/classes').flush(mockClasses);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -104,7 +104,7 @@ describe('ClassStore', () => {
 
   it('should update page size and recalculate total pages', () => {
     store.loadClasses();
-    httpMock.expectOne('http://localhost:3001/classes').flush(mockClasses);
+    httpMock.expectOne('/classes').flush(mockClasses);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -128,14 +128,14 @@ describe('ClassStore', () => {
 
   it('should clamp currentPage when loaded classes shrink', () => {
     store.loadClasses();
-    httpMock.expectOne('http://localhost:3001/classes').flush(mockClasses);
+    httpMock.expectOne('/classes').flush(mockClasses);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
 
     // Reload with only 3 classes
     store.loadClasses();
-    httpMock.expectOne('http://localhost:3001/classes').flush(mockClasses.slice(0, 3));
+    httpMock.expectOne('/classes').flush(mockClasses.slice(0, 3));
 
     expect(store.totalPages()).toBe(1);
     expect(store.currentPage()).toBe(1);
