@@ -57,23 +57,24 @@ This is an Angular 22 standalone application with Server-Side Rendering (SSR), N
 Dự án áp dụng mô hình phân tầng đơn hướng nghiêm ngặt (được kiểm soát tự động bằng `npm run check:arch`):
 
 ```text
-Component ──> Facade ──> Store (SignalStore) ──> Service (HttpClient) ──> REST API
+Page / Component ──> Facade ──> Store (SignalStore) ──> Service (HttpClient) ──> REST API
 ```
 
 ### Cấu trúc thư mục chuẩn (`src/app/features/<feature>/`):
-- `components/`: UI components (Standalone Components, Signal-based reactivity, control flow `@if`, `@for`).
-- `facades/`: `<feature>.facade.ts` (điều phối nghiệp vụ, cung cấp Signals và action cho components).
+- `pages/`: (Tùy chọn/Khuyến nghị cho feature có routing) Routed / Container components gắn với `<feature>.routes.ts` (điều phối layout, nhận URL params, inject Facade).
+- `components/`: UI components / Dumb widgets nội bộ (Standalone Components, Signal-based reactivity, control flow `@if`, `@for`; nhận data qua `input()`, phát event qua `output()`).
+- `facades/`: `<feature>.facade.ts` (điều phối nghiệp vụ, cung cấp Signals và action cho components/pages).
 - `models/`: `<feature>.model.ts` (TypeScript interfaces/types dữ liệu thuần túy).
 - `services/`: `<feature>.service.ts` (thực hiện HTTP REST API calls qua Angular `HttpClient`).
 - `store/`: `<feature>.store.ts` (quản lý feature state và side-effects bằng `@ngrx/signals`).
-- `<feature>.routes.ts`: Cấu hình routing của feature.
+- `<feature>.routes.ts`: Cấu hình routing của feature (ưu tiên trỏ tới `pages/`).
 - Shared code: Nằm trong `src/app/shared/` (`utils/` cho helper functions thuần túy, `components/` cho layout, modal, button...).
 
 ### Ranh giới kiến trúc bắt buộc (Strict Boundary Rules):
-1. **Component**: CHỈ ĐƯỢC inject và gọi **Facade**. TUYỆT ĐỐI KHÔNG import hoặc gọi trực tiếp từ `services/`, `store/`, hoặc `HttpClient`.
-2. **Facade**: Quản lý phối hợp giữa Store và Service. Không inject `HttpClient` trực tiếp.
-3. **Store**: Dùng `signalStore`. Không depend vào Component hay Facade.
-4. **Service**: Chỉ giao tiếp REST API. Không depend vào Component, Facade hay Store.
+1. **Component & Page**: CHỈ ĐƯỢC inject và gọi **Facade**. TUYỆT ĐỐI KHÔNG import hoặc gọi trực tiếp từ `services/`, `store/`, hoặc `HttpClient`. Components không được import Pages.
+2. **Facade**: Quản lý phối hợp giữa Store và Service. Không inject `HttpClient` trực tiếp. Không import Component hay Page.
+3. **Store**: Dùng `signalStore`. Không depend vào Component, Page hay Facade.
+4. **Service**: Chỉ giao tiếp REST API. Không depend vào Component, Page, Facade hay Store.
 
 *(Chi tiết đầy đủ về các feature và ranh giới xem tại: `.claude/skills/project-architecture/SKILL.md`)*
 
