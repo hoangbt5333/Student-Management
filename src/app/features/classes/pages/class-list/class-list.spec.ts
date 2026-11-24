@@ -7,7 +7,7 @@ import { ClassService } from '../../services/class.service';
 import { StudentService } from '../../../students/services/student.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { ClassForm } from '../class-form/class-form';
+import { ClassForm } from '../../components/class-form/class-form';
 import type { ClassModel } from '../../models/class.model';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 

@@ -5,7 +5,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { ClassFacade } from '../../facades/class.facade';
 import type { ClassModel } from '../../models/class.model';
-import { ClassForm } from '../class-form/class-form';
+import { ClassForm } from '../../components/class-form/class-form';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
