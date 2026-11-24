@@ -1,21 +1,78 @@
 {
   "tasks": [
     {
-      "id": "TASK-REFACTOR-LAYOUT",
-      "title": "Refactor chuyển Layout từ Shared sang Core",
-      "description": "Di chuyển toàn bộ thư mục layout (Header, Sidebar) từ src/app/shared/components/layout sang src/app/core/layout. Cập nhật các đường dẫn import nội bộ (AuthFacade, TooltipDirective) và import tại src/app/app.ts. Xóa thư mục cũ trong shared và đảm bảo toàn bộ unit test, lint, typecheck đều pass.",
+      "id": "TASK-REFACTOR-GRADES",
+      "title": "Refactor module Grades: tách routed page component vào thư mục pages/",
+      "description": "Chuyển đổi cấu trúc thư mục của feature Grades theo chuẩn kiến trúc Explicit Layering. Di chuyển smart page component GradeList (grade-list.ts, grade-list.html, grade-list.css, grade-list.spec.ts) từ src/app/features/grades/components/grade-list sang src/app/features/grades/pages/grade-list. Cập nhật grades.routes.ts để lazy load từ ./pages/grade-list/grade-list. Dọn dẹp thư mục cũ trong components/ và đảm bảo toàn bộ unit test, linting, typecheck, architecture check đều pass 100%.",
       "depends_on": [],
       "owned_files": [
-        "src/app/core/layout/**",
-        "src/app/shared/components/layout/**",
-        "src/app/app.ts"
+        "src/app/features/grades/**"
       ],
       "acceptance_criteria": [
-        "AC-1: Di chuyển trọn vẹn HeaderComponent và SidebarComponent cùng styles, spec, index sang src/app/core/layout/.",
-        "AC-2: Cập nhật đường dẫn import trong src/app/app.ts trỏ tới core/layout.",
-        "AC-3: Điều chỉnh các import tương đối bên trong header.component.ts và sidebar.component.ts (AuthFacade, TooltipDirective) để biên dịch không lỗi.",
-        "AC-4: Xóa sạch thư mục layout cũ trong src/app/shared/components/layout/.",
-        "AC-5: npm run lint, npx tsc, npm test (274 tests) và npm run check:arch đều PASS 100%."
+        "AC-1: Di chuyển toàn bộ file của GradeList (grade-list.ts, grade-list.html, grade-list.css, grade-list.spec.ts) từ src/app/features/grades/components/grade-list/ sang src/app/features/grades/pages/grade-list/.",
+        "AC-2: Cập nhật file grades.routes.ts để import và lazy load GradeListComponent từ ./pages/grade-list/grade-list.",
+        "AC-3: Giữ nguyên selector app-grade-list, logic reactive signals và tích hợp Facade (GradeFacade, StudentFacade, SubjectFacade, AuthFacade).",
+        "AC-4: Xóa sạch thư mục cũ src/app/features/grades/components/grade-list/.",
+        "AC-5: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering (không import trực tiếp Store hay Service từ Component/Page).",
+        "AC-6: Toàn bộ unit tests của module Grades (grade-list.spec.ts, grade.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
+        "AC-7: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
+      ]
+    },
+    {
+      "id": "TASK-REFACTOR-SUBJECTS",
+      "title": "Refactor module Subjects: tách các routed page component vào thư mục pages/",
+      "description": "Chuyển đổi cấu trúc thư mục của feature Subjects theo chuẩn kiến trúc Explicit Layering. Di chuyển 2 smart container page components: SubjectList (subject-list.ts, subject-list.html, subject-list.css, subject-list.spec.ts) và SubjectDetail (subject-detail.ts, subject-detail.html, subject-detail.css, subject-detail.spec.ts) từ src/app/features/subjects/components/ sang src/app/features/subjects/pages/. Cập nhật subjects.routes.ts để lazy load cả 2 routes từ thư mục pages/. Dọn dẹp thư mục cũ trong components/ và đảm bảo toàn bộ unit test, linting, typecheck, architecture check đều pass 100%.",
+      "depends_on": [],
+      "owned_files": [
+        "src/app/features/subjects/**"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Di chuyển toàn bộ file của SubjectList từ src/app/features/subjects/components/subject-list/ sang src/app/features/subjects/pages/subject-list/.",
+        "AC-2: Di chuyển toàn bộ file của SubjectDetail từ src/app/features/subjects/components/subject-detail/ sang src/app/features/subjects/pages/subject-detail/.",
+        "AC-3: Cập nhật subjects.routes.ts để lazy load SubjectListComponent từ ./pages/subject-list/subject-list và SubjectDetailComponent từ ./pages/subject-detail/subject-detail.",
+        "AC-4: Giữ nguyên selector app-subject-list và app-subject-detail, đảm bảo các đường dẫn import nội bộ hoạt động trơn tru.",
+        "AC-5: Xóa sạch các thư mục cũ src/app/features/subjects/components/subject-list/ và src/app/features/subjects/components/subject-detail/.",
+        "AC-6: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering (không import trực tiếp Store hay Service từ Component/Page).",
+        "AC-7: Toàn bộ unit tests của module Subjects (subject-list.spec.ts, subject-detail.spec.ts, subject.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
+        "AC-8: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
+      ]
+    },
+    {
+      "id": "TASK-REFACTOR-TEACHERS",
+      "title": "Refactor module Teachers: tách các routed page component vào thư mục pages/",
+      "description": "Chuyển đổi cấu trúc thư mục của feature Teachers theo chuẩn kiến trúc Explicit Layering. Di chuyển 2 smart container page components: TeacherList (teacher-list.ts, teacher-list.html, teacher-list.css, teacher-list.spec.ts) và TeacherDetail (teacher-detail.ts, teacher-detail.html, teacher-detail.css, teacher-detail.spec.ts) từ src/app/features/teachers/components/ sang src/app/features/teachers/pages/. Cập nhật teachers.routes.ts để lazy load các routes từ thư mục pages/. Dọn dẹp thư mục cũ trong components/ và đảm bảo toàn bộ unit test, linting, typecheck, architecture check đều pass 100%.",
+      "depends_on": [],
+      "owned_files": [
+        "src/app/features/teachers/**"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Di chuyển toàn bộ file của TeacherList từ src/app/features/teachers/components/teacher-list/ sang src/app/features/teachers/pages/teacher-list/.",
+        "AC-2: Di chuyển toàn bộ file của TeacherDetail từ src/app/features/teachers/components/teacher-detail/ sang src/app/features/teachers/pages/teacher-detail/.",
+        "AC-3: Cập nhật teachers.routes.ts để lazy load TeacherListComponent từ ./pages/teacher-list/teacher-list và TeacherDetailComponent từ ./pages/teacher-detail/teacher-detail.",
+        "AC-4: Giữ nguyên selector app-teacher-list và app-teacher-detail, đảm bảo các đường dẫn import nội bộ hoạt động trơn tru.",
+        "AC-5: Xóa sạch các thư mục cũ src/app/features/teachers/components/teacher-list/ và src/app/features/teachers/components/teacher-detail/.",
+        "AC-6: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering (không import trực tiếp Store hay Service từ Component/Page).",
+        "AC-7: Toàn bộ unit tests của module Teachers (teacher-list.spec.ts, teacher-detail.spec.ts, teacher.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
+        "AC-8: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
+      ]
+    },
+    {
+      "id": "TASK-REFACTOR-USERS",
+      "title": "Refactor module Users: tách smart page component vào pages/, giữ dumb components tại components/",
+      "description": "Chuyển đổi cấu trúc thư mục của feature Users theo chuẩn kiến trúc Explicit Layering. Di chuyển smart routed component UserList (user-list.component.ts, user-list.component.html, user-list.component.css, user-list.component.spec.ts) từ src/app/features/users/components/user-list sang src/app/features/users/pages/user-list. Giữ nguyên 2 presentational/dumb components là user-form và user-detail trong src/app/features/users/components/. Cập nhật các đường dẫn import trong user-list.component.ts và user-list.component.spec.ts trỏ đến ../../components/user-form/user-form.component và ../../components/user-detail/user-detail.component. Cập nhật users.routes.ts để lazy load từ ./pages/user-list/user-list.component. Xóa thư mục cũ user-list trong components/ và đảm bảo toàn bộ unit test cùng verification checks đều pass 100%.",
+      "depends_on": [],
+      "owned_files": [
+        "src/app/features/users/**"
+      ],
+      "acceptance_criteria": [
+        "AC-1: Di chuyển toàn bộ file của UserList (user-list.component.ts, user-list.component.html, user-list.component.css, user-list.component.spec.ts) từ src/app/features/users/components/user-list/ sang src/app/features/users/pages/user-list/.",
+        "AC-2: Giữ nguyên vẹn 2 dumb / presentational components là user-form (UserFormComponent) và user-detail (UserDetailComponent) trong thư mục src/app/features/users/components/.",
+        "AC-3: Cập nhật đường dẫn import của UserFormComponent và UserDetailComponent bên trong user-list.component.ts và user-list.component.spec.ts sang ../../components/... chính xác.",
+        "AC-4: Cập nhật users.routes.ts để lazy load UserListComponent từ ./pages/user-list/user-list.component.",
+        "AC-5: Xóa sạch thư mục cũ src/app/features/users/components/user-list/.",
+        "AC-6: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering: Page/Component chỉ giao tiếp qua Facade, dumb components không import smart page components.",
+        "AC-7: Toàn bộ unit tests của module Users (user-list.component.spec.ts, user-form.component.spec.ts, user-detail.component.spec.ts, user.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
+        "AC-8: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
       ]
     }
   ]
