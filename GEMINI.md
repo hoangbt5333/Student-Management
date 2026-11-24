@@ -37,7 +37,8 @@ Agent linh hoạt hoạt động theo 2 chế độ:
   1. Agent tự đọc hiểu mã nguồn, chọn kỹ năng (skill) phù hợp trong `.agents/skills/` (như `feature-development`, `debugging`, `code-validation`, `refactoring`, `ui-standardization`, `test-execution`...).
   2. Triển khai trực tiếp trên workspace hiện tại (không tạo git worktree, không gọi lệnh `orchestrator/cli.mjs`).
   3. Tự chạy kiểm thử và xác minh (`npm run validate` hoặc `npm run verify`).
-  4. Đảm bảo working tree sạch sẽ và báo cáo kết quả kèm bằng chứng.
+  4. **Git Commit chuẩn hóa:** Sau khi kiểm thử vượt qua, tự động stage các file liên quan và tạo local commit theo chuẩn Conventional Commits (tham chiếu skill `git-commit`). TUYỆT ĐỐI KHÔNG tự ý `git push`.
+  5. Đảm bảo working tree sạch sẽ và báo cáo kết quả kèm bằng chứng kiểm thử cùng thông tin commit (hash + message).
 
 ### Chế độ 2: Multi-Agent Orchestrator (CHỈ KÍCH HOẠT KHI ĐƯỢC CHỈ ĐỊNH)
 - **Điều kiện kích hoạt:**

@@ -90,7 +90,8 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
   1. Claude tự đọc hiểu mã nguồn, lập luận và triển khai trực tiếp trong phiên hiện tại.
   2. Luôn tuân thủ kiến trúc Explicit Layering ở Mục 2.
   3. Chạy **Automated Validation** (`npm run validate -- --spec='<path-to-spec>'`) để kiểm chứng kết quả nhanh chóng.
-  4. Đảm bảo working tree sạch sẽ sau khi hoàn thành.
+  4. **Git Commit chuẩn hóa:** Sau khi validation pass, tự động stage và commit các thay đổi theo Conventional Commits (tham chiếu skill `git-commit`). Không tự ý `git push`.
+  5. Đảm bảo working tree sạch sẽ và báo cáo kết quả kèm commit hash và bằng chứng nghiệm thu.
 
 ---
 
