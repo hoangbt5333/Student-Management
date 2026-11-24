@@ -25,7 +25,7 @@ interface DemoAccount {
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3001/users';
+  private readonly apiUrl = '/users';
 
   login(credentials: LoginCredentials): Observable<AuthUser> {
     return this.http.get<DemoAccount[]>(this.apiUrl).pipe(

@@ -135,7 +135,7 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
   }
 
   delete(teacher: Teacher): void {
-    this.http.get<SubjectRef[]>('http://localhost:3001/subjects').subscribe({
+    this.http.get<SubjectRef[]>('/subjects').subscribe({
       next: (subjects) => {
         if (subjects.some((subject) => subject.teacherId === teacher.id)) {
           alert('Không thể xóa giảng viên đang phụ trách môn học.');

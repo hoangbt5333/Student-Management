@@ -50,7 +50,7 @@ describe('GradeStore', () => {
 
   it('should paginate grades with default size 5', () => {
     store.loadGrades();
-    const req = httpMock.expectOne('http://localhost:3001/grades');
+    const req = httpMock.expectOne('/grades');
     req.flush(mockGrades);
 
     expect(store.grades()).toHaveLength(12);
@@ -72,7 +72,7 @@ describe('GradeStore', () => {
 
   it('should clamp out-of-range page requests', () => {
     store.loadGrades();
-    httpMock.expectOne('http://localhost:3001/grades').flush(mockGrades);
+    httpMock.expectOne('/grades').flush(mockGrades);
 
     store.setPage(99);
     expect(store.currentPage()).toBe(3);
@@ -83,7 +83,7 @@ describe('GradeStore', () => {
 
   it('should update page size and clamp invalid page size requests', () => {
     store.loadGrades();
-    httpMock.expectOne('http://localhost:3001/grades').flush(mockGrades);
+    httpMock.expectOne('/grades').flush(mockGrades);
 
     store.setPageSize(10);
     expect(store.pageSize()).toBe(10);
@@ -96,7 +96,7 @@ describe('GradeStore', () => {
 
   it('should filter by student and reset to page 1', () => {
     store.loadGrades();
-    httpMock.expectOne('http://localhost:3001/grades').flush(mockGrades);
+    httpMock.expectOne('/grades').flush(mockGrades);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -109,7 +109,7 @@ describe('GradeStore', () => {
 
   it('should filter by subject and reset to page 1', () => {
     store.loadGrades();
-    httpMock.expectOne('http://localhost:3001/grades').flush(mockGrades);
+    httpMock.expectOne('/grades').flush(mockGrades);
 
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
@@ -127,14 +127,14 @@ describe('GradeStore', () => {
     ];
 
     store.loadGrades();
-    httpMock.expectOne('http://localhost:3001/grades').flush(grades);
+    httpMock.expectOne('/grades').flush(grades);
 
     expect(store.averageScore()).toBe('8.50');
   });
 
   it('should handle load grades error gracefully', () => {
     store.loadGrades();
-    const req = httpMock.expectOne('http://localhost:3001/grades');
+    const req = httpMock.expectOne('/grades');
     req.flush('Error', { status: 500, statusText: 'Server Error' });
 
     expect(store.loading()).toBe(false);

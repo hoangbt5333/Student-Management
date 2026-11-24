@@ -142,7 +142,7 @@ export class SubjectListComponent implements OnInit, HasPendingChanges {
   }
 
   delete(subject: Subject): void {
-    this.http.get<GradeRef[]>('http://localhost:3001/grades').subscribe({
+    this.http.get<GradeRef[]>('/grades').subscribe({
       next: (grades) => {
         if (grades.some((grade) => grade.subjectId === subject.id)) {
           alert('Không thể xóa môn học đã có điểm sinh viên.');

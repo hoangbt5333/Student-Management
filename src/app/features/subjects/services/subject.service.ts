@@ -8,7 +8,7 @@ import type { Subject } from '../models/subject.model';
 })
 export class SubjectService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3001/subjects';
+  private readonly apiUrl = '/subjects';
 
   getSubjects(): Observable<Subject[]> {
     return this.http.get<Subject[]>(this.apiUrl);

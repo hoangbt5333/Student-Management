@@ -49,7 +49,7 @@ describe('StudentStore', () => {
     store.loadStudents();
 
     const request = httpMock.expectOne(
-      'http://localhost:3001/students'
+      '/students'
     );
 
     expect(request.request.method).toBe('GET');
@@ -65,7 +65,7 @@ describe('StudentStore', () => {
     store.loadStudents();
 
     const request = httpMock.expectOne(
-      'http://localhost:3001/students'
+      '/students'
     );
 
     request.flush('Server error', {
@@ -93,7 +93,7 @@ describe('StudentStore', () => {
     });
 
     const postRequest = httpMock.expectOne(
-      'http://localhost:3001/students'
+      '/students'
     );
 
     expect(postRequest.request.method).toBe('POST');
@@ -106,7 +106,7 @@ describe('StudentStore', () => {
     postRequest.flush(newStudent);
 
     const getRequest = httpMock.expectOne(
-      'http://localhost:3001/students'
+      '/students'
     );
 
     expect(getRequest.request.method).toBe('GET');
@@ -135,7 +135,7 @@ describe('StudentStore', () => {
     ];
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush(students);
+    httpMock.expectOne('/students').flush(students);
 
     expect(store.pageStudents().map((s) => s.id)).toEqual(['SV001', 'SV002']);
   });
@@ -152,13 +152,13 @@ describe('StudentStore', () => {
 
     const classStore = TestBed.inject(ClassStore);
     classStore.loadClasses();
-    httpMock.expectOne('http://localhost:3001/classes').flush([
+    httpMock.expectOne('/classes').flush([
       { id: 'CLS001', name: 'CTK42', department: 'Công nghệ thông tin', academicYear: '2024-2028' },
       { id: 'CLS002', name: 'CTK43', department: 'Toán', academicYear: '2024-2028' }
     ]);
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush(students);
+    httpMock.expectOne('/students').flush(students);
 
     expect(store.pageStudents().map((student) => student.id)).toEqual([
       'SV001',
@@ -201,12 +201,12 @@ describe('StudentStore', () => {
     }));
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush(students);
+    httpMock.expectOne('/students').flush(students);
     store.setPage(2);
     expect(store.currentPage()).toBe(2);
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush(students.slice(0, 3));
+    httpMock.expectOne('/students').flush(students.slice(0, 3));
 
     expect(store.currentPage()).toBe(1);
     expect(store.pageStudents()).toHaveLength(3);
@@ -225,12 +225,12 @@ describe('StudentStore', () => {
     ];
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush(students);
+    httpMock.expectOne('/students').flush(students);
     store.setClassFilter('CTK42');
     store.setFacultyFilter('Công nghệ thông tin');
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush([{
+    httpMock.expectOne('/students').flush([{
       ...students[0],
       className: 'CTK43',
       faculty: 'Toán'
@@ -244,7 +244,7 @@ describe('StudentStore', () => {
   it('should preserve a class ID filter after refreshing students', () => {
     const classStore = TestBed.inject(ClassStore);
     classStore.loadClasses();
-    httpMock.expectOne('http://localhost:3001/classes').flush([
+    httpMock.expectOne('/classes').flush([
       { id: 'CLS001', name: 'CTK42', department: 'Công nghệ thông tin', academicYear: '2024-2028' }
     ]);
 
@@ -258,11 +258,11 @@ describe('StudentStore', () => {
     }];
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush(students);
+    httpMock.expectOne('/students').flush(students);
     store.setClassFilter('CLS001');
 
     store.loadStudents();
-    httpMock.expectOne('http://localhost:3001/students').flush(students);
+    httpMock.expectOne('/students').flush(students);
 
     expect(store.classFilter()).toBe('CLS001');
     expect(store.filteredStudents()).toEqual(students);
