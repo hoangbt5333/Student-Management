@@ -5,12 +5,12 @@ export const TEACHER_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./components/teacher-list/teacher-list').then((m) => m.TeacherListComponent),
+      import('./pages/teacher-list/teacher-list').then((m) => m.TeacherListComponent),
     canDeactivate: [pendingChangesGuard],
   },
   {
     path: ':id',
     loadComponent: () =>
-      import('./components/teacher-detail/teacher-detail').then((m) => m.TeacherDetailComponent),
+      import('./pages/teacher-detail/teacher-detail').then((m) => m.TeacherDetailComponent),
   },
 ];
