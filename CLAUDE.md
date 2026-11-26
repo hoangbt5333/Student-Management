@@ -7,7 +7,7 @@
 1. **Core vs Project Boundary:** Never modify files under `orchestrator/`, `core/`, `state/`, `logs/`, `.claude/`, `.agents/`, or `project.config.json` to fit specific task requirements.
 2. **Canonical Orchestration Commands:**
    - **Initialize Execution:** `node orchestrator/cli.mjs init --exec <id> --tasks tasks.json`
-   - **Start Task & Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, liên kết node_modules qua Junction/Symlink, và chuyển task sang in_progress)*
+   - **Start Task & Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, cài đặt node_modules qua pnpm, và chuyển task sang in_progress)*
    - **Validate Task (Coder Gate):** `node orchestrator/validate.mjs <task_id> ../wt/<task_id> --exec <id> --base integration/<id>` *(chạy build, typecheck, lint, test)*
    - **Task Handoff:** Coder tạo `.task-report.json` trong worktree với `result: "READY_FOR_REVIEW"`.
    - **Review Verdict:** `node orchestrator/cli.mjs review-record <task_id> --exec <id> --verdict APPROVED` *(nếu task ở in_progress sẽ tự động chuyển sang ready_for_review)*
@@ -35,17 +35,17 @@ Tài liệu hướng dẫn ngữ cảnh, quy chuẩn kiến trúc và quy trình
 
 ## 1. Tổng quan dự án
 
-- `npm start` — start the Angular dev server at `http://localhost:4200`.
-- `npm run build` — production build, including the configured server/SSR output.
-- `npm run watch` — rebuild continuously in development configuration.
-- `npm run test:ci` — canonical test command; runs non-watch mode, outputs to console and writes JSON report to `artifacts/test-results.json`.
-  - Specific file: `npm run test:ci -- --include='<path-to-spec>'`
-- `npm run lint` — check code quality using ESLint & Angular-ESLint.
-- `npm run check:arch` — check Explicit Layering architecture boundary violations.
-- `npm run validate` — deterministic automated validation (check:arch + lint + typecheck + targeted test).
-  - Specific file: `npm run validate -- --spec='<path-to-spec>'`
-- `npm run verify` — run check:arch, lint, build, and full test suite.
-- `npm run serve:ssr:user-management` — serve the previously built SSR app (default port 4000; configurable with `PORT`).
+- `pnpm start` — start the Angular dev server at `http://localhost:4200`.
+- `pnpm run build` — production build, including the configured server/SSR output.
+- `pnpm run watch` — rebuild continuously in development configuration.
+- `pnpm run test:ci` — canonical test command; runs non-watch mode, outputs to console and writes JSON report to `artifacts/test-results.json`.
+  - Specific file: `pnpm run test:ci -- --include='<path-to-spec>'`
+- `pnpm run lint` — check code quality using ESLint & Angular-ESLint.
+- `pnpm run check:arch` — check Explicit Layering architecture boundary violations.
+- `pnpm run validate` — deterministic automated validation (check:arch + lint + typecheck + targeted test).
+  - Specific file: `pnpm run validate -- --spec='<path-to-spec>'`
+- `pnpm run verify` — run check:arch, lint, build, and full test suite.
+- `pnpm run serve:ssr:user-management` — serve the previously built SSR app (default port 4000; configurable with `PORT`).
 
 The app expects a mock REST API on port 3001. Services currently use hard-coded `http://localhost:3001` URLs.
 This is an Angular 22 standalone application with Server-Side Rendering (SSR), NgRx SignalStore (`@ngrx/signals`), and Vitest.
@@ -54,7 +54,7 @@ This is an Angular 22 standalone application with Server-Side Rendering (SSR), N
 
 ## 2. Kiến trúc dự án (Explicit Layering Standard)
 
-Dự án áp dụng mô hình phân tầng đơn hướng nghiêm ngặt (được kiểm soát tự động bằng `npm run check:arch`):
+Dự án áp dụng mô hình phân tầng đơn hướng nghiêm ngặt (được kiểm soát tự động bằng `pnpm run check:arch`):
 
 ```text
 Page / Component ──> Facade ──> Store (SignalStore) ──> Service (HttpClient) ──> REST API
@@ -90,7 +90,7 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
 - **Nguyên tắc:**
   1. Claude tự đọc hiểu mã nguồn, lập luận và triển khai trực tiếp trong phiên hiện tại.
   2. Luôn tuân thủ kiến trúc Explicit Layering ở Mục 2.
-  3. Chạy **Automated Validation** (`npm run validate -- --spec='<path-to-spec>'`) để kiểm chứng kết quả nhanh chóng.
+  3. Chạy **Automated Validation** (`pnpm run validate -- --spec='<path-to-spec>'`) để kiểm chứng kết quả nhanh chóng.
   4. **Git Commit chuẩn hóa:** Sau khi validation pass, tự động stage và commit các thay đổi theo Conventional Commits (tham chiếu skill `git-commit`). Không tự ý `git push`.
   5. Đảm bảo working tree sạch sẽ và báo cáo kết quả kèm commit hash và bằng chứng nghiệm thu.
 
@@ -131,7 +131,7 @@ Claude Code linh hoạt chuyển đổi giữa 2 chế độ tùy theo độ ph�
   ```bash
   node orchestrator/cli.mjs worktree <task_id> --exec <id> --agent <coder_name>
   ```
-  *(Tự động tạo worktree `../wt/<task_id>`, liên kết node_modules qua NTFS Junction, và chuyển task sang trạng thái in_progress).*
+  *(Tự động tạo worktree `../wt/<task_id>`, cài đặt node_modules qua pnpm, và chuyển task sang trạng thái in_progress).*
 - Coder làm việc strictly trong worktree `../wt/<task_id>` và CHỈ sửa các file thuộc `owned_files`. Không sao chép thủ công qua lại với thư mục gốc.
 
 #### Bước 5: Coder Completion Gate & Bàn giao Handoff

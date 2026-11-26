@@ -28,10 +28,10 @@ Responsibilities:
    - Follow project architectural boundaries: `Component -> Facade -> NgRx Signal Store -> Service -> REST API`.
    - Write/update comprehensive unit tests with Vitest for all newly created or modified logic.
 3. **Linting & Code Quality**:
-   - On PC environment (where linting is configured): Ensure code strictly satisfies `npm run lint` without errors/warnings.
-   - On local/personal environment (where lint script may not yet be installed): The validation gate uses fallback `npm run lint --if-present` so it will not block your workflow. However, you must still maintain clean code, strict TypeScript types, and format with Prettier.
+   - On PC environment (where linting is configured): Ensure code strictly satisfies `pnpm run lint` without errors/warnings.
+   - On local/personal environment (where lint script may not yet be installed): The validation gate uses fallback `pnpm run lint --if-present` so it will not block your workflow. However, you must still maintain clean code, strict TypeScript types, and format with Prettier.
 4. **Automated Validation Gate (MANDATORY)**:
-   - For fast local iteration: Run `npm run validate -- --spec=<spec-file>` or `npm run test:ci -- --include='<spec-file>'`.
+   - For fast local iteration: Run `pnpm run validate -- --spec=<spec-file>` or `pnpm run test:ci -- --include='<spec-file>'`.
    - Before completing the task, run the official Framework Validation Gate command specified in your Task Brief:
      ```bash
      node orchestrator/validate.mjs <TASK-ID> <worktree-path> --exec <EXEC-ID>

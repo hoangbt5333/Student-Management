@@ -6,31 +6,31 @@
   },
   "commands": {
     "install": {
-      "cmd": "npm ci",
+      "cmd": "pnpm install --frozen-lockfile",
       "timeout_s": 600
     },
     "build": {
-      "cmd": "npm run build",
+      "cmd": "pnpm run build",
       "required": true,
       "timeout_s": 300
     },
     "typecheck": {
-      "cmd": "npx tsc --noEmit -p tsconfig.app.json",
+      "cmd": "pnpm exec tsc --noEmit -p tsconfig.app.json",
       "required": true,
       "timeout_s": 120
     },
     "lint": {
-      "cmd": "npm run lint",
+      "cmd": "pnpm run lint",
       "required": true,
       "timeout_s": 120
     },
     "unit_test": {
-      "cmd": "npm test -- --watch=false",
+      "cmd": "pnpm test -- --watch=false",
       "required": true,
       "timeout_s": 600
     },
     "e2e": {
-      "cmd": "npm run test:e2e",
+      "cmd": "pnpm run test:e2e",
       "required": false
     }
   },
@@ -50,7 +50,7 @@
   "ownership": {
     "shared_files": [
       "package.json",
-      "package-lock.json",
+      "pnpm-lock.yaml",
       "src/app/app.routes.ts",
       "src/app/app.config.ts"
     ]

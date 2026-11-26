@@ -1,5 +1,6 @@
 // Luật đường dẫn dùng chung: hook chặn sửa file (lúc sửa) và kiểm tra bàn giao (lúc nộp, theo git diff).
-import { symlinkSync, unlinkSync, rmdirSync, existsSync, lstatSync } from 'node:fs';
+import { symlinkSync, unlinkSync, rmdirSync, rmSync, existsSync, lstatSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { hasGlob, matchesAny, normalize } from './ownership.mjs';
 
@@ -34,14 +35,32 @@ export function ownedViolation(relPath, owned, config, actor) {
 export const ownershipViolation = (rel, owned, config, actor) => pathViolation(rel, config) ?? ownedViolation(rel, owned, config, actor);
 
 /**
- * Tự động liên kết node_modules từ thư mục gốc dự án sang worktree.
- * Trên Windows dùng Junction ('junction') không cần quyền Admin.
- * Trên macOS/Linux dùng Symbolic Link ('dir').
+ * Tự động chuẩn bị node_modules cho worktree:
+ * - Nếu worktree có pnpm-lock.yaml: chạy `pnpm install --frozen-lockfile --prefer-offline`
+ *   (hardlink trực tiếp từ pnpm store, an toàn khi chạy nhiều worktree song song).
+ * - Ngược lại: fallback liên kết junction (Windows) hoặc symlink (macOS/Linux) từ root.
  */
 export function ensureNodeModules(root, worktree) {
   const rootModules = join(root, 'node_modules');
   const wtModules = join(worktree, 'node_modules');
-  if (existsSync(rootModules) && !existsSync(wtModules)) {
+  if (existsSync(wtModules)) {
+    return { linked: false, already_exists: true };
+  }
+
+  if (existsSync(join(worktree, 'pnpm-lock.yaml'))) {
+    try {
+      execSync('pnpm install --frozen-lockfile --prefer-offline', {
+        cwd: worktree,
+        stdio: 'pipe',
+        encoding: 'utf8',
+      });
+      return { linked: true, type: 'pnpm', path: wtModules };
+    } catch (err) {
+      return { linked: false, error: err.stderr?.trim() || err.message };
+    }
+  }
+
+  if (existsSync(rootModules)) {
     try {
       const type = process.platform === 'win32' ? 'junction' : 'dir';
       symlinkSync(rootModules, wtModules, type);
@@ -50,18 +69,18 @@ export function ensureNodeModules(root, worktree) {
       return { linked: false, error: err.message };
     }
   }
-  return { linked: false, already_exists: existsSync(wtModules) };
+  return { linked: false, already_exists: false };
 }
 
 /**
- * Tháo gỡ liên kết junction/symlink node_modules trước khi dọn dẹp worktree.
+ * Tháo gỡ node_modules (junction/symlink hoặc thư mục pnpm) trước khi dọn dẹp worktree.
  */
 export function unlinkNodeModules(worktree) {
   const wtModules = join(worktree, 'node_modules');
   try {
     if (existsSync(wtModules)) {
       const stat = lstatSync(wtModules);
-      if (stat.isSymbolicLink() || (process.platform === 'win32' && stat.isDirectory())) {
+      if (stat.isSymbolicLink()) {
         try {
           unlinkSync(wtModules);
           return true;
@@ -69,6 +88,10 @@ export function unlinkNodeModules(worktree) {
           rmdirSync(wtModules);
           return true;
         }
+      }
+      if (stat.isDirectory()) {
+        rmSync(wtModules, { recursive: true, force: true });
+        return true;
       }
     }
   } catch (_) {
