@@ -59,3 +59,6 @@ db.json
 state/
 logs/
 .task-report.json
+
+playwright-report/
+test-results/
