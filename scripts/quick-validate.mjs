@@ -66,7 +66,7 @@ function main() {
   }
 
   // 2. ESLint Quality Check
-  if (!runStep('ESLint Code Quality Check', 'npm run lint')) {
+  if (!runStep('ESLint Code Quality Check', 'pnpm run lint')) {
     process.exit(1);
   }
 
@@ -77,8 +77,8 @@ function main() {
 
   // 3. Unit Tests (Targeted or Full)
   const testCmd = spec
-    ? `npm run test:ci -- --include='${spec}'`
-    : 'npm run test:ci';
+    ? `pnpm run test:ci -- --include='${spec}'`
+    : 'pnpm run test:ci';
 
   if (!runStep(`Unit Test Execution (${spec || 'All Tests'})`, testCmd)) {
     process.exit(1);

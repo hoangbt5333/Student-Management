@@ -10,7 +10,7 @@
     "test:ci": "ng test --watch=false --reporters=default --reporters=json --output-file=artifacts/test-results.json",
     "check:arch": "node scripts/check-architecture.mjs",
     "validate": "node scripts/quick-validate.mjs",
-    "verify": "npm run check:arch && npm run lint && npm run build && npm run test:ci",
+    "verify": "pnpm run check:arch && pnpm run lint && pnpm run build && pnpm run test:ci",
     "serve:ssr:user-management": "node dist/user-management/server/server.mjs",
     "lint": "ng lint",
     "test:e2e": "playwright test",
@@ -18,7 +18,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "private": true,
-  "packageManager": "npm@11.19.0",
+  "packageManager": "pnpm@12.23.0",
   "dependencies": {
     "@angular/common": "^22.2.0",
     "@angular/compiler": "^22.2.0",
