@@ -8,7 +8,7 @@ import type { Teacher } from '../models/teacher.model';
 })
 export class TeacherService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3001/teachers';
+  private readonly apiUrl = '/teachers';
 
   getTeachers(): Observable<Teacher[]> {
     return this.http.get<Teacher[]>(this.apiUrl);

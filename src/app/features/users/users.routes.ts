@@ -5,7 +5,7 @@ export const USER_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./components/user-list/user-list.component').then(
+      import('./pages/user-list/user-list.component').then(
         m => m.UserListComponent
       ),
     canDeactivate: [pendingChangesGuard],

@@ -15,8 +15,8 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 
 import type { Student } from '../../models/student.model';
 import { studentsToCsv } from '../../../../shared/utils/student-csv.util';
-import { StudentTable } from '../student-table/student-table';
-import { StudentForm } from '../student-form/student-form';
+import { StudentTable } from '../../components/student-table/student-table';
+import { StudentForm } from '../../components/student-form/student-form';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { StudentFacade } from '../../facades/student.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';

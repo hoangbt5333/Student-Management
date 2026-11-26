@@ -67,7 +67,7 @@ flowchart TD
 - Apply the minimal code modification needed to solve the problem.
 - Preserve existing comments, docstrings, and unrelated code.
 
-### Phase 4: Full Automated Verification
+### Phase 4: Full Automated Verification & Commit
 Execute the 3-in-1 verification pipeline:
 ```bash
 cmd /c npm run verify
@@ -76,6 +76,13 @@ Confirm:
 - Architecture boundary checks: **PASSED (0 violations)**.
 - Angular build & SSR build: **PASSED (0 errors)**.
 - Vitest test suite: **PASSED (100% pass rate)**.
+
+After verification passes, commit the fix locally using the `git-commit` protocol:
+```bash
+git add <modified-files>
+git commit -m "fix(<scope>): <concise-bug-fix-description>"
+```
+Do not push to remote.
 
 ---
 
@@ -86,6 +93,7 @@ When reporting debugging findings to the user or team, provide:
 2. **Root Cause Analysis**: The exact file, line number, and mechanical reason for the failure.
 3. **Surgical Fix**: The precise code change applied.
 4. **Verification Evidence**: Output from `npm run verify` demonstrating green checks.
+5. **Git Commit Info**: Commit hash and commit message.
 
 ---
 

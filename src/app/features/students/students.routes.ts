@@ -5,13 +5,13 @@ export const STUDENT_ROUTES: Routes = [
     {
         path: ':id',
         loadComponent: () =>
-            import('./components/student-detail/student-detail')
+            import('./pages/student-detail/student-detail')
                 .then(m => m.StudentDetailComponent)
     },
     {
         path: '',
         loadComponent: () =>
-            import('./components/student-list/student-list')
+            import('./pages/student-list/student-list')
                     .then(m => m.StudentListComponent),
         canDeactivate: [pendingChangesGuard]
     }

@@ -7,14 +7,15 @@ The Student Management application is built on Angular 22 with Server-Side Rende
 The project strictly follows the **Explicit Layering** architecture across all features:
 
 ```
-Component ──> Facade ──> Store ──> Service ──> REST API
+Page / Component ──> Facade ──> Store ──> Service ──> REST API
 ```
 
 ## Layer Responsibility Matrix
 
 | Layer | Allowed Responsibilities | Forbidden Responsibilities |
 | :--- | :--- | :--- |
-| **Component** | • Render HTML template<br>• Capture user interactions<br>• Inject and consume Facades (read Signals, trigger Facade actions)<br>• Manage strictly local UI state (e.g. `showModal`, form open/close) | ❌ Direct HTTP calls (`HttpClient`)<br>❌ Direct injection of `services/`<br>❌ Direct injection of `store/`<br>❌ Complex business logic or validation algorithms |
+| **Page** | • Routed / Container screen loaded by router<br>• Read route params, query params<br>• Inject Facade (read Signals, trigger actions)<br>• Pass data down to child components via `input()` and handle `output()` | ❌ Direct HTTP calls (`HttpClient`)<br>❌ Direct injection of `services/` or `store/`<br>❌ Writing complex presentation markup directly when reusable components exist |
+| **Component** | • Reusable presentation UI widget (Table, Form, Cards)<br>• Receive data via `input()` / `input.required()`<br>• Emit user events via `output()`<br>• Manage strictly local UI state (e.g. `showDropdown`, accordion) | ❌ Direct HTTP calls (`HttpClient`)<br>❌ Direct injection of `services/` or `store/`<br>❌ Importing from `pages/`<br>❌ Injecting Store or Service |
 | **Facade** | • Coordinate between Store and UI<br>• Expose Signals (state, computed filters, messages)<br>• Expose business actions (e.g., `saveStudent`, `deleteClass`)<br>• Coordinate cross-feature interactions (e.g. injecting another Feature's Facade) | ❌ Direct HTTP calls (`HttpClient`)<br>❌ Direct DOM manipulation or UI rendering |
 | **Store** | • State management via NgRx `signalStore`<br>• Reactive state patching (`patchState`)<br>• Computed signals (`withComputed`) for filtering, sorting, pagination<br>• Async orchestration (`rxMethod`, `switchMap`, `exhaustMap`)<br>• Calls Services for network I/O | ❌ UI logic or HTML elements<br>❌ Direct manipulation of router or DOM |
 | **Service** | • HTTP communication with REST API via `HttpClient`<br>• Request payload mapping and URL parameter encoding<br>• Returning typed Observables (`Observable<T>`) | ❌ Managing UI state<br>❌ Storing persistent state<br>❌ Dependency on Component, Facade, or Store |

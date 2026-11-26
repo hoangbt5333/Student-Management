@@ -8,7 +8,7 @@ import type { Grade } from '../models/grade.model';
 })
 export class GradeService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3001/grades';
+  private readonly apiUrl = '/grades';
 
   getGrades(): Observable<Grade[]> {
     return this.http.get<Grade[]>(this.apiUrl);

@@ -84,11 +84,16 @@ This verifies:
 2. `npm run build`: Type-checks and builds application + SSR server.
 3. `npm run test:ci`: Executes all Vitest unit test suites.
 
-### Step 6: Completion Report with Evidence
-Provide a clear summary including:
-- Files created and modified.
-- Output from `npm run verify` demonstrating zero errors and passing tests.
-- Brief functional walkthrough.
+### Step 6: Git Commit & Completion Report
+1. **Commit Local Changes**:
+   - Follow the `git-commit` protocol: stage newly created and modified files (`git add ...`).
+   - Create a Conventional Commit (e.g., `git commit -m "feat(<feature>): implement <feature-summary>"`).
+   - Never push to remote.
+2. **Provide Completion Summary**:
+   - Files created and modified.
+   - Output from `npm run verify` demonstrating zero errors and passing tests.
+   - Git Commit info (hash and message).
+   - Brief functional walkthrough.
 
 ---
 

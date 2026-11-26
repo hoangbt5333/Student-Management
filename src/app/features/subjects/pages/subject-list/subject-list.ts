@@ -4,43 +4,45 @@ import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angu
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { TeacherFacade } from '../../facades/teacher.facade';
-import type { Teacher } from '../../models/teacher.model';
+import { SubjectFacade } from '../../facades/subject.facade';
+import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
+import type { Subject } from '../../models/subject.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
-import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
-import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
+import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
+import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 
-interface SubjectRef {
+interface GradeRef {
   id: string;
-  teacherId?: string;
+  subjectId: string;
 }
 
 @Component({
-  selector: 'app-teacher-list',
+  selector: 'app-subject-list',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, ModalComponent, PaginationComponent, TooltipDirective],
-  templateUrl: './teacher-list.html',
-  styleUrl: './teacher-list.css',
+  templateUrl: './subject-list.html',
+  styleUrl: './subject-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TeacherListComponent implements OnInit, HasPendingChanges {
-  readonly facade = inject(TeacherFacade);
+export class SubjectListComponent implements OnInit, HasPendingChanges {
+  readonly facade = inject(SubjectFacade);
+  readonly teacherFacade = inject(TeacherFacade);
   readonly authFacade = inject(AuthFacade);
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
 
   readonly searchControl = new FormControl('', { nonNullable: true });
 
-  readonly teachers = this.facade.teachers;
-  readonly pageTeachers = this.facade.pageTeachers;
-  readonly currentPage = this.facade.currentPage;
-  readonly filteredTeacherCount = this.facade.filteredTeacherCount;
-  readonly pageSize = this.facade.pageSize;
+  readonly subjects = this.facade.subjects;
+  readonly filteredSubjects = this.facade.filteredSubjects;
+  readonly pageSubjects = this.facade.pageSubjects;
   readonly loading = this.facade.loading;
   readonly errorMessage = this.facade.errorMessage;
   readonly successMessage = this.facade.successMessage;
+
+  readonly teachers = this.teacherFacade.teachers;
 
   readonly editingId = signal('');
   readonly showForm = signal(false);
@@ -68,10 +70,10 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
   });
 
   readonly form = this.fb.nonNullable.group({
-    id: ['', [Validators.required, Validators.pattern(/^GV\d{3,}$/)]],
+    id: ['', [Validators.required, Validators.pattern(/^MH\d{3,}$/)]],
     name: ['', [Validators.required, Validators.maxLength(100)]],
-    email: ['', [Validators.required, Validators.email]],
-    department: ['', [Validators.required, Validators.maxLength(100)]],
+    credits: [3, [Validators.required, Validators.min(1), Validators.max(10)]],
+    teacherId: [''],
   });
 
   constructor() {
@@ -99,20 +101,25 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
   }
 
   ngOnInit(): void {
-    this.facade.loadTeachers();
+    this.facade.loadSubjects();
+    this.teacherFacade.loadTeachers();
   }
 
   openAdd(): void {
     this.editingId.set('');
-    this.form.reset({ id: '', name: '', email: '', department: '' });
+    this.form.reset({ id: '', name: '', credits: 3, teacherId: '' });
     this.form.controls.id.enable();
     this.showForm.set(true);
     this.facade.clearMessages();
   }
 
-  edit(teacher: Teacher): void {
-    this.editingId.set(teacher.id);
-    this.form.reset({ ...teacher, id: teacher.code ?? teacher.id });
+  edit(subject: Subject): void {
+    this.editingId.set(subject.id);
+    this.form.reset({
+      ...subject,
+      id: subject.code ?? subject.id,
+      teacherId: subject.teacherId ?? ''
+    });
     this.form.controls.id.disable();
     this.showForm.set(true);
     this.facade.clearMessages();
@@ -124,32 +131,40 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
       return;
     }
     const values = this.form.getRawValue();
-    const teacher: Teacher = {
+    const subject: Subject = {
       ...values,
       id: this.editingId() || values.id,
       code: values.id
     };
 
     this.waitingForSave = true;
-    this.facade.saveTeacher(teacher, this.editingId() ? 'update' : 'add');
+    this.facade.saveSubject(subject, this.editingId() ? 'update' : 'add');
   }
 
-  delete(teacher: Teacher): void {
-    this.http.get<SubjectRef[]>('http://localhost:3001/subjects').subscribe({
-      next: (subjects) => {
-        if (subjects.some((subject) => subject.teacherId === teacher.id)) {
-          alert('Không thể xóa giảng viên đang phụ trách môn học.');
+  delete(subject: Subject): void {
+    this.http.get<GradeRef[]>('/grades').subscribe({
+      next: (grades) => {
+        if (grades.some((grade) => grade.subjectId === subject.id)) {
+          alert('Không thể xóa môn học đã có điểm sinh viên.');
           return;
         }
-        if (!window.confirm(`Xóa giảng viên ${teacher.name}?`)) return;
-        this.facade.deleteTeacher(teacher.id);
+        if (!window.confirm(`Xóa môn học ${subject.name}?`)) return;
+        this.facade.deleteSubject(subject.id);
       },
       error: () => {
-        if (window.confirm(`Không thể kiểm tra môn học phụ trách. Vẫn muốn xóa giảng viên ${teacher.name}?`)) {
-          this.facade.deleteTeacher(teacher.id);
+        if (window.confirm(`Không thể kiểm tra điểm sinh viên. Vẫn muốn xóa môn học ${subject.name}?`)) {
+          this.facade.deleteSubject(subject.id);
         }
       }
     });
+  }
+
+  teacherName(id?: string): string {
+    return this.teachers().find((teacher) => teacher.id === id)?.name ?? 'Chưa phân công';
+  }
+
+  setSearch(value: string): void {
+    this.searchControl.setValue(value);
   }
 
   closeForm(force = false): void {
@@ -161,10 +176,6 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
     this.showForm.set(false);
     this.form.reset();
     this.form.controls.id.enable();
-  }
-
-  setSearch(value: string): void {
-    this.searchControl.setValue(value);
   }
 
   onPageChange(page: number): void {

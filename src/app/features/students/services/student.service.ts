@@ -7,9 +7,9 @@ import type { Student } from '../models/student.model';
   providedIn: 'root'
 })
 export class StudentService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
-  private apiUrl = 'http://localhost:3001/students';
+  private readonly apiUrl = '/students';
 
   getStudents(): Observable<Student[]> {
     return this.http.get<Student[]>(this.apiUrl);

@@ -50,7 +50,7 @@ describe('TeacherStore', () => {
   it('should load teachers successfully', () => {
     store.loadTeachers();
 
-    const req = httpMock.expectOne('http://localhost:3001/teachers');
+    const req = httpMock.expectOne('/teachers');
     expect(req.request.method).toBe('GET');
     req.flush(mockTeachers);
 
@@ -70,7 +70,7 @@ describe('TeacherStore', () => {
     }));
 
     store.loadTeachers();
-    httpMock.expectOne('http://localhost:3001/teachers').flush(teachers);
+    httpMock.expectOne('/teachers').flush(teachers);
 
     expect(store.pageTeachers()).toHaveLength(5);
     expect(store.totalPages()).toBe(3);
@@ -91,7 +91,7 @@ describe('TeacherStore', () => {
 
   it('should update page size and clamp invalid page requests', () => {
     store.loadTeachers();
-    httpMock.expectOne('http://localhost:3001/teachers').flush(mockTeachers);
+    httpMock.expectOne('/teachers').flush(mockTeachers);
 
     store.setPage(20);
     expect(store.currentPage()).toBe(1);
@@ -105,7 +105,7 @@ describe('TeacherStore', () => {
 
   it('should filter teachers with Vietnamese diacritic insensitivity', () => {
     store.loadTeachers();
-    const req = httpMock.expectOne('http://localhost:3001/teachers');
+    const req = httpMock.expectOne('/teachers');
     req.flush(mockTeachers);
 
     // 1. Search unaccented "dat" -> matches "Nguyễn Văn Đạt" (tests both accent and đ/Đ)
