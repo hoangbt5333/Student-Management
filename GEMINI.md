@@ -7,7 +7,7 @@
 1. **Core vs Project Boundary:** Tuyệt đối không sửa file trong `core/`, `orchestrator/`, `state/`, `logs/`, `.agents/`, `.claude/`, hoặc `project.config.json` để phục vụ nhu cầu riêng của từng Task.
 2. **Canonical Orchestration Commands:**
    - **Khởi tạo Execution:** `node orchestrator/cli.mjs init --exec <id> --tasks tasks.json`
-   - **Tạo Task Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, liên kết node_modules và chuyển task sang in_progress)*
+   - **Tạo Task Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, cài đặt node_modules qua pnpm và chuyển task sang in_progress)*
    - **Kiểm định Coder Gate:** `node orchestrator/validate.mjs <task_id> ../wt/<task_id> --exec <id> --base integration/<id>`
    - **Bàn giao Task:** Coder tạo `.task-report.json` trong worktree với `result: "READY_FOR_REVIEW"`.
    - **Ghi nhận Review:** `node orchestrator/cli.mjs review-record <task_id> --exec <id> --verdict APPROVED`
@@ -36,7 +36,7 @@ Agent linh hoạt hoạt động theo 2 chế độ:
 - **Nguyên tắc hoạt động:**
   1. Agent tự đọc hiểu mã nguồn, chọn kỹ năng (skill) phù hợp trong `.agents/skills/` (như `feature-development`, `debugging`, `code-validation`, `refactoring`, `ui-standardization`, `test-execution`...).
   2. Triển khai trực tiếp trên workspace hiện tại (không tạo git worktree, không gọi lệnh `orchestrator/cli.mjs`).
-  3. Tự chạy kiểm thử và xác minh (`npm run validate` hoặc `npm run verify`).
+  3. Tự chạy kiểm thử và xác minh (`pnpm run validate` hoặc `pnpm run verify`).
   4. **Git Commit chuẩn hóa:** Sau khi kiểm thử vượt qua, tự động stage các file liên quan và tạo local commit theo chuẩn Conventional Commits (tham chiếu skill `git-commit`). TUYỆT ĐỐI KHÔNG tự ý `git push`.
   5. Đảm bảo working tree sạch sẽ và báo cáo kết quả kèm bằng chứng kiểm thử cùng thông tin commit (hash + message).
 

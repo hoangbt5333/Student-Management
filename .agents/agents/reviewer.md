@@ -29,12 +29,12 @@ Responsibilities:
    - Business logic correctness, edge cases, error handling, and state reactivity (OnPush, Signals).
    - Security: No leaked secrets/tokens, correct permissions, sanitized inputs.
    - **Linting & Formatting**:
-     - On PC environment (where linting is present): Verify `npm run lint` logs in evidence directory (`logs/<exec>/<task>/<commit>/lint.stdout.txt`), ensuring zero linting errors.
+     - On PC environment (where linting is present): Verify `pnpm run lint` logs in evidence directory (`logs/<exec>/<task>/<commit>/lint.stdout.txt`), ensuring zero linting errors.
      - On personal environment (where linting is not yet installed): Audit code cleanliness directly via TypeScript compiler rules, naming conventions, and code structure.
 4. **Evaluate Testing Evidence & Validation Gate**:
    - Check the official validation evidence file: `logs/<exec_id>/<task_id>/<commit_short>/result.json`.
    - Confirm status is `"READY_FOR_REVIEW"` and the commit hash matches the task branch HEAD.
-   - Run targeted tests (`npm run test:ci -- --include='<spec>'`) if independent verification is needed.
+   - Run targeted tests (`pnpm run test:ci -- --include='<spec>'`) if independent verification is needed.
 5. **READ-ONLY Rule & Verdict Recording**:
    - Reviewer is strictly READ-ONLY: Never modify source code, never commit code, and never run merge commands.
    - Issue your official verdict:
