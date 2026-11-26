@@ -55,6 +55,19 @@ if (fs.existsSync(FEATURES_DIR)) {
   }
 }
 
+function checkForbiddenHttpClient(lines, filePath, rule, message) {
+  lines.forEach((line, idx) => {
+    if (line.includes('@angular/common/http') && (line.includes('HttpClient') || line.includes('http'))) {
+      violations.push({
+        file: path.relative(process.cwd(), filePath),
+        line: idx + 1,
+        rule,
+        message
+      });
+    }
+  });
+}
+
 // 2. Check import boundaries
 walk(FEATURES_DIR, (filePath) => {
   const normPath = filePath.replace(/\\/g, '/');
@@ -62,7 +75,7 @@ walk(FEATURES_DIR, (filePath) => {
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split('\n');
 
-  // Rule 2A: Components and Pages must not import services or store directly (non-spec only)
+  // Rule 2A: Components and Pages must not import services, store, or HttpClient directly (non-spec only)
   const isComponentOrPage = (normPath.includes('/components/') || normPath.includes('/pages/')) && !isSpec && normPath.endsWith('.ts');
   if (isComponentOrPage) {
     lines.forEach((line, idx) => {
@@ -87,20 +100,23 @@ walk(FEATURES_DIR, (filePath) => {
         }
       }
     });
+
+    checkForbiddenHttpClient(
+      lines,
+      filePath,
+      'Component/Page -> HttpClient Violation',
+      'Components and Pages must NOT use HttpClient directly. Delegate API calls to Facade.'
+    );
   }
 
   // Rule 2B: Facades must not directly inject HttpClient
   if (normPath.includes('/facades/') && !isSpec && normPath.endsWith('.ts')) {
-    lines.forEach((line, idx) => {
-      if (line.includes('@angular/common/http') && (line.includes('HttpClient') || line.includes('http'))) {
-        violations.push({
-          file: path.relative(process.cwd(), filePath),
-          line: idx + 1,
-          rule: 'Facade -> HttpClient Violation',
-          message: `Facades must NOT use HttpClient directly. Delegate API calls to Service or Store.`
-        });
-      }
-    });
+    checkForbiddenHttpClient(
+      lines,
+      filePath,
+      'Facade -> HttpClient Violation',
+      'Facades must NOT use HttpClient directly. Delegate API calls to Service or Store.'
+    );
   }
 
   // Rule 2C: Services must not import components, pages, facades, or store
@@ -165,6 +181,7 @@ if (violations.length === 0) {
   console.log('  ✔ Components and Pages communicate exclusively through Facades');
   console.log('  ✔ Zero direct Component/Page -> Service calls');
   console.log('  ✔ Zero direct Component/Page -> Store calls');
+  console.log('  ✔ Zero direct Component/Page/Facade -> HttpClient usage');
   console.log('  ✔ Layer separation is intact');
   process.exit(0);
 } else {

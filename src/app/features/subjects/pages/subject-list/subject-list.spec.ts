@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { SubjectListComponent } from './subject-list';
 import { SubjectFacade } from '../../facades/subject.facade';
 import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
+import { GradeFacade } from '../../../grades/facades/grade.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import type { Subject } from '../../models/subject.model';
 import type { Teacher } from '../../../teachers/models/teacher.model';
+import type { Grade } from '../../../grades/models/grade.model';
 import { UTF8_BOM } from '../../../../shared/utils/csv-export.util';
 
 describe('SubjectListComponent', () => {
@@ -41,8 +41,14 @@ describe('SubjectListComponent', () => {
     },
   ]);
 
+  const mockGradesSignal = signal<Grade[]>([]);
+  const mockGradesLoadingSignal = signal(false);
+  const mockGradesErrorSignal = signal('');
+
   const mockLoadSubjects = vi.fn();
   const mockLoadTeachers = vi.fn();
+  const mockLoadGrades = vi.fn();
+  const mockDeleteSubject = vi.fn();
   const mockClearMessages = vi.fn();
   const mockSetSearchTerm = vi.fn();
   const mockSetPage = vi.fn();
@@ -51,13 +57,15 @@ describe('SubjectListComponent', () => {
   beforeEach(async () => {
     mockFilteredSubjectsSignal.set(mockSubjectsSignal());
     mockPageSubjectsSignal.set(mockSubjectsSignal());
+    mockGradesSignal.set([]);
+    mockGradesLoadingSignal.set(false);
+    mockGradesErrorSignal.set('');
+    mockDeleteSubject.mockReset();
 
     await TestBed.configureTestingModule({
       imports: [SubjectListComponent],
       providers: [
         provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
         {
           provide: SubjectFacade,
           useValue: {
@@ -74,6 +82,7 @@ describe('SubjectListComponent', () => {
             errorMessage: signal(null),
             successMessage: signal(null),
             loadSubjects: mockLoadSubjects,
+            deleteSubject: mockDeleteSubject,
             clearMessages: mockClearMessages,
             setSearchTerm: mockSetSearchTerm,
             setPage: mockSetPage,
@@ -85,6 +94,15 @@ describe('SubjectListComponent', () => {
           useValue: {
             teachers: mockTeachersSignal,
             loadTeachers: mockLoadTeachers,
+          },
+        },
+        {
+          provide: GradeFacade,
+          useValue: {
+            grades: mockGradesSignal,
+            loading: mockGradesLoadingSignal,
+            errorMessage: mockGradesErrorSignal,
+            loadGrades: mockLoadGrades,
           },
         },
         {
@@ -106,9 +124,10 @@ describe('SubjectListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call loadSubjects and loadTeachers on init', () => {
+  it('should call loadSubjects, loadTeachers, and loadGrades on init', () => {
     expect(mockLoadSubjects).toHaveBeenCalled();
     expect(mockLoadTeachers).toHaveBeenCalled();
+    expect(mockLoadGrades).toHaveBeenCalled();
   });
 
   it('should render subject rows in table', () => {
@@ -244,14 +263,54 @@ describe('SubjectListComponent', () => {
     expect(deleteSpy).toHaveBeenCalledWith(mockSubjectsSignal()[0]);
   });
 
+  describe('delete constraints via GradeFacade', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should block deletion when a grade references the subject', () => {
+      mockGradesSignal.set([
+        { id: 'G001', studentId: 'SV001', subjectId: 'MH001', score: 8.5 },
+      ]);
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+      const confirmSpy = vi.spyOn(window, 'confirm');
+
+      component.delete(mockSubjectsSignal()[0]);
+
+      expect(alertSpy).toHaveBeenCalledWith('Không thể xóa môn học đã có điểm sinh viên.');
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(mockDeleteSubject).not.toHaveBeenCalled();
+    });
+
+    it('should delete subject when no grades reference it and user confirms', () => {
+      mockGradesSignal.set([]);
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      component.delete(mockSubjectsSignal()[0]);
+
+      expect(confirmSpy).toHaveBeenCalledWith('Xóa môn học Lap trinh Web?');
+      expect(mockDeleteSubject).toHaveBeenCalledWith('MH001');
+    });
+
+    it('should ask fallback confirmation when gradeFacade has an error', () => {
+      mockGradesErrorSignal.set('Lỗi tải điểm');
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      component.delete(mockSubjectsSignal()[0]);
+
+      expect(confirmSpy).toHaveBeenCalledWith(
+        'Không thể kiểm tra điểm sinh viên. Vẫn muốn xóa môn học Lap trinh Web?'
+      );
+      expect(mockDeleteSubject).toHaveBeenCalledWith('MH001');
+    });
+  });
+
   it('should only render view-detail button and hide edit/delete buttons when manage-subjects is denied', async () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [SubjectListComponent],
       providers: [
         provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
         {
           provide: SubjectFacade,
           useValue: {
@@ -268,6 +327,7 @@ describe('SubjectListComponent', () => {
             errorMessage: signal(null),
             successMessage: signal(null),
             loadSubjects: mockLoadSubjects,
+            deleteSubject: mockDeleteSubject,
             clearMessages: mockClearMessages,
             setSearchTerm: mockSetSearchTerm,
             setPage: mockSetPage,
@@ -279,6 +339,15 @@ describe('SubjectListComponent', () => {
           useValue: {
             teachers: mockTeachersSignal,
             loadTeachers: mockLoadTeachers,
+          },
+        },
+        {
+          provide: GradeFacade,
+          useValue: {
+            grades: mockGradesSignal,
+            loading: mockGradesLoadingSignal,
+            errorMessage: mockGradesErrorSignal,
+            loadGrades: mockLoadGrades,
           },
         },
         {

@@ -2,9 +2,9 @@ import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, Hos
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { TeacherFacade } from '../../facades/teacher.facade';
+import { SubjectFacade } from '../../../subjects/facades/subject.facade';
 import type { Teacher } from '../../models/teacher.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
@@ -20,11 +20,6 @@ const TEACHER_CSV_COLUMNS: readonly CsvColumn<Teacher>[] = [
   { header: 'Khoa / Bộ môn', accessor: 'department' },
 ];
 
-interface SubjectRef {
-  id: string;
-  teacherId?: string;
-}
-
 @Component({
   selector: 'app-teacher-list',
   standalone: true,
@@ -35,9 +30,9 @@ interface SubjectRef {
 })
 export class TeacherListComponent implements OnInit, HasPendingChanges {
   readonly facade = inject(TeacherFacade);
+  readonly subjectFacade = inject(SubjectFacade);
   readonly authFacade = inject(AuthFacade);
   private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient);
 
   readonly searchControl = new FormControl('', { nonNullable: true });
 
@@ -108,6 +103,7 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
 
   ngOnInit(): void {
     this.facade.loadTeachers();
+    this.subjectFacade.loadSubjects();
   }
 
   openAdd(): void {
@@ -143,21 +139,25 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
   }
 
   delete(teacher: Teacher): void {
-    this.http.get<SubjectRef[]>('/subjects').subscribe({
-      next: (subjects) => {
-        if (subjects.some((subject) => subject.teacherId === teacher.id)) {
-          alert('Không thể xóa giảng viên đang phụ trách môn học.');
-          return;
-        }
-        if (!window.confirm(`Xóa giảng viên ${teacher.name}?`)) return;
+    if (this.subjectFacade.errorMessage()) {
+      if (window.confirm(`Không thể kiểm tra môn học phụ trách. Vẫn muốn xóa giảng viên ${teacher.name}?`)) {
         this.facade.deleteTeacher(teacher.id);
-      },
-      error: () => {
-        if (window.confirm(`Không thể kiểm tra môn học phụ trách. Vẫn muốn xóa giảng viên ${teacher.name}?`)) {
-          this.facade.deleteTeacher(teacher.id);
-        }
       }
-    });
+      return;
+    }
+
+    if (this.subjectFacade.loading()) {
+      alert('Đang tải dữ liệu môn học. Vui lòng thử lại sau giây lát.');
+      return;
+    }
+
+    if (this.subjectFacade.subjects().some((subject) => subject.teacherId === teacher.id)) {
+      alert('Không thể xóa giảng viên đang phụ trách môn học.');
+      return;
+    }
+
+    if (!window.confirm(`Xóa giảng viên ${teacher.name}?`)) return;
+    this.facade.deleteTeacher(teacher.id);
   }
 
   closeForm(force = false): void {

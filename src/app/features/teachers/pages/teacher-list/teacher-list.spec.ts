@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TeacherListComponent } from './teacher-list';
 import { TeacherFacade } from '../../facades/teacher.facade';
+import { SubjectFacade } from '../../../subjects/facades/subject.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { UTF8_BOM } from '../../../../shared/utils/csv-export.util';
 import type { Teacher } from '../../models/teacher.model';
+import type { Subject } from '../../../subjects/models/subject.model';
 
 describe('TeacherListComponent', () => {
   let component: TeacherListComponent;
@@ -26,7 +26,13 @@ describe('TeacherListComponent', () => {
   ]);
   const mockFilteredTeachersSignal = signal<Teacher[]>(mockTeachersSignal());
 
+  const mockSubjectsSignal = signal<Subject[]>([]);
+  const mockSubjectsLoadingSignal = signal(false);
+  const mockSubjectsErrorSignal = signal('');
+
   const mockLoadTeachers = vi.fn();
+  const mockLoadSubjects = vi.fn();
+  const mockDeleteTeacher = vi.fn();
   const mockClearMessages = vi.fn();
   const mockSetSearchTerm = vi.fn();
   const mockPageTeachersSignal = signal<Teacher[]>(mockTeachersSignal());
@@ -50,13 +56,15 @@ describe('TeacherListComponent', () => {
     mockFilteredTeachersSignal.set(defaultTeachers);
     mockPageTeachersSignal.set(defaultTeachers);
     mockFilteredTeacherCountSignal.set(1);
+    mockSubjectsSignal.set([]);
+    mockSubjectsLoadingSignal.set(false);
+    mockSubjectsErrorSignal.set('');
+    mockDeleteTeacher.mockReset();
 
     await TestBed.configureTestingModule({
       imports: [TeacherListComponent],
       providers: [
         provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
         {
           provide: TeacherFacade,
           useValue: {
@@ -70,10 +78,20 @@ describe('TeacherListComponent', () => {
             errorMessage: signal(null),
             successMessage: signal(null),
             loadTeachers: mockLoadTeachers,
+            deleteTeacher: mockDeleteTeacher,
             clearMessages: mockClearMessages,
             setSearchTerm: mockSetSearchTerm,
             setPage: mockSetPage,
             setPageSize: mockSetPageSize,
+          },
+        },
+        {
+          provide: SubjectFacade,
+          useValue: {
+            subjects: mockSubjectsSignal,
+            loading: mockSubjectsLoadingSignal,
+            errorMessage: mockSubjectsErrorSignal,
+            loadSubjects: mockLoadSubjects,
           },
         },
         {
@@ -95,8 +113,9 @@ describe('TeacherListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call loadTeachers on initialization', () => {
+  it('should call loadTeachers and loadSubjects on initialization', () => {
     expect(mockLoadTeachers).toHaveBeenCalled();
+    expect(mockLoadSubjects).toHaveBeenCalled();
   });
 
   it('should render teachers table rows', () => {
@@ -232,14 +251,54 @@ describe('TeacherListComponent', () => {
     expect(deleteSpy).toHaveBeenCalledWith(mockTeachersSignal()[0]);
   });
 
+  describe('delete constraints via SubjectFacade', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should block deletion when a subject references the teacher', () => {
+      mockSubjectsSignal.set([
+        { id: 'MH001', code: 'MH001', name: 'Lap trinh Web', credits: 3, teacherId: 'GV001' },
+      ]);
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+      const confirmSpy = vi.spyOn(window, 'confirm');
+
+      component.delete(mockTeachersSignal()[0]);
+
+      expect(alertSpy).toHaveBeenCalledWith('Không thể xóa giảng viên đang phụ trách môn học.');
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(mockDeleteTeacher).not.toHaveBeenCalled();
+    });
+
+    it('should delete teacher when no subjects reference them and user confirms', () => {
+      mockSubjectsSignal.set([]);
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      component.delete(mockTeachersSignal()[0]);
+
+      expect(confirmSpy).toHaveBeenCalledWith('Xóa giảng viên Nguyen Van B?');
+      expect(mockDeleteTeacher).toHaveBeenCalledWith('GV001');
+    });
+
+    it('should ask fallback confirmation when subjectFacade has an error', () => {
+      mockSubjectsErrorSignal.set('Lỗi tải môn học');
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      component.delete(mockTeachersSignal()[0]);
+
+      expect(confirmSpy).toHaveBeenCalledWith(
+        'Không thể kiểm tra môn học phụ trách. Vẫn muốn xóa giảng viên Nguyen Van B?'
+      );
+      expect(mockDeleteTeacher).toHaveBeenCalledWith('GV001');
+    });
+  });
+
   it('should only render view-detail button and hide edit/delete buttons when manage-teachers is denied', async () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [TeacherListComponent],
       providers: [
         provideRouter([]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
         {
           provide: TeacherFacade,
           useValue: {
@@ -253,10 +312,20 @@ describe('TeacherListComponent', () => {
             errorMessage: signal(null),
             successMessage: signal(null),
             loadTeachers: mockLoadTeachers,
+            deleteTeacher: mockDeleteTeacher,
             clearMessages: mockClearMessages,
             setSearchTerm: mockSetSearchTerm,
             setPage: mockSetPage,
             setPageSize: mockSetPageSize,
+          },
+        },
+        {
+          provide: SubjectFacade,
+          useValue: {
+            subjects: mockSubjectsSignal,
+            loading: mockSubjectsLoadingSignal,
+            errorMessage: mockSubjectsErrorSignal,
+            loadSubjects: mockLoadSubjects,
           },
         },
         {

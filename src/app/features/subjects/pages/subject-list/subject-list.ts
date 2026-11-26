@@ -2,10 +2,10 @@ import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, Hos
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { SubjectFacade } from '../../facades/subject.facade';
 import { TeacherFacade } from '../../../teachers/facades/teacher.facade';
+import { GradeFacade } from '../../../grades/facades/grade.facade';
 import type { Subject } from '../../models/subject.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
@@ -13,11 +13,6 @@ import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 import { downloadCsv, objectsToCsv } from '../../../../shared/utils/csv-export.util';
-
-interface GradeRef {
-  id: string;
-  subjectId: string;
-}
 
 @Component({
   selector: 'app-subject-list',
@@ -30,9 +25,9 @@ interface GradeRef {
 export class SubjectListComponent implements OnInit, HasPendingChanges {
   readonly facade = inject(SubjectFacade);
   readonly teacherFacade = inject(TeacherFacade);
+  readonly gradeFacade = inject(GradeFacade);
   readonly authFacade = inject(AuthFacade);
   private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient);
 
   readonly searchControl = new FormControl('', { nonNullable: true });
 
@@ -104,6 +99,7 @@ export class SubjectListComponent implements OnInit, HasPendingChanges {
   ngOnInit(): void {
     this.facade.loadSubjects();
     this.teacherFacade.loadTeachers();
+    this.gradeFacade.loadGrades();
   }
 
   openAdd(): void {
@@ -143,21 +139,25 @@ export class SubjectListComponent implements OnInit, HasPendingChanges {
   }
 
   delete(subject: Subject): void {
-    this.http.get<GradeRef[]>('/grades').subscribe({
-      next: (grades) => {
-        if (grades.some((grade) => grade.subjectId === subject.id)) {
-          alert('Không thể xóa môn học đã có điểm sinh viên.');
-          return;
-        }
-        if (!window.confirm(`Xóa môn học ${subject.name}?`)) return;
+    if (this.gradeFacade.errorMessage()) {
+      if (window.confirm(`Không thể kiểm tra điểm sinh viên. Vẫn muốn xóa môn học ${subject.name}?`)) {
         this.facade.deleteSubject(subject.id);
-      },
-      error: () => {
-        if (window.confirm(`Không thể kiểm tra điểm sinh viên. Vẫn muốn xóa môn học ${subject.name}?`)) {
-          this.facade.deleteSubject(subject.id);
-        }
       }
-    });
+      return;
+    }
+
+    if (this.gradeFacade.loading()) {
+      alert('Đang tải dữ liệu điểm sinh viên. Vui lòng thử lại sau giây lát.');
+      return;
+    }
+
+    if (this.gradeFacade.grades().some((grade) => grade.subjectId === subject.id)) {
+      alert('Không thể xóa môn học đã có điểm sinh viên.');
+      return;
+    }
+
+    if (!window.confirm(`Xóa môn học ${subject.name}?`)) return;
+    this.facade.deleteSubject(subject.id);
   }
 
   teacherName(id?: string): string {
