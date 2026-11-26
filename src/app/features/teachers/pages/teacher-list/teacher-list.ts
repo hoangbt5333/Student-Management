@@ -11,6 +11,14 @@ import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
+import { downloadCsv, objectsToCsv, type CsvColumn } from '../../../../shared/utils/csv-export.util';
+
+const TEACHER_CSV_COLUMNS: readonly CsvColumn<Teacher>[] = [
+  { header: 'Mã GV', accessor: (t) => t.code || t.id },
+  { header: 'Họ và tên', accessor: 'name' },
+  { header: 'Email', accessor: 'email' },
+  { header: 'Khoa / Bộ môn', accessor: 'department' },
+];
 
 interface SubjectRef {
   id: string;
@@ -173,5 +181,10 @@ export class TeacherListComponent implements OnInit, HasPendingChanges {
 
   onPageSizeChange(pageSize: number): void {
     this.facade.setPageSize(pageSize);
+  }
+
+  exportCsv(): void {
+    const csv = objectsToCsv(this.facade.filteredTeachers(), TEACHER_CSV_COLUMNS);
+    downloadCsv(csv, 'teachers.csv');
   }
 }

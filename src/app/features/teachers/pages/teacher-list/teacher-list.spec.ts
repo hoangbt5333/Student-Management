@@ -8,6 +8,7 @@ import { TeacherListComponent } from './teacher-list';
 import { TeacherFacade } from '../../facades/teacher.facade';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { UTF8_BOM } from '../../../../shared/utils/csv-export.util';
 import type { Teacher } from '../../models/teacher.model';
 
 describe('TeacherListComponent', () => {
@@ -23,6 +24,7 @@ describe('TeacherListComponent', () => {
       department: 'Khoa hoc may tinh',
     },
   ]);
+  const mockFilteredTeachersSignal = signal<Teacher[]>(mockTeachersSignal());
 
   const mockLoadTeachers = vi.fn();
   const mockClearMessages = vi.fn();
@@ -35,6 +37,20 @@ describe('TeacherListComponent', () => {
   const mockSetPageSize = vi.fn();
 
   beforeEach(async () => {
+    const defaultTeachers: Teacher[] = [
+      {
+        id: 'GV001',
+        code: 'GV001',
+        name: 'Nguyen Van B',
+        email: 'b@university.edu.vn',
+        department: 'Khoa hoc may tinh',
+      },
+    ];
+    mockTeachersSignal.set(defaultTeachers);
+    mockFilteredTeachersSignal.set(defaultTeachers);
+    mockPageTeachersSignal.set(defaultTeachers);
+    mockFilteredTeacherCountSignal.set(1);
+
     await TestBed.configureTestingModule({
       imports: [TeacherListComponent],
       providers: [
@@ -45,7 +61,7 @@ describe('TeacherListComponent', () => {
           provide: TeacherFacade,
           useValue: {
             teachers: mockTeachersSignal,
-            filteredTeachers: mockTeachersSignal,
+            filteredTeachers: mockFilteredTeachersSignal,
             pageTeachers: mockPageTeachersSignal,
             filteredTeacherCount: mockFilteredTeacherCountSignal,
             currentPage: mockCurrentPageSignal,
@@ -259,5 +275,84 @@ describe('TeacherListComponent', () => {
     expect(unauthFixture.debugElement.query(By.css('.btn-view-detail'))).toBeTruthy();
     expect(unauthFixture.debugElement.query(By.css('.btn-edit-teacher'))).toBeNull();
     expect(unauthFixture.debugElement.query(By.css('.btn-delete-teacher'))).toBeNull();
+  });
+
+  it('should render export CSV button with text "Xuất CSV" and call exportCsv on click', () => {
+    const exportBtn = fixture.debugElement.query(By.css('.page-header-actions .btn-export-csv'));
+    expect(exportBtn).toBeTruthy();
+    expect(exportBtn.nativeElement.textContent.trim()).toBe('Xuất CSV');
+
+    const exportSpy = vi.spyOn(component, 'exportCsv').mockImplementation(() => undefined);
+    exportBtn.nativeElement.click();
+
+    expect(exportSpy).toHaveBeenCalledOnce();
+    exportSpy.mockRestore();
+  });
+
+  it('should export all filteredTeachers (not only pageTeachers) as teachers.csv with UTF-8 BOM', async () => {
+    const filteredList: Teacher[] = [
+      {
+        id: 'GV001',
+        code: 'GV001',
+        name: 'Nguyễn Văn B',
+        email: 'b@university.edu.vn',
+        department: 'Khoa học máy tính',
+      },
+      {
+        id: 'GV002',
+        name: 'Trần Thị "C", PhD',
+        email: 'c@university.edu.vn',
+        department: 'Toán, Tin học',
+      },
+    ];
+    mockFilteredTeachersSignal.set(filteredList);
+    mockPageTeachersSignal.set([filteredList[0]]);
+    fixture.detectChanges();
+
+    const createObjectURLSpy = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue('blob:teachers-csv');
+    const revokeObjectURLSpy = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => undefined);
+    const originalCreateElement = document.createElement.bind(document);
+    const createdAnchor = originalCreateElement('a');
+    const clickSpy = vi.spyOn(createdAnchor, 'click').mockImplementation(() => undefined);
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tagName: string, options?: ElementCreationOptions) =>
+        tagName === 'a' ? createdAnchor : originalCreateElement(tagName, options),
+      );
+
+    try {
+      const exportBtn = fixture.debugElement.query(By.css('.btn-export-csv'));
+      exportBtn.nativeElement.click();
+
+      expect(createObjectURLSpy).toHaveBeenCalledOnce();
+      const blob = createObjectURLSpy.mock.calls[0][0] as Blob;
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.type).toBe('text/csv;charset=utf-8');
+
+      const csvText = new TextDecoder('utf-8', { ignoreBOM: true }).decode(
+        await blob.arrayBuffer(),
+      );
+      expect(csvText.startsWith(UTF8_BOM)).toBe(true);
+      expect(csvText).toBe(
+        UTF8_BOM +
+          [
+            'Mã GV,Họ và tên,Email,Khoa / Bộ môn',
+            'GV001,Nguyễn Văn B,b@university.edu.vn,Khoa học máy tính',
+            'GV002,"Trần Thị ""C"", PhD",c@university.edu.vn,"Toán, Tin học"',
+          ].join('\r\n'),
+      );
+
+      expect(createElementSpy).toHaveBeenCalledWith('a');
+      expect(createdAnchor.href).toBe('blob:teachers-csv');
+      expect(createdAnchor.download).toBe('teachers.csv');
+      expect(clickSpy).toHaveBeenCalledOnce();
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:teachers-csv');
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 });

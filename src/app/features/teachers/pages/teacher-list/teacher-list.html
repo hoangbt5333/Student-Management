@@ -5,11 +5,16 @@
       <p>Hồ sơ giảng viên, khoa chuyên môn và môn học phụ trách trong hệ thống.</p>
     </div>
 
-    @if (authFacade.can('manage-teachers')) {
-      <button type="button" class="btn btn-primary primary-button primary" (click)="openAdd()">
-        + Thêm giảng viên
+    <div class="page-header-actions">
+      <button type="button" class="btn btn-secondary btn-export-csv" (click)="exportCsv()">
+        Xuất CSV
       </button>
-    }
+      @if (authFacade.can('manage-teachers')) {
+        <button type="button" class="btn btn-primary primary-button primary" (click)="openAdd()">
+          + Thêm giảng viên
+        </button>
+      }
+    </div>
   </header>
 
   @if (showForm()) {
