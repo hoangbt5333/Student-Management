@@ -1,78 +1,60 @@
 {
   "tasks": [
     {
-      "id": "TASK-REFACTOR-GRADES",
-      "title": "Refactor module Grades: tách routed page component vào thư mục pages/",
-      "description": "Chuyển đổi cấu trúc thư mục của feature Grades theo chuẩn kiến trúc Explicit Layering. Di chuyển smart page component GradeList (grade-list.ts, grade-list.html, grade-list.css, grade-list.spec.ts) từ src/app/features/grades/components/grade-list sang src/app/features/grades/pages/grade-list. Cập nhật grades.routes.ts để lazy load từ ./pages/grade-list/grade-list. Dọn dẹp thư mục cũ trong components/ và đảm bảo toàn bộ unit test, linting, typecheck, architecture check đều pass 100%.",
+      "id": "TASK-CSV-UTIL",
+      "title": "Tạo shared utility xuất CSV thuần (csv-export.util.ts) và unit tests",
+      "description": "Xây dựng utility thuần tại src/app/shared/utils/csv-export.util.ts (kèm src/app/shared/utils/csv-export.util.spec.ts) để chuyển đổi mảng object thành chuỗi CSV chuẩn RFC 4180 có UTF-8 BOM (\\uFEFF), escape đúng dấu phẩy, ngoặc kép và xuống dòng (\\r, \\n), cùng helper downloadCsv an toàn SSR để các feature modules tái sử dụng thống nhất.",
       "depends_on": [],
       "owned_files": [
-        "src/app/features/grades/**"
+        "src/app/shared/utils/csv-export.util.ts",
+        "src/app/shared/utils/csv-export.util.spec.ts"
       ],
       "acceptance_criteria": [
-        "AC-1: Di chuyển toàn bộ file của GradeList (grade-list.ts, grade-list.html, grade-list.css, grade-list.spec.ts) từ src/app/features/grades/components/grade-list/ sang src/app/features/grades/pages/grade-list/.",
-        "AC-2: Cập nhật file grades.routes.ts để import và lazy load GradeListComponent từ ./pages/grade-list/grade-list.",
-        "AC-3: Giữ nguyên selector app-grade-list, logic reactive signals và tích hợp Facade (GradeFacade, StudentFacade, SubjectFacade, AuthFacade).",
-        "AC-4: Xóa sạch thư mục cũ src/app/features/grades/components/grade-list/.",
-        "AC-5: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering (không import trực tiếp Store hay Service từ Component/Page).",
-        "AC-6: Toàn bộ unit tests của module Grades (grade-list.spec.ts, grade.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
-        "AC-7: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
+        "AC-1: Tạo file src/app/shared/utils/csv-export.util.ts export các API với signature chuẩn: `export const UTF8_BOM = '\\uFEFF'`, `export type CsvCellValue = string | number | boolean | null | undefined`, `export interface CsvColumn<T> { readonly header: string; readonly accessor: keyof T | ((row: T) => CsvCellValue); }`, `export function escapeCsvCell(value: CsvCellValue): string`, `export function objectsToCsv<T extends object>(rows: readonly T[], columns?: readonly CsvColumn<T>[]): string`, và `export function downloadCsv(csvContent: string, filename: string): boolean`.",
+        "AC-2: Dùng generic constraint `T extends object` (không dùng `Record<string, unknown>`) để các TypeScript interface như `Teacher` và `Subject` truyền vào hợp lệ không lỗi typecheck.",
+        "AC-3: `objectsToCsv` luôn bắt đầu kết quả bằng UTF-8 BOM (`\\uFEFF`), ngăn cách các dòng bằng `\\r\\n`, escape cả header và cell value qua `escapeCsvCell` (chuyển `null`/`undefined` thành `''`, chuyển `number`/`boolean` qua `String(value)`, bọc trong ngoặc kép `\"...\"` và nhân đôi `\"` thành `\"\"` khi chứa `,`, `\"`, `\\r`, hoặc `\\n`).",
+        "AC-4: Khi truyền `columns` và `rows` rỗng `[]`, `objectsToCsv` trả về `UTF8_BOM + headerLine`; khi không truyền `columns` và `rows` rỗng `[]`, trả về `UTF8_BOM`; khi không truyền `columns` và `rows` khác rỗng, tự lấy `Object.keys(rows[0])` làm cột.",
+        "AC-5: `downloadCsv(csvContent, filename)` kiểm tra môi trường SSR (`typeof document === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function'`), trả về `false` nếu không có DOM/URL; đảm bảo chỉ có 1 UTF-8 BOM (không bị nhân đôi BOM nếu `csvContent` đã có `UTF8_BOM`), tạo `Blob` với `{ type: 'text/csv;charset=utf-8' }`, tạo thẻ `<a>` với `download = filename`, gọi `click()`, giải phóng bằng `URL.revokeObjectURL(objectUrl)` trong `finally`, và trả về `true`.",
+        "AC-6: Tạo unit test đầy đủ tại src/app/shared/utils/csv-export.util.spec.ts bằng Vitest kiểm chứng: UTF-8 BOM, giữ nguyên tiếng Việt Unicode, escape dấu phẩy / ngoặc kép / xuống dòng (`\\n` và `\\r\\n`), giá trị `null`/`undefined`/số/boolean, mảng rỗng có và không có `columns`, auto-columns khi bỏ qua `columns`, và `downloadCsv` (tạo Blob, filename, click, revokeObjectURL, không nhân đôi BOM, SSR guard).",
+        "AC-7: Không vi phạm Explicit Layering (shared util không import từ `features/`), pass 100% `pnpm run build`, `pnpm exec tsc --noEmit -p tsconfig.app.json`, `pnpm run lint`, `pnpm run check:arch`, và `pnpm test -- --watch=false`."
       ]
     },
     {
-      "id": "TASK-REFACTOR-SUBJECTS",
-      "title": "Refactor module Subjects: tách các routed page component vào thư mục pages/",
-      "description": "Chuyển đổi cấu trúc thư mục của feature Subjects theo chuẩn kiến trúc Explicit Layering. Di chuyển 2 smart container page components: SubjectList (subject-list.ts, subject-list.html, subject-list.css, subject-list.spec.ts) và SubjectDetail (subject-detail.ts, subject-detail.html, subject-detail.css, subject-detail.spec.ts) từ src/app/features/subjects/components/ sang src/app/features/subjects/pages/. Cập nhật subjects.routes.ts để lazy load cả 2 routes từ thư mục pages/. Dọn dẹp thư mục cũ trong components/ và đảm bảo toàn bộ unit test, linting, typecheck, architecture check đều pass 100%.",
-      "depends_on": [],
+      "id": "TASK-TEACHERS-CSV",
+      "title": "Thêm tính năng xuất CSV (teachers.csv) trên trang danh sách Giáo viên",
+      "description": "Cập nhật TeacherListComponent (src/app/features/teachers/pages/teacher-list/) để thêm nút \"Xuất CSV\" sử dụng shared utility `objectsToCsv` và `downloadCsv` từ `src/app/shared/utils/csv-export.util.ts` nhằm xuất toàn bộ danh sách giáo viên đã lọc (`facade.filteredTeachers()`) ra file `teachers.csv`.",
+      "depends_on": [
+        "TASK-CSV-UTIL"
+      ],
       "owned_files": [
-        "src/app/features/subjects/**"
+        "src/app/features/teachers/pages/teacher-list/**"
       ],
       "acceptance_criteria": [
-        "AC-1: Di chuyển toàn bộ file của SubjectList từ src/app/features/subjects/components/subject-list/ sang src/app/features/subjects/pages/subject-list/.",
-        "AC-2: Di chuyển toàn bộ file của SubjectDetail từ src/app/features/subjects/components/subject-detail/ sang src/app/features/subjects/pages/subject-detail/.",
-        "AC-3: Cập nhật subjects.routes.ts để lazy load SubjectListComponent từ ./pages/subject-list/subject-list và SubjectDetailComponent từ ./pages/subject-detail/subject-detail.",
-        "AC-4: Giữ nguyên selector app-subject-list và app-subject-detail, đảm bảo các đường dẫn import nội bộ hoạt động trơn tru.",
-        "AC-5: Xóa sạch các thư mục cũ src/app/features/subjects/components/subject-list/ và src/app/features/subjects/components/subject-detail/.",
-        "AC-6: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering (không import trực tiếp Store hay Service từ Component/Page).",
-        "AC-7: Toàn bộ unit tests của module Subjects (subject-list.spec.ts, subject-detail.spec.ts, subject.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
-        "AC-8: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
+        "AC-1: Trong `teacher-list.html`, thêm nhóm `.page-header-actions` trong `.page-header` chứa nút `<button type=\"button\" class=\"btn btn-secondary btn-export-csv\" (click)=\"exportCsv()\">Xuất CSV</button>` đặt cạnh nút `+ Thêm giảng viên` (vẫn giữ class `primary-button` và điều kiện `@if (authFacade.can('manage-teachers'))` cho nút thêm mới).",
+        "AC-2: Trong `teacher-list.css`, bổ sung style cho `.page-header-actions` (`display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;`) đồng bộ với design system.",
+        "AC-3: Trong `teacher-list.ts`, implement method `exportCsv(): void` sử dụng `objectsToCsv` và `downloadCsv` từ `../../../../shared/utils/csv-export.util` để xuất `this.facade.filteredTeachers()` (toàn bộ danh sách đang lọc, không chỉ trang hiện tại) với các cột: `Mã GV` (`(t) => t.code || t.id`), `Họ và tên` (`'name'`), `Email` (`'email'`), `Khoa / Bộ môn` (`'department'`) và tải xuống với tên file `'teachers.csv'`.",
+        "AC-4: Tuân thủ nghiêm ngặt Explicit Layering: `TeacherListComponent` chỉ đọc dữ liệu qua `TeacherFacade` (`this.facade.filteredTeachers()`), không import trực tiếp `TeacherStore` hay `TeacherService`.",
+        "AC-5: Bổ sung unit test trong `teacher-list.spec.ts` kiểm chứng: nút `.btn-export-csv` hiển thị với text `Xuất CSV`, click nút gọi `exportCsv()`, xuất toàn bộ `facade.filteredTeachers()` chứ không chỉ `pageTeachers()`, tạo Blob `text/csv;charset=utf-8` có UTF-8 BOM và nội dung CSV đúng dữ liệu giáo viên, gán `download = 'teachers.csv'`, gọi `click()` và `URL.revokeObjectURL()`.",
+        "AC-6: Toàn bộ unit tests hiện có của `teacher-list.spec.ts` và toàn bộ test suite (`pnpm test -- --watch=false`) pass 100%, cùng `pnpm run build`, `pnpm exec tsc --noEmit -p tsconfig.app.json`, `pnpm run lint`, và `pnpm run check:arch` pass 0 lỗi."
       ]
     },
     {
-      "id": "TASK-REFACTOR-TEACHERS",
-      "title": "Refactor module Teachers: tách các routed page component vào thư mục pages/",
-      "description": "Chuyển đổi cấu trúc thư mục của feature Teachers theo chuẩn kiến trúc Explicit Layering. Di chuyển 2 smart container page components: TeacherList (teacher-list.ts, teacher-list.html, teacher-list.css, teacher-list.spec.ts) và TeacherDetail (teacher-detail.ts, teacher-detail.html, teacher-detail.css, teacher-detail.spec.ts) từ src/app/features/teachers/components/ sang src/app/features/teachers/pages/. Cập nhật teachers.routes.ts để lazy load các routes từ thư mục pages/. Dọn dẹp thư mục cũ trong components/ và đảm bảo toàn bộ unit test, linting, typecheck, architecture check đều pass 100%.",
-      "depends_on": [],
+      "id": "TASK-SUBJECTS-CSV",
+      "title": "Thêm tính năng xuất CSV (subjects.csv) trên trang danh sách Môn học",
+      "description": "Cập nhật SubjectListComponent (src/app/features/subjects/pages/subject-list/) để thêm nút \"Xuất CSV\" sử dụng shared utility `objectsToCsv` và `downloadCsv` từ `src/app/shared/utils/csv-export.util.ts` nhằm xuất toàn bộ danh sách môn học đã lọc (`facade.filteredSubjects()`) ra file `subjects.csv`.",
+      "depends_on": [
+        "TASK-CSV-UTIL"
+      ],
       "owned_files": [
-        "src/app/features/teachers/**"
+        "src/app/features/subjects/pages/subject-list/**"
       ],
       "acceptance_criteria": [
-        "AC-1: Di chuyển toàn bộ file của TeacherList từ src/app/features/teachers/components/teacher-list/ sang src/app/features/teachers/pages/teacher-list/.",
-        "AC-2: Di chuyển toàn bộ file của TeacherDetail từ src/app/features/teachers/components/teacher-detail/ sang src/app/features/teachers/pages/teacher-detail/.",
-        "AC-3: Cập nhật teachers.routes.ts để lazy load TeacherListComponent từ ./pages/teacher-list/teacher-list và TeacherDetailComponent từ ./pages/teacher-detail/teacher-detail.",
-        "AC-4: Giữ nguyên selector app-teacher-list và app-teacher-detail, đảm bảo các đường dẫn import nội bộ hoạt động trơn tru.",
-        "AC-5: Xóa sạch các thư mục cũ src/app/features/teachers/components/teacher-list/ và src/app/features/teachers/components/teacher-detail/.",
-        "AC-6: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering (không import trực tiếp Store hay Service từ Component/Page).",
-        "AC-7: Toàn bộ unit tests của module Teachers (teacher-list.spec.ts, teacher-detail.spec.ts, teacher.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
-        "AC-8: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
-      ]
-    },
-    {
-      "id": "TASK-REFACTOR-USERS",
-      "title": "Refactor module Users: tách smart page component vào pages/, giữ dumb components tại components/",
-      "description": "Chuyển đổi cấu trúc thư mục của feature Users theo chuẩn kiến trúc Explicit Layering. Di chuyển smart routed component UserList (user-list.component.ts, user-list.component.html, user-list.component.css, user-list.component.spec.ts) từ src/app/features/users/components/user-list sang src/app/features/users/pages/user-list. Giữ nguyên 2 presentational/dumb components là user-form và user-detail trong src/app/features/users/components/. Cập nhật các đường dẫn import trong user-list.component.ts và user-list.component.spec.ts trỏ đến ../../components/user-form/user-form.component và ../../components/user-detail/user-detail.component. Cập nhật users.routes.ts để lazy load từ ./pages/user-list/user-list.component. Xóa thư mục cũ user-list trong components/ và đảm bảo toàn bộ unit test cùng verification checks đều pass 100%.",
-      "depends_on": [],
-      "owned_files": [
-        "src/app/features/users/**"
-      ],
-      "acceptance_criteria": [
-        "AC-1: Di chuyển toàn bộ file của UserList (user-list.component.ts, user-list.component.html, user-list.component.css, user-list.component.spec.ts) từ src/app/features/users/components/user-list/ sang src/app/features/users/pages/user-list/.",
-        "AC-2: Giữ nguyên vẹn 2 dumb / presentational components là user-form (UserFormComponent) và user-detail (UserDetailComponent) trong thư mục src/app/features/users/components/.",
-        "AC-3: Cập nhật đường dẫn import của UserFormComponent và UserDetailComponent bên trong user-list.component.ts và user-list.component.spec.ts sang ../../components/... chính xác.",
-        "AC-4: Cập nhật users.routes.ts để lazy load UserListComponent từ ./pages/user-list/user-list.component.",
-        "AC-5: Xóa sạch thư mục cũ src/app/features/users/components/user-list/.",
-        "AC-6: Đảm bảo tuân thủ nghiêm ngặt Explicit Layering: Page/Component chỉ giao tiếp qua Facade, dumb components không import smart page components.",
-        "AC-7: Toàn bộ unit tests của module Users (user-list.component.spec.ts, user-form.component.spec.ts, user-detail.component.spec.ts, user.store.spec.ts) cùng test suite toàn dự án đạt 100% PASS.",
-        "AC-8: npm run lint, npx tsc, và node scripts/check-architecture.mjs đều đạt PASS 0 lỗi, 0 cảnh báo."
+        "AC-1: Trong `subject-list.html`, thêm nhóm `.page-header-actions` trong `.page-header` chứa nút `<button type=\"button\" class=\"btn btn-secondary btn-export-csv\" (click)=\"exportCsv()\">Xuất CSV</button>` đặt cạnh nút `+ Thêm môn học` (vẫn giữ class `primary-button` và điều kiện `@if (authFacade.can('manage-subjects'))` cho nút thêm mới).",
+        "AC-2: Trong `subject-list.css`, bổ sung style cho `.page-header-actions` (`display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;`) đồng bộ với design system.",
+        "AC-3: Trong `subject-list.ts`, implement method `exportCsv(): void` sử dụng `objectsToCsv` và `downloadCsv` từ `../../../../shared/utils/csv-export.util` để xuất `this.facade.filteredSubjects()` (toàn bộ danh sách đang lọc, không chỉ trang hiện tại) với các cột: `Mã môn` (`(s) => s.code || s.id`), `Tên môn học` (`'name'`), `Số tín chỉ` (`'credits'`), `Giảng viên phụ trách` (`(s) => this.teacherName(s.teacherId)`) và tải xuống với tên file `'subjects.csv'`.",
+        "AC-4: Tuân thủ nghiêm ngặt Explicit Layering: `SubjectListComponent` chỉ đọc dữ liệu qua `SubjectFacade` và `TeacherFacade`, không import trực tiếp Store hay Service.",
+        "AC-5: Bổ sung unit test trong `subject-list.spec.ts` kiểm chứng: nút `.btn-export-csv` hiển thị với text `Xuất CSV`, click nút gọi `exportCsv()`, xuất toàn bộ `facade.filteredSubjects()` chứ không chỉ `pageSubjects()`, ánh xạ đúng tên giảng viên phụ trách (và `'Chưa phân công'` khi không có `teacherId`), tạo Blob `text/csv;charset=utf-8` có UTF-8 BOM, gán `download = 'subjects.csv'`, gọi `click()` và `URL.revokeObjectURL()`.",
+        "AC-6: Toàn bộ unit tests hiện có của `subject-list.spec.ts` và toàn bộ test suite (`pnpm test -- --watch=false`) pass 100%, cùng `pnpm run build`, `pnpm exec tsc --noEmit -p tsconfig.app.json`, `pnpm run lint`, và `pnpm run check:arch` pass 0 lỗi."
       ]
     }
   ]
