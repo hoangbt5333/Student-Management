@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { truncateText } from './string.util';
+import { maskEmail, truncateText } from './string.util';
 
 describe('truncateText', () => {
   it.each([null, undefined, ''])('returns an empty string for empty input %s', (text) => {
@@ -27,5 +27,34 @@ describe('truncateText', () => {
 
   it('preserves whitespace when the text is within the limit', () => {
     expect(truncateText('  text  ', 8)).toBe('  text  ');
+  });
+});
+
+describe('maskEmail', () => {
+  it('masks the middle of a local part with 3 or more characters and keeps the domain', () => {
+    expect(maskEmail('abc@example.com')).toBe('a***c@example.com');
+    expect(maskEmail('alice@example.com')).toBe('a***e@example.com');
+    expect(maskEmail('nguyen.van.a@sub.company.vn')).toBe('n***a@sub.company.vn');
+  });
+
+  it('masks local parts shorter than 3 characters as *** while keeping the domain', () => {
+    expect(maskEmail('a@example.com')).toBe('***@example.com');
+    expect(maskEmail('ab@example.com')).toBe('***@example.com');
+  });
+
+  it('returns empty or whitespace-only inputs unchanged', () => {
+    expect(maskEmail('')).toBe('');
+    expect(maskEmail('   ')).toBe('   ');
+  });
+
+  it.each([
+    'invalid-email',
+    '@example.com',
+    'alice@',
+    'a@b@example.com',
+    '   @example.com',
+    'alice@   ',
+  ])('returns invalid email input "%s" unchanged', (invalidEmail) => {
+    expect(maskEmail(invalidEmail)).toBe(invalidEmail);
   });
 });
