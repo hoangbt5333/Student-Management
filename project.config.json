@@ -25,7 +25,7 @@
       "timeout_s": 120
     },
     "unit_test": {
-      "cmd": "pnpm test -- --watch=false",
+      "cmd": "pnpm test --watch=false",
       "required": true,
       "timeout_s": 600
     },
