@@ -3,11 +3,30 @@
 
 > **Notice:** This section is managed by `agent-framework`. Do not edit directly; changes will be overwritten upon upgrade.
 
+## Workflow Modes
+
+The agent operates flexibly in two modes:
+
+### Mode 1: Direct / Single-Agent Mode (DEFAULT for most requests)
+- **Applicable for:** Bug fixes, refactoring, small/medium feature additions, writing tests, UI adjustments, or any request where the user does not explicitly request subagents or orchestrator.
+- **Operating Principles:**
+  1. Understand the codebase directly and select appropriate skills (e.g. `feature-development`, `debugging`, `code-validation`, `refactoring`, `test-execution`).
+  2. Implement directly on the current workspace (do not create git worktrees or run `orchestrator/cli.mjs`).
+  3. Run validation and test verification (`npm run validate`, `npm run verify`, or project test commands).
+  4. **Standardized Git Commit:** After tests pass, automatically stage relevant files and create a local commit adhering to Conventional Commits (reference skill `git-commit`). NEVER run `git push` without explicit user permission.
+  5. Ensure a clean working tree and report findings with test evidence and commit details (hash + message).
+
+### Mode 2: Multi-Agent Orchestrator Mode (ONLY WHEN EXPLICITLY REQUESTED)
+- **Trigger Conditions:**
+  1. The user explicitly requests it (e.g., *"use orchestrator"*, *"run multi-agent"*, *"spawn subagents"*, *"8-step workflow"*).
+  2. OR when a task is large and complex (affecting > 5-10 files, cross-cutting multiple features, requiring parallel tasks): The agent **proactively proposes** using Multi-Agent; activate ONLY after user approval.
+- **Operating Principles:** When in this mode, the agent acts as Coordinator and strictly adheres to the `Multi-Agent Workflow Rules` and the `orchestrator` skill.
+
 ## Multi-Agent Workflow Rules
 1. **Core vs Project Boundary:** Never modify files under `orchestrator/`, `core/`, `state/`, `logs/`, `.claude/`, `.agents/`, or `project.config.json` to fit specific task requirements.
 2. **Canonical Orchestration Commands:**
    - **Initialize Execution:** `node orchestrator/cli.mjs init --exec <id> --tasks tasks.json`
-   - **Start Task & Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, cài đặt node_modules qua pnpm, và chuyển task sang in_progress)*
+   - **Start Task & Worktree:** `node orchestrator/cli.mjs worktree <task_id> --exec <id>` *(tự động tạo worktree từ nhánh integration/<id>, liên kết node_modules qua Junction/Symlink, và chuyển task sang in_progress)*
    - **Validate Task (Coder Gate):** `node orchestrator/validate.mjs <task_id> ../wt/<task_id> --exec <id> --base integration/<id>` *(chạy build, typecheck, lint, test)*
    - **Task Handoff:** Coder tạo `.task-report.json` trong worktree với `result: "READY_FOR_REVIEW"`.
    - **Review Verdict:** `node orchestrator/cli.mjs review-record <task_id> --exec <id> --verdict APPROVED` *(nếu task ở in_progress sẽ tự động chuyển sang ready_for_review)*
