@@ -5,11 +5,14 @@
       <p>Danh mục môn học, số tín chỉ và giảng viên phụ trách trong chương trình đào tạo.</p>
     </div>
 
-    @if (authFacade.can('manage-subjects')) {
-      <button type="button" class="btn btn-primary primary-button primary" (click)="openAdd()">
-        + Thêm môn học
-      </button>
-    }
+    <div class="page-header-actions">
+      <button type="button" class="btn btn-secondary btn-export-csv" (click)="exportCsv()">Xuất CSV</button>
+      @if (authFacade.can('manage-subjects')) {
+        <button type="button" class="btn btn-primary primary-button primary" (click)="openAdd()">
+          + Thêm môn học
+        </button>
+      }
+    </div>
   </header>
 
   @if (showForm()) {

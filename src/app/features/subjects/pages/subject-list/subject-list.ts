@@ -12,6 +12,7 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { TooltipDirective } from '../../../../shared/directives/tooltip/tooltip.directive';
 import { AuthFacade } from '../../../../core/auth/facades/auth.facade';
 import { confirmDiscardChanges, HasPendingChanges } from '../../../../core/guards/pending-changes.guard';
+import { downloadCsv, objectsToCsv } from '../../../../shared/utils/csv-export.util';
 
 interface GradeRef {
   id: string;
@@ -161,6 +162,16 @@ export class SubjectListComponent implements OnInit, HasPendingChanges {
 
   teacherName(id?: string): string {
     return this.teachers().find((teacher) => teacher.id === id)?.name ?? 'Chưa phân công';
+  }
+
+  exportCsv(): void {
+    const csv = objectsToCsv(this.facade.filteredSubjects(), [
+      { header: 'Mã môn', accessor: (s) => s.code || s.id },
+      { header: 'Tên môn học', accessor: 'name' },
+      { header: 'Số tín chỉ', accessor: 'credits' },
+      { header: 'Giảng viên phụ trách', accessor: (s) => this.teacherName(s.teacherId) },
+    ]);
+    downloadCsv(csv, 'subjects.csv');
   }
 
   setSearch(value: string): void {

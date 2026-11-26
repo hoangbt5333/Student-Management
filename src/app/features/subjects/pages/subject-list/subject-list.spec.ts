@@ -12,6 +12,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import type { Subject } from '../../models/subject.model';
 import type { Teacher } from '../../../teachers/models/teacher.model';
+import { UTF8_BOM } from '../../../../shared/utils/csv-export.util';
 
 describe('SubjectListComponent', () => {
   let component: SubjectListComponent;
@@ -26,6 +27,9 @@ describe('SubjectListComponent', () => {
       teacherId: 'GV001',
     },
   ]);
+
+  const mockFilteredSubjectsSignal = signal<Subject[]>(mockSubjectsSignal());
+  const mockPageSubjectsSignal = signal<Subject[]>(mockSubjectsSignal());
 
   const mockTeachersSignal = signal<Teacher[]>([
     {
@@ -45,6 +49,9 @@ describe('SubjectListComponent', () => {
   const mockSetPageSize = vi.fn();
 
   beforeEach(async () => {
+    mockFilteredSubjectsSignal.set(mockSubjectsSignal());
+    mockPageSubjectsSignal.set(mockSubjectsSignal());
+
     await TestBed.configureTestingModule({
       imports: [SubjectListComponent],
       providers: [
@@ -55,8 +62,8 @@ describe('SubjectListComponent', () => {
           provide: SubjectFacade,
           useValue: {
             subjects: mockSubjectsSignal,
-            filteredSubjects: mockSubjectsSignal,
-            pageSubjects: mockSubjectsSignal,
+            filteredSubjects: mockFilteredSubjectsSignal,
+            pageSubjects: mockPageSubjectsSignal,
             filteredSubjectCount: signal(1),
             subjectCount: signal(1),
             page: signal(1),
@@ -287,8 +294,78 @@ describe('SubjectListComponent', () => {
     unauthFixture.detectChanges();
     await unauthFixture.whenStable();
 
+    expect(unauthFixture.debugElement.query(By.css('.btn-export-csv'))).toBeTruthy();
     expect(unauthFixture.debugElement.query(By.css('.btn-view-detail'))).toBeTruthy();
     expect(unauthFixture.debugElement.query(By.css('.btn-edit-subject'))).toBeNull();
     expect(unauthFixture.debugElement.query(By.css('.btn-delete-subject'))).toBeNull();
+  });
+
+  describe('CSV export', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should render .btn-export-csv with text "Xuất CSV" and call exportCsv() on click', () => {
+      const exportBtn = fixture.debugElement.query(By.css('.page-header-actions .btn-export-csv'));
+      expect(exportBtn).toBeTruthy();
+      expect(exportBtn.nativeElement.textContent.trim()).toBe('Xuất CSV');
+
+      const exportSpy = vi.spyOn(component, 'exportCsv').mockImplementation(() => undefined);
+      exportBtn.nativeElement.click();
+
+      expect(exportSpy).toHaveBeenCalledOnce();
+    });
+
+    it('should export all filteredSubjects (not only pageSubjects), map teacher names with "Chưa phân công" fallback, create UTF-8 BOM Blob, download subjects.csv, and revoke object URL', async () => {
+      const filteredSubjects: Subject[] = [
+        {
+          id: 'MH001',
+          code: 'MH001',
+          name: 'Lap trinh Web',
+          credits: 3,
+          teacherId: 'GV001',
+        },
+        {
+          id: 'MH002',
+          name: 'Co so du lieu',
+          credits: 4,
+        },
+      ];
+      mockFilteredSubjectsSignal.set(filteredSubjects);
+      mockPageSubjectsSignal.set([filteredSubjects[0]]);
+      fixture.detectChanges();
+
+      const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:subjects-csv');
+      const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+      const originalCreateElement = document.createElement.bind(document);
+      const anchor = originalCreateElement('a');
+      const clickSpy = vi.spyOn(anchor, 'click').mockImplementation(() => undefined);
+      vi.spyOn(document, 'createElement').mockImplementation((tagName: string) =>
+        tagName === 'a' ? anchor : originalCreateElement(tagName),
+      );
+
+      const exportBtn = fixture.debugElement.query(By.css('.btn-export-csv'));
+      exportBtn.nativeElement.click();
+
+      expect(createObjectURL).toHaveBeenCalledOnce();
+      const blob = createObjectURL.mock.calls[0][0] as Blob;
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.type).toBe('text/csv;charset=utf-8');
+
+      const csvText = new TextDecoder('utf-8', { ignoreBOM: true }).decode(await blob.arrayBuffer());
+      expect(csvText.startsWith(UTF8_BOM)).toBe(true);
+      expect(csvText).toBe(
+        UTF8_BOM +
+          [
+            'Mã môn,Tên môn học,Số tín chỉ,Giảng viên phụ trách',
+            'MH001,Lap trinh Web,3,Nguyen Van B',
+            'MH002,Co so du lieu,4,Chưa phân công',
+          ].join('\r\n'),
+      );
+
+      expect(anchor.download).toBe('subjects.csv');
+      expect(clickSpy).toHaveBeenCalledOnce();
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:subjects-csv');
+    });
   });
 });
